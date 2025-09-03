@@ -555,7 +555,7 @@ export default function BalancePage() {
           </h2>
           <button
             onClick={() => router.push("/dashboard/transactions")}
-            className="text-blue-600 text-sm font-medium"
+            className="text-blue-600 text-sm font-medium hover:cursor-pointer"
           >
             View All
           </button>

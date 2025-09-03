@@ -24,7 +24,7 @@ import IGoal from "@/types/goal";
 
 export default function GoalsPage() {
   const { data: session } = useSession();
-  const { goals, fetchGoals, addGoal, updateGoal, deleteGoal } = useGoalStore();
+  const { goals, addGoal, updateGoal, deleteGoal } = useGoalStore();
 
   const { accounts } = useAccountStore();
 
@@ -50,11 +50,6 @@ export default function GoalsPage() {
     return Math.min(progress, 100); // cap at 100%
   }
 
-  useEffect(() => {
-    if (session?.user) {
-      fetchGoals(); // No need to pass userId, backend handles it
-    }
-  }, [session]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

@@ -1,4 +1,6 @@
 // app/dashboard/page.tsx
+"use client";
+
 import {
   ArrowDownRight,
   ArrowUpRight,
@@ -9,47 +11,16 @@ import {
   TrendingUp,
   Wallet,
 } from "lucide-react";
+import { useTransactionStore } from "@/store/useTransactionStore";
+import { useAccountStore } from "@/store/useAccountStore";
+import { useGoalStore } from "@/store/useGoalStore";
+import { getServerSession } from "next-auth";
 
 export default function DashboardPage() {
-  // Mock data for the dashboard
-  const startingBalance = 10000;
-  const transactions = [
-    {
-      id: 1,
-      type: "expense",
-      category: "Food",
-      amount: 200,
-      date: "2023-06-15",
-    },
-    {
-      id: 2,
-      type: "income",
-      category: "Salary",
-      amount: 3000,
-      date: "2023-06-10",
-    },
-    {
-      id: 3,
-      type: "expense",
-      category: "Transport",
-      amount: 50,
-      date: "2023-06-05",
-    },
-    {
-      id: 4,
-      type: "expense",
-      category: "Shopping",
-      amount: 450,
-      date: "2023-06-02",
-    },
-    {
-      id: 5,
-      type: "income",
-      category: "Freelance",
-      amount: 1200,
-      date: "2023-05-28",
-    },
-  ];
+
+  const { transactions } = useTransactionStore();
+  const { accounts } = useAccountStore();
+  const { goals } = useGoalStore();
 
   // Calculate financial metrics
   const income = transactions
@@ -58,26 +29,17 @@ export default function DashboardPage() {
   const expense = transactions
     .filter((t) => t.type === "expense")
     .reduce((sum, t) => sum + t.amount, 0);
-  const available = startingBalance + income - expense;
+  const available = accounts.map((a) => a.balance).reduce((a, b) => a + b, 0);
   const netChange = income - expense;
   const isPositive = netChange >= 0;
-  const recentTransactions = [...transactions]
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    .slice(0, 5);
-
-  // Goals data
-  const goals = [
-    { name: "Emergency Fund", target: 10000, current: 7500 },
-    { name: "Vacation", target: 5000, current: 1500 },
-    { name: "New Car", target: 20000, current: 4500 },
-  ];
+  const recentTransactions = transactions.slice(0, 5);
 
   return (
     <div className="space-y-6">
       {/* Welcome Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">
-          Welcome back, John!
+          Welcome back, {}
         </h1>
         <p className="text-gray-600">
           Here's your financial overview for today
@@ -269,14 +231,14 @@ export default function DashboardPage() {
             {goals.map((goal, index) => {
               const progress = Math.min(
                 100,
-                (goal.current / goal.target) * 100
+                (goal?.current||0 / goal.target) * 100
               );
               return (
                 <div key={index}>
                   <div className="flex justify-between mb-2">
                     <span className="font-medium">{goal.name}</span>
                     <span className="text-gray-600">
-                      ₹{goal.current.toLocaleString()}/₹
+                      ₹{goal?.current||0}/₹
                       {goal.target.toLocaleString()}
                     </span>
                   </div>
@@ -320,7 +282,7 @@ export default function DashboardPage() {
               <tbody>
                 {recentTransactions.map((transaction) => (
                   <tr
-                    key={transaction.id}
+                    key={transaction._id}
                     className="border-b hover:bg-gray-50"
                   >
                     <td className="py-4">
