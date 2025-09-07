@@ -12,6 +12,8 @@ import {
   BarChart,
   ArrowRight,
 } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 
 export default function LoginPage() {
   const { data: session, status } = useSession();
@@ -63,12 +65,12 @@ export default function LoginPage() {
       <div className="lg:w-1/2 bg-gradient-to-br from-blue-500 to-indigo-700 p-8 lg:p-12 flex flex-col justify-between">
         <div>
           <div className="flex items-center">
-            <div className="bg-white/20 w-10 h-10 rounded-lg flex items-center justify-center">
+            {/* <div className="bg-white/20 w-10 h-10 rounded-lg flex items-center justify-center">
               <DollarSign className="h-6 w-6 text-white" />
             </div>
             <span className="ml-3 text-xl font-bold text-white">
               MoneyManager
-            </span>
+            </span> */}
           </div>
 
           <div className="mt-16 max-w-md">
@@ -130,6 +132,16 @@ export default function LoginPage() {
       {/* Right Panel - Login Form */}
       <div className="lg:w-1/2 flex items-center justify-center p-6 lg:p-12">
         <div className="w-full max-w-md">
+          <div>
+            <Link href={"/"}>
+              <Image
+                src={"/images/logo/mainlogo.png"}
+                alt="Money Nest Logo"
+                width={1500}
+                height={500}
+              />
+            </Link>
+          </div>
           <div className="text-center mb-10">
             <h2 className="text-3xl font-bold text-gray-800 mb-2">
               Welcome Back

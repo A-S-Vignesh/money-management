@@ -11,6 +11,7 @@ export interface IUser extends Document {
   phoneNo?: string;
   dob?: Date;
   currency: string;
+  locale: string;
   lang: string;
   notifications: boolean;
   twoFactorAuth: boolean;
@@ -30,6 +31,7 @@ const UserSchema: Schema<IUser> = new mongoose.Schema(
     phoneNo: { type: String, unique: true, sparse: true },
     dob: { type: Date },
     currency: { type: String, default: "INR" },
+    locale: { type: String, default: "en-IN" },
     lang: { type: String, default: "en" },
     notifications: { type: Boolean, default: true },
     twoFactorAuth: { type: Boolean, default: false },

@@ -7,6 +7,8 @@ export default interface IProfile {
   dob?: Date;
   currency?: string;
   lang?: string;
+  locale?: string;
   notifications?: boolean;
   twoFactorAuth?: boolean;
+  createdAt?: Date;
 }

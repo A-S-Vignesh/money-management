@@ -1,33 +1,49 @@
+const CACHE_NAME = "money-nest-cache-v1";
+
+// Precache important assets
+const PRECACHE_ASSETS = [
+  "/",
+  "/login",
+  "/dashboard",
+  "/offline",
+  "/favicon.ico",
+  "/manifest.json",
+  "/apple-icon.png",
+  "/icon0.svg",
+  "/icon1.png"
+];
+
+// Install event → cache files
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open("app-cache").then((cache) => {
-      return cache.addAll([
-        "/", // root route
-        "/login", // login page
-        "/dashboard", // dashboard entry
-        "/offline", // offline fallback
-        "/favicon.ico",
-        "/manifest.json",
-        "/apple-icon.png",
-        "/icon0.svg",
-        "/icon1.png",
-
-        // Next.js chunks & CSS from build
-        "/_next/static/chunks/202abb9aed9e828b.js",
-        "/_next/static/chunks/75a3f12660976f11.js",
-        "/_next/static/chunks/e3e5434a413abe7f.js",
-        "/_next/static/chunks/cd27ad11fa76cf91.css",
-      ]);
-    })
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_ASSETS))
   );
+  self.skipWaiting();
 });
 
+// Activate event → cleanup old caches
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    caches.keys().then((keys) =>
+      Promise.all(keys.map((key) => key !== CACHE_NAME && caches.delete(key)))
+    )
+  );
+  self.clients.claim();
+});
+
+// Fetch event → cache-first strategy
 self.addEventListener("fetch", (event) => {
   event.respondWith(
-    caches.match(event.request).then((response) => {
-      return (
-        response || fetch(event.request).catch(() => caches.match("/offline"))
-      );
-    })
+    caches.match(event.request).then(
+      (cached) =>
+        cached ||
+        fetch(event.request).then((response) => {
+          // Cache runtime resources like chunks
+          return caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, response.clone());
+            return response;
+          });
+        })
+    )
   );
 });

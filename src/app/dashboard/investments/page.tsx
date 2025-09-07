@@ -1,7 +1,15 @@
-import ComingSoonPage from "@/components/CommingSoon"
+// app/balance/page.tsx
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/authOptions";
+import { redirect } from "next/navigation";
+import InvestmentsPage from "@/allpages/InvestmentPage";
 
-export default function Investments() {
-    return (
-        <ComingSoonPage />
-    )
+export default async function Balance() {
+  const session = await getServerSession(authOptions);
+
+  if (!session?.user) {
+    redirect("/login"); // 👈 if not logged in, go to login
+  }
+
+  return <InvestmentsPage />;
 }

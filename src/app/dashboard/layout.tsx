@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { useState, useEffect, useRef, use } from "react";
 import { useSession, signOut } from "next-auth/react";
-import {useToastStore} from "@/store/useToastStore";
+import { useToastStore } from "@/store/useToastStore";
 import { useTransactionStore } from "@/store/useTransactionStore";
 import { useProfileStore } from "@/store/useProfileStore";
 import { useAccountStore } from "@/store/useAccountStore";
@@ -110,7 +110,7 @@ export default function DashboardLayout({
   const { fetchAccounts } = useAccountStore();
   const { fetchProfile } = useProfileStore();
   const { fetchBudgets } = useBudgetStore();
-  const { fetchGoals} = useGoalStore();
+  const { fetchGoals } = useGoalStore();
 
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -123,7 +123,7 @@ export default function DashboardLayout({
 
   const userName = session?.user?.name || "Unknown User";
   const userEmail = session?.user?.email || "No email";
-  const userImage = session?.user?.image || "/default-avatar.png";
+  const userImage = session?.user?.image || "/images/avathar/default.png";
 
   // Handle click outside to close dropdowns
   useEffect(() => {
@@ -147,7 +147,6 @@ export default function DashboardLayout({
         setIsUserMenuOpen(false);
       }
     };
-
 
     checkIfMobile();
     window.addEventListener("resize", checkIfMobile);
@@ -192,11 +191,24 @@ export default function DashboardLayout({
         {/* Sidebar Header */}
         <div className="p-4 border-b border-gray-700 flex items-center justify-between">
           <div className="flex items-center">
-            <div className="bg-gradient-to-r from-blue-500 to-indigo-600 w-10 h-10 rounded-lg flex items-center justify-center">
-              <DollarSign className="text-white" />
-            </div>
-            {!collapsed && (
-              <h1 className="text-xl font-bold ml-3">Money Manager</h1>
+            {collapsed ? (
+              <div className=" w-10 h-10 rounded-lg flex items-center justify-center">
+                <Image
+                  src={"/images/logo/mainlogo2.png"}
+                  alt="Money Nest Logo"
+                  width={669}
+                  height={669}
+                  className="w-12 h-12"
+                />
+              </div>
+            ) : (
+              <Image
+                src={"/images/logo/mainlogo.png"}
+                alt="Money Nest Logo"
+                width={1500}
+                height={500}
+                className="w-40 h-12"
+              />
             )}
           </div>
           <div className="flex gap-2 items-center">
@@ -307,7 +319,7 @@ export default function DashboardLayout({
                 </button> */}
                 <button
                   onClick={() => signOut()}
-                  className="text-gray-400 hover:text-white p-1 rounded hover:bg-gray-700"
+                  className="text-gray-400 cursor-pointer hover:text-white p-1 rounded hover:bg-gray-700"
                 >
                   <LogOut size={18} />
                 </button>
@@ -331,6 +343,7 @@ export default function DashboardLayout({
             <div>
               <h1 className="text-xl font-semibold text-gray-900">
                 {menuItems.find((item) => item.href === pathname)?.label ||
+                  secondaryItems.find((item) => item.href === pathname)?.label ||
                   "Dashboard"}
               </h1>
               <p className="text-sm text-gray-600">Your financial overview</p>
@@ -341,7 +354,7 @@ export default function DashboardLayout({
             {/* Notification Dropdown */}
             <div className="relative" ref={notifRef}>
               <button
-                className="relative p-2 text-gray-500 hover:bg-gray-100 rounded-full"
+                className="relative p-2 text-gray-500 hover:bg-gray-100 rounded-full cursor-pointer"
                 onClick={toggleNotif}
               >
                 <Bell size={20} />
@@ -469,18 +482,18 @@ export default function DashboardLayout({
                     >
                       Settings
                     </Link> */}
-                    <Link
+                    {/* <Link
                       href="/dashboard/billing"
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                       onClick={() => setIsUserMenuOpen(false)}
                     >
                       Billing
-                    </Link>
+                    </Link> */}
                   </div>
                   <div className="py-1 border-t border-gray-100">
                     <button
                       onClick={() => signOut()}
-                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 flex items-center"
+                      className="w-full cursor-pointer text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 flex items-center"
                     >
                       <LogOut size={16} className="mr-2" />
                       Sign out

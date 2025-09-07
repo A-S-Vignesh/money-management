@@ -1,8 +1,9 @@
 // store/useTransactionStore.ts
 import { create } from "zustand";
-import { IAccount } from "@/models/Account";
 import { useAccountStore } from "./useAccountStore";
+import { useToastStore } from "./useToastStore";
 import { ITransaction } from "@/types/transaction";
+
 interface TransactionStore {
   transactions: ITransaction[];
   loading: boolean;
@@ -17,100 +18,114 @@ interface TransactionStore {
   ) => Promise<void>;
 }
 
-export const useTransactionStore = create<TransactionStore>((set) => ({
-  transactions: [],
-  loading: false,
-  error: null,
+export const useTransactionStore = create<TransactionStore>((set, get) => {
+  const { showToast } = useToastStore.getState();
 
-  // ✅ Fetch transactions from backend API
-  fetchTransactions: async () => {
-    set({ loading: true, error: null });
-    try {
-      const response = await fetch("/api/transactions");
-      if (!response.ok) throw new Error("Failed to fetch transactions");
+  return {
+    transactions: [],
+    loading: false,
+    error: null,
 
-      const data: ITransaction[] = await response.json();
-      set({ transactions: data, loading: false });
-    } catch (error: any) {
-      set({ error: error.message, loading: false });
-    }
-  },
+    // ✅ Fetch transactions
+    fetchTransactions: async () => {
+      set({ loading: true, error: null });
+      try {
+        const res = await fetch("/api/transactions");
+        const result = await res.json();
 
-  // ✅ Add a transaction and sync with backend
-  addTransaction: async (transaction: Omit<ITransaction, "_id">) => {
-    set({ error: null });
-    try {
-      const response = await fetch("/api/transactions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(transaction),
-      });
+        if (!res.ok)
+          throw new Error(result.message || "Failed to fetch transactions");
 
-      if (!response.ok) throw new Error("Failed to add transaction");
+        set({ transactions: result.data as ITransaction[], loading: false });
+      } catch (error: any) {
+        set({ error: error.message, loading: false });
+        showToast(error.message, "error");
+      }
+    },
 
-      const savedTransaction: ITransaction = await response.json();
+    // ✅ Add transaction
+    addTransaction: async (transaction) => {
+      set({ error: null });
+      try {
+        const res = await fetch("/api/transactions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(transaction),
+        });
 
-      set((state) => ({
-        transactions: [...state.transactions, savedTransaction],
-      }));
+        const result = await res.json();
+        if (!res.ok)
+          throw new Error(result.message || "Failed to add transaction");
 
-      // Refresh accounts after adding
-      const { fetchAccounts } = useAccountStore.getState();
-      fetchAccounts();
-    } catch (error: any) {
-      console.error("Add transaction error:", error);
-      set({ error: error.message });
-    }
-  },
+        set((state) => ({
+          transactions: [...state.transactions, result.data as ITransaction],
+        }));
 
-  // ✅ Remove a transaction and sync with backend
-  removeTransaction: async (id: string) => {
-    set({ error: null });
-    try {
-      const response = await fetch(`/api/transactions/${id}`, {
-        method: "DELETE",
-      });
-      if (!response.ok) throw new Error("Failed to delete transaction");
+        // Refresh accounts
+        const { fetchAccounts } = useAccountStore.getState();
+        fetchAccounts();
 
-      set((state) => ({
-        transactions: state.transactions.filter((t) => t._id !== id),
-      }));
+        showToast(result.message, result.type);
+      } catch (error: any) {
+        set({ error: error.message });
+        showToast(error.message, "error");
+      }
+    },
 
-      // Refresh accounts after deletion
-      const { fetchAccounts } = useAccountStore.getState();
-      fetchAccounts();
-    } catch (error: any) {
-      set({ error: error.message });
-    }
-  },
+    // ✅ Remove transaction
+    removeTransaction: async (id) => {
+      set({ error: null });
+      try {
+        const res = await fetch(`/api/transactions/${id}`, {
+          method: "DELETE",
+        });
+        const result = await res.json();
 
-  // ✅ Update a transaction and sync with backend
-  updateTransaction: async (
-    id: string,
-    updatedTransaction: Partial<ITransaction>
-  ) => {
-    set({ error: null });
-    try {
-      const response = await fetch(`/api/transactions/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedTransaction),
-      });
-      if (!response.ok) throw new Error("Failed to update transaction");
+        if (!res.ok)
+          throw new Error(result.message || "Failed to delete transaction");
 
-      const updated: ITransaction = await response.json();
+        set((state) => ({
+          transactions: state.transactions.filter((t) => t._id !== id),
+        }));
 
-      set((state) => ({
-        transactions: state.transactions.map((t) =>
-          t._id === id ? updated : t
-        ),
-      }));
+        const { fetchAccounts } = useAccountStore.getState();
+        fetchAccounts();
 
-      // Refresh accounts after update
-      const { fetchAccounts } = useAccountStore.getState();
-      fetchAccounts();
-    } catch (error: any) {
-      set({ error: error.message });
-    }
-  },
-}));
+        showToast(result.message, result.type);
+      } catch (error: any) {
+        set({ error: error.message });
+        showToast(error.message, "error");
+      }
+    },
+
+    // ✅ Update transaction
+    updateTransaction: async (id, updatedTransaction) => {
+      set({ error: null });
+      try {
+        const res = await fetch(`/api/transactions/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updatedTransaction),
+        });
+
+        const result = await res.json();
+        if (!res.ok)
+          throw new Error(result.message || "Failed to update transaction");
+
+        set((state) => ({
+          transactions: state.transactions.map((t) =>
+            t._id === id ? (result.data as ITransaction) : t
+          ),
+        }));
+
+        const { fetchAccounts } = useAccountStore.getState();
+        fetchAccounts();
+
+        showToast(result.message, result.type);
+      } catch (error: any) {
+        set({ error: error.message });
+        showToast(error.message, "error");
+      }
+    },
+  };
+});

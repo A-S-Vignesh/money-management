@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { useToastStore } from "./useToastStore";
-import  IBudget  from "@/types/budget";
+import IBudget from "@/types/budget";
 
 // Define store interface
 interface BudgetStore {
@@ -21,19 +21,21 @@ export const useBudgetStore = create<BudgetStore>((set) => {
     loading: false,
     error: null,
 
-    // Fetch all active budgets
+    // Fetch all budgets
     fetchBudgets: async () => {
       set({ loading: true, error: null });
       try {
         const res = await fetch("/api/budgets");
-        if (!res.ok) throw new Error("Failed to fetch budgets");
-        const data: IBudget[] = await res.json();
-        set({ budgets: data, loading: false });
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data.error || "Failed to fetch budgets");
+
+        set({ budgets: data.data || [], loading: false });
+        // ❌ No success toast for fetch (as per your preference)
       } catch (error: unknown) {
-        set({
-          error: error instanceof Error ? error.message : String(error),
-          loading: false,
-        });
+        const message = error instanceof Error ? error.message : String(error);
+        set({ error: message, loading: false });
+        showToast(message, "error");
       }
     },
 
@@ -46,20 +48,18 @@ export const useBudgetStore = create<BudgetStore>((set) => {
           body: JSON.stringify(budget),
         });
 
-        const message = await res.text();
-        if (!res.ok) throw new Error(message);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Failed to add budget");
 
-        const newBudget: IBudget = JSON.parse(message);
         set((state) => ({
-          budgets: [...state.budgets, newBudget],
+          budgets: [...state.budgets, data.data],
         }));
 
-        showToast("Budget added successfully!", "success");
+        showToast(data.message || "Budget added successfully!", "success");
       } catch (error: unknown) {
-        set({
-          error: error instanceof Error ? error.message : String(error),
-          loading: false,
-        });
+        const message = error instanceof Error ? error.message : String(error);
+        set({ error: message, loading: false });
+        showToast(message, "error");
       }
     },
 
@@ -72,19 +72,18 @@ export const useBudgetStore = create<BudgetStore>((set) => {
           body: JSON.stringify(updatedBudget),
         });
 
-        if (!res.ok) throw new Error("Failed to update budget");
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Failed to update budget");
 
-        const updated: IBudget = await res.json();
         set((state) => ({
-          budgets: state.budgets.map((b) => (b._id === id ? updated : b)),
+          budgets: state.budgets.map((b) => (b._id === id ? data.data : b)),
         }));
 
-        showToast("Budget updated successfully!", "success");
+        showToast(data.message || "Budget updated successfully!", "success");
       } catch (error: unknown) {
-        set({
-          error: error instanceof Error ? error.message : String(error),
-          loading: false,
-        });
+        const message = error instanceof Error ? error.message : String(error);
+        set({ error: message, loading: false });
+        showToast(message, "error");
       }
     },
 
@@ -95,19 +94,18 @@ export const useBudgetStore = create<BudgetStore>((set) => {
           method: "DELETE",
         });
 
-        const message = await res.text();
-        if (!res.ok) throw new Error(message);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Failed to delete budget");
 
         set((state) => ({
           budgets: state.budgets.filter((b) => b._id !== id),
         }));
 
-        showToast(message, "success");
+        showToast(data.message || "Budget deleted successfully!", "success");
       } catch (error: unknown) {
-        set({
-          error: error instanceof Error ? error.message : String(error),
-          loading: false,
-        });
+        const message = error instanceof Error ? error.message : String(error);
+        set({ error: message, loading: false });
+        showToast(message, "error");
       }
     },
   };

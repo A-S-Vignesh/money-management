@@ -1,90 +1,157 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { connectToDatabase } from "@/lib/mongodb";
-import mongoose from "mongoose"; // Ensure mongoose is imported
 import Budget from "@/models/Budget";
-import Transaction from "@/models/Transaction";
-import { getPeriodRange } from "@/utils/getBudgetPeriod"; // <-- utility function you’ll create
 
+// ✅ GET: Fetch single budget by ID
 export async function GET(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions);
   if (!session || !session.user?._id) {
-    return new Response("Unauthorized", { status: 401 });
-    }
-    
-    const { id } = await params;
+    return Response.json(
+      { message: "Unauthorized", type: "error", success: false },
+      { status: 401 }
+    );
+  }
 
+  const { id } = await params;
   await connectToDatabase();
 
-  const budget = await Budget.findOne({
-    _id: id,
-    userId: session.user._id,
-  });
+  try {
+    const budget = await Budget.findOne({ _id: id, userId: session.user._id });
 
-  if (!budget) {
-    return new Response("Budget not found", { status: 404 });
+    if (!budget) {
+      return Response.json(
+        { message: "Budget not found", type: "error", success: false },
+        { status: 404 }
+      );
+    }
+
+    return Response.json(
+      {
+        message: "Budget fetched successfully",
+        type: "success",
+        success: true,
+        data: budget,
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("GET /api/budget/:id error:", error);
+    return Response.json(
+      { message: "Failed to fetch budget", type: "error", success: false },
+      { status: 500 }
+    );
   }
-
-  return Response.json(budget);
 }
 
-export async function PUT(req:Request, { params }:{params:Promise<{id:string}>}) {
+// ✅ PUT: Update budget
+export async function PUT(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
   const session = await getServerSession(authOptions);
   if (!session || !session.user?._id) {
-    return new Response("Unauthorized", { status: 401 });
+    return Response.json(
+      { message: "Unauthorized", type: "error", success: false },
+      { status: 401 }
+    );
   }
 
-    await connectToDatabase();
-    const { id } = await params;
-  const updates = await req.json();
+  const { id } = await params;
+  await connectToDatabase();
 
-  const existing = await Budget.findOne({
-    _id: id,
-    userId: session.user._id,
-  });
+  try {
+    const updates = await req.json();
 
-  if (!existing) {
-    return new Response("Budget not found", { status: 404 });
+    const existing = await Budget.findOne({
+      _id: id,
+      userId: session.user._id,
+    });
+    if (!existing) {
+      return Response.json(
+        { message: "Budget not found", type: "error", success: false },
+        { status: 404 }
+      );
+    }
+
+    const updated = await Budget.findOneAndUpdate(
+      { _id: id, userId: session.user._id },
+      updates,
+      { new: true }
+    );
+
+    if (!updated) {
+      return Response.json(
+        { message: "Failed to update budget", type: "error", success: false },
+        { status: 500 }
+      );
+    }
+
+    return Response.json(
+      {
+        message: "Budget updated successfully",
+        type: "success",
+        success: true,
+        data: updated,
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("PUT /api/budget/:id error:", error);
+    return Response.json(
+      { message: "Failed to update budget", type: "error", success: false },
+      { status: 500 }
+    );
   }
-
-  const updated = await Budget.findOneAndUpdate(
-    { _id: id, userId: session.user._id },
-    updates,
-    { new: true }
-  );
-
-  if (!updated) {
-    return new Response("Failed to update budget", { status: 500 });
-  }
-
-  return Response.json(updated);
 }
 
-export async function DELETE(req:Request, { params }:{params:Promise<{id:string}>}) {
+// ✅ DELETE: Remove budget
+export async function DELETE(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
   const session = await getServerSession(authOptions);
   if (!session || !session.user?._id) {
-    return new Response("Unauthorized", { status: 401 });
+    return Response.json(
+      { message: "Unauthorized", type: "error", success: false },
+      { status: 401 }
+    );
   }
 
-    await connectToDatabase();
-    
-    const { id } = await params;
+  const { id } = await params;
+  await connectToDatabase();
 
-  const existing = await Budget.findOne({
-    _id: id,
-    userId: session.user._id,
-  });
+  try {
+    const existing = await Budget.findOne({
+      _id: id,
+      userId: session.user._id,
+    });
+    if (!existing) {
+      return Response.json(
+        { message: "Budget not found", type: "error", success: false },
+        { status: 404 }
+      );
+    }
 
-  if (!existing) {
-    return new Response("Budget not found", { status: 404 });
+    await Budget.deleteOne({ _id: id, userId: session.user._id });
+
+    return Response.json(
+      {
+        message: "Budget deleted successfully",
+        type: "success",
+        success: true,
+        data: { id },
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("DELETE /api/budget/:id error:", error);
+    return Response.json(
+      { message: "Failed to delete budget", type: "error", success: false },
+      { status: 500 }
+    );
   }
-
-  await Budget.deleteOne({ _id: id });
-
-  return new Response("Budget deleted and archived successfully", {
-    status: 200,
-  });
 }

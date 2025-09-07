@@ -1,9 +1,11 @@
-// app/api/accounts/route.js
+// app/api/accounts/[id]/route.ts
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { connectToDatabase } from "@/lib/mongodb";
 import Account from "@/models/Account";
+import Transaction from "@/models/Transaction";
 
+// ------------------ GET ------------------
 export async function GET(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -12,25 +14,42 @@ export async function GET(
   const userId = session?.user?._id;
 
   if (!userId) {
-    return new Response("Unauthorized", { status: 401 });
+    return Response.json(
+      { message: "Unauthorized", type: "error" },
+      { status: 401 }
+    );
   }
 
   const { id } = await params;
-
   await connectToDatabase();
 
   try {
-    const accounts = await Account.findById(id);
-    return Response.json(accounts);
+    const account = await Account.findOne({ _id: id, userId });
+    if (!account) {
+      return Response.json(
+        { message: "Account not found", type: "error" },
+        { status: 404 }
+      );
+    }
+
+    return Response.json(
+      {
+        message: "Account fetched successfully",
+        type: "success",
+        data: account,
+      },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("GET /api/accounts error:", error);
     return Response.json(
-      { error: "Failed to fetch accounts" },
+      { message: "Failed to fetch account", type: "error" },
       { status: 500 }
     );
   }
 }
 
+// ------------------ PUT ------------------
 export async function PUT(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -39,37 +58,62 @@ export async function PUT(
   const userId = session?.user?._id;
 
   if (!userId) {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
+    return Response.json(
+      { message: "Unauthorized", type: "error" },
+      { status: 401 }
+    );
   }
 
   const { id } = await params;
-
   await connectToDatabase();
 
   try {
-    const account = await Account.findOne({ _id: id }).select("type");
+    const account = await Account.findOne({ _id: id, userId }).select("type");
+    if (!account) {
+      return Response.json(
+        { message: "Account not found", type: "error" },
+        { status: 404 }
+      );
+    }
 
-    if (account?.type === "system") {
-      return new Response("Cannot edit System accounts", { status: 403 });
-    } else if (account?.type === "goal" || account?.type === "investment") {
-      return new Response(`Cannot edit ${account.type} accounts here`, {
-        status: 403,
-      });
+    if (account.type === "system") {
+      return Response.json(
+        { message: "Cannot edit system accounts", type: "warning" },
+        { status: 403 }
+      );
+    }
+
+    if (account.type === "goal" || account.type === "investment") {
+      return Response.json(
+        {
+          message: `Cannot edit ${account.type} accounts here`,
+          type: "warning",
+        },
+        { status: 403 }
+      );
     }
 
     const body = await req.json();
-    const update = await Account.findByIdAndUpdate(id, body, { new: true });
+    const updated = await Account.findByIdAndUpdate(id, body, { new: true });
 
-    return Response.json(update);
-  } catch (error) {
-    console.error("POST /api/accounts error:", error);
     return Response.json(
-      { error: "Failed to create account" },
+      {
+        message: "Account updated successfully",
+        type: "success",
+        data: updated,
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("PUT /api/accounts error:", error);
+    return Response.json(
+      { message: "Failed to update account", type: "error" },
       { status: 500 }
     );
   }
 }
 
+// ------------------ DELETE ------------------
 export async function DELETE(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -79,25 +123,61 @@ export async function DELETE(
   const userId = session?.user?._id;
 
   if (!userId) {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
+    return Response.json(
+      { message: "Unauthorized", type: "error" },
+      { status: 401 }
+    );
   }
 
-  const account = await Account.findOne({ _id: id }).select("type");
-
-  if (account?.type === "system") {
-    return new Response("Cannot delete System accounts", { status: 403 });
-  } else if (account?.type === "goal" || account?.type === "investment") {
-    return new Response(`Cannot delete ${account.type} accounts here`, {
-      status: 403,
-    });
-  }
+  await connectToDatabase();
 
   try {
-    await connectToDatabase();
+    const account = await Account.findOne({ _id: id, userId }).select("type");
+
+    if (!account) {
+      return Response.json(
+        { message: "Account not found", type: "error" },
+        { status: 404 }
+      );
+    }
+
+    if (account.type === "system") {
+      return Response.json(
+        { message: "Cannot delete system accounts", type: "warning" },
+        { status: 403 }
+      );
+    }
+
+    if (account.type === "goal" || account.type === "investment") {
+      return Response.json(
+        {
+          message: `Cannot delete ${account.type} accounts here`,
+          type: "warning",
+        },
+        { status: 403 }
+      );
+    }
+
+    // delete all related transactions
+    await Transaction.deleteMany({
+      userId,
+      $or: [{ fromAccountId: id }, { toAccountId: id }],
+    });
+
     await Account.findByIdAndDelete(id);
-    return new Response("Account Deleted Successfully", { status: 200 });
+
+    return Response.json(
+      {
+        message: "Account and related transactions deleted successfully",
+        type: "success",
+      },
+      { status: 200 }
+    );
   } catch (error) {
-    console.error("Error deleting account:", error);
-    return new Response("Failed to delete account", { status: 500 });
+    console.error("DELETE /api/accounts error:", error);
+    return Response.json(
+      { message: "Failed to delete account", type: "error" },
+      { status: 500 }
+    );
   }
 }

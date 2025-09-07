@@ -20,8 +20,8 @@ interface NewBubbleStylesType {
 }
 
 
-const FIXED_LAUNCH_DATE = new Date();
-FIXED_LAUNCH_DATE.setDate(FIXED_LAUNCH_DATE.getDate() + 30);
+const FIXED_LAUNCH_DATE = new Date("2025-10-15T12:00:00");
+// FIXED_LAUNCH_DATE.setDate(FIXED_LAUNCH_DATE.getDate() + 30);
 
 export default function ComingSoonPage() {
   const [days, setDays] = useState(0);

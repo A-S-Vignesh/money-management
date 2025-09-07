@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { IAccount, NewAccount, UpdateAccount } from "@/types/account";
+import { useToastStore } from "./useToastStore";
 
 interface AccountStore {
   accounts: IAccount[];
@@ -12,76 +13,96 @@ interface AccountStore {
   deleteAccount: (id: string) => Promise<void>;
 }
 
-export const useAccountStore = create<AccountStore>((set) => ({
-  accounts: [],
-  loading: false,
-  error: null,
+export const useAccountStore = create<AccountStore>((set) => {
+  const { showToast } = useToastStore.getState();
 
-  fetchAccounts: async () => {
-    set({ loading: true, error: null });
-    try {
-      const res = await fetch(`/api/accounts`);
-      const data: IAccount[] = await res.json();
+  return {
+    accounts: [],
+    loading: false,
+    error: null,
 
-      if (!res.ok)
-        throw new Error((data as any).error || "Failed to fetch accounts");
-      set({ accounts: data, loading: false });
-    } catch (err: any) {
-      set({ error: err.message, loading: false });
-    }
-  },
+    fetchAccounts: async () => {
+      set({ loading: true, error: null });
+      try {
+        const res = await fetch(`/api/accounts`);
+        const response = await res.json();
 
-  addAccount: async (accountData: NewAccount) => {
-    set({ error: null });
-    try {
-      const res = await fetch("/api/accounts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(accountData),
-      });
-      const data: IAccount = await res.json();
+        if (!res.ok)
+          throw new Error(response.message || "Failed to fetch accounts");
 
-      if (!res.ok)
-        throw new Error((data as any).error || "Failed to add account");
+        set({ accounts: response.data, loading: false });
+      } catch (err: any) {
+        set({ error: err.message, loading: false });
+        showToast(err.message, "error");
+      }
+    },
 
-      set((state) => ({ accounts: [...state.accounts, data] }));
-    } catch (err: any) {
-      set({ error: err.message });
-    }
-  },
+    addAccount: async (accountData: NewAccount) => {
+      set({ error: null });
+      try {
+        const res = await fetch("/api/accounts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(accountData),
+        });
+        const response = await res.json();
 
-  updateAccount: async (id: string, updatedData: UpdateAccount) => {
-    set({ error: null });
-    try {
-      const res = await fetch(`/api/accounts/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedData),
-      });
-      const data: IAccount = await res.json();
+        if (!res.ok)
+          throw new Error(response.message || "Failed to add account");
 
-      if (!res.ok)
-        throw new Error((data as any).error || "Failed to update account");
+        set((state) => ({ accounts: [...state.accounts, response.data] }));
 
-      set((state) => ({
-        accounts: state.accounts.map((acc) => (acc._id === id ? data : acc)),
-      }));
-    } catch (err: any) {
-      set({ error: err.message });
-    }
-  },
+        showToast(response.message, response.type || "success");
+      } catch (err: any) {
+        set({ error: err.message });
+        showToast(err.message, "error");
+      }
+    },
 
-  deleteAccount: async (id: string) => {
-    set({ error: null });
-    try {
-      const res = await fetch(`/api/accounts/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed to delete account");
+    updateAccount: async (id: string, updatedData: UpdateAccount) => {
+      set({ error: null });
+      try {
+        const res = await fetch(`/api/accounts/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updatedData),
+        });
+        const response = await res.json();
 
-      set((state) => ({
-        accounts: state.accounts.filter((acc) => acc._id !== id),
-      }));
-    } catch (err: any) {
-      set({ error: err.message });
-    }
-  },
-}));
+        if (!res.ok)
+          throw new Error(response.message || "Failed to update account");
+
+        set((state) => ({
+          accounts: state.accounts.map((acc) =>
+            acc._id === id ? response.data : acc
+          ),
+        }));
+
+        showToast(response.message, response.type || "success");
+      } catch (err: any) {
+        set({ error: err.message });
+        showToast(err.message, "error");
+      }
+    },
+
+    deleteAccount: async (id: string) => {
+      set({ error: null });
+      try {
+        const res = await fetch(`/api/accounts/${id}`, { method: "DELETE" });
+        const response = await res.json();
+
+        if (!res.ok)
+          throw new Error(response.message || "Failed to delete account");
+
+        set((state) => ({
+          accounts: state.accounts.filter((acc) => acc._id !== id),
+        }));
+
+        showToast(response.message, response.type || "success");
+      } catch (err: any) {
+        set({ error: err.message });
+        showToast(err.message, "error");
+      }
+    },
+  };
+});

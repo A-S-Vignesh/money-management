@@ -13,13 +13,19 @@ export async function GET(req: Request) {
   }
   try {
     await connectToDatabase();
-    const transactions = await Transaction.find({ userId }).sort({ updatedAt: -1 });
+    const transactions = await Transaction.find({ userId }).sort({
+      updatedAt: -1,
+    });
 
-    return Response.json(transactions);
+    return Response.json({
+      message: "Transaction Fetched Successfully",
+      type: "success",
+      data: transactions,
+    });
   } catch (error) {
     console.error("GET /api/transactions error:", error);
     return Response.json(
-      { error: "Failed to fetch transactions" },
+      { message: "Failed to fetch transactions", type: "error" },
       { status: 500 }
     );
   }
@@ -32,55 +38,70 @@ export async function POST(req: Request) {
   if (!userId) {
     return new Response("Unauthorized", { status: 401 });
   }
+
   try {
     await connectToDatabase();
     const body = await req.json();
     const { fromAccountId, amount, date, toAccountId, type } = body;
-    const newTransaction = await Transaction.create({ ...body, userId });
 
-    if (type === "transfer" && fromAccountId === toAccountId) {
+    // basic validation
+    if (amount <= 0) {
       return Response.json(
-        { error: "From and To accounts must be different for transfers" },
+        { message: "Amount must be greater than zero", type: "warning" },
         { status: 400 }
       );
     }
-    // if (amount <= 0) {
-    //   return Response.json(
-    //     { error: "Amount must be greater than zero" },
-    //     { status: 400 }
-    //   );
-    // }
+
+    if (type === "transfer" && fromAccountId === toAccountId) {
+      return Response.json(
+        {
+          message: "From and To accounts must be different for transfers",
+          type: "warning",
+        },
+        { status: 400 }
+      );
+    }
+
+    const newTransaction = await Transaction.create({ ...body, userId });
 
     if (type === "transfer") {
+      // deduct from source
       await Account.findByIdAndUpdate(fromAccountId, {
         $inc: { balance: -amount },
         $set: { lastUpdated: new Date(date) },
       });
 
+      // add to target
       await Account.findByIdAndUpdate(toAccountId, {
         $inc: { balance: amount },
         $set: { lastUpdated: new Date(date) },
       });
-    } else {
-      const accountId = toAccountId;
-      const balanceUpdate =
-        type === "income"
-          ? {
-              $inc: { balance: amount },
-              $set: { lastUpdated: new Date(date) },
-            }
-          : {
-              $inc: { balance: -amount },
-              $set: { lastUpdated: new Date(date) },
-            };
-
-      await Account.findByIdAndUpdate(accountId, balanceUpdate);
+    } else if (type === "income") {
+      // add money into account
+      await Account.findByIdAndUpdate(toAccountId, {
+        $inc: { balance: amount },
+        $set: { lastUpdated: new Date(date) },
+      });
+    } else if (type === "expense") {
+      // deduct money from account
+      await Account.findByIdAndUpdate(fromAccountId, {
+        $inc: { balance: -amount },
+        $set: { lastUpdated: new Date(date) },
+      });
     }
-    return Response.json(newTransaction);
+
+    return Response.json(
+      {
+        message: "Transaction Created Successfully",
+        type: "success",
+        data: newTransaction,
+      },
+      { status: 201 }
+    );
   } catch (error) {
     console.error("POST /api/transactions error:", error);
     return Response.json(
-      { error: "Failed to create transactions" },
+      { message: "Failed to create transaction", type: "error" },
       { status: 500 }
     );
   }
