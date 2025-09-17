@@ -31,6 +31,10 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <meta name="apple-mobile-web-app-title" content="Nest" />
+        <meta
+          name="google-site-verification"
+          content="rY46jA55lDxJARyTs3BCYKp079RBOphEEL6aDqQ_hB4"
+        />
         <link rel="manifest" href="/manifest.json"></link>
       </head>
       <body
