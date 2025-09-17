@@ -202,13 +202,6 @@ export default function Navbar() {
             <div className="pt-4 border-t border-gray-200">
               <Link
                 href="/login"
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:text-indigo-600 hover:bg-gray-50 transition-colors duration-200"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Sign In
-              </Link>
-              <Link
-                href="/signup"
                 className="block px-3 py-2 mt-2 rounded-md text-base font-medium text-white bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 transition-all duration-300"
                 onClick={() => setIsMenuOpen(false)}
               >

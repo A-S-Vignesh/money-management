@@ -343,7 +343,7 @@ export default function AboutPage() {
 
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <Link
-                href="/signup"
+                href="/login"
                 className="inline-flex items-center px-8 py-3.5 text-base font-medium rounded-xl text-white bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl"
               >
                 Start Your Journey
@@ -498,7 +498,7 @@ export default function AboutPage() {
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Link
-              href="/signup"
+              href="/login"
               className="inline-flex items-center px-8 py-4 border border-transparent text-base font-medium rounded-md text-indigo-600 bg-white hover:bg-gray-100 shadow-lg transition-all"
             >
               Get Started Free

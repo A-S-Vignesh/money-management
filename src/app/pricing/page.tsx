@@ -19,7 +19,7 @@ export default function PricingPage() {
       pricePeriod: "",
       popular: false,
       cta: "Get Started",
-      href: "/signup",
+      href: "/login",
       features: [
         "Track up to 3 accounts",
         "Basic expense tracking",
@@ -36,7 +36,7 @@ export default function PricingPage() {
       pricePeriod: "/month",
       popular: true,
       cta: "Start Free Trial",
-      href: "/signup?plan=pro",
+      href: "/login?plan=pro",
       features: [
         "Unlimited accounts",
         "Automated expense tracking",
@@ -352,7 +352,7 @@ export default function PricingPage() {
             first year with MoneyManager.
           </p>
           <Link
-            href="/signup"
+            href="/login"
             className="inline-flex items-center px-8 py-4 border border-transparent text-base font-medium rounded-md text-indigo-600 bg-white hover:bg-gray-100 shadow-lg"
           >
             Get Started Free
