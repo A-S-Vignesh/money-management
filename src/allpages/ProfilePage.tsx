@@ -58,7 +58,8 @@ export default function ProfilePage() {
     }
   }, [profile]);
 
-  console.log("Profile Data:", profile);
+  // console.log("Profile Data:", profile);
+  console.log("Temp Data:", tempData);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, type, checked, value } = e.target;
@@ -120,38 +121,6 @@ export default function ProfilePage() {
             Manage your personal and account information
           </p>
         </div>
-
-        {!editMode ? (
-          <button
-            onClick={() => setEditMode(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors"
-          >
-            <Edit size={16} />
-            <span>Edit Profile</span>
-          </button>
-        ) : (
-          <div className="flex gap-2">
-            <button
-              onClick={handleCancel}
-              className="flex items-center gap-2 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
-            >
-              <X size={16} />
-              <span>Cancel</span>
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={isLoading}
-              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors disabled:opacity-75"
-            >
-              {isLoading ? (
-                <div className="w-4 h-4 border-t-2 border-white border-solid rounded-full animate-spin"></div>
-              ) : (
-                <Save size={16} />
-              )}
-              <span>Save Changes</span>
-            </button>
-          </div>
-        )}
       </div>
 
       {/* Profile Card */}
@@ -376,6 +345,39 @@ export default function ProfilePage() {
               )}
             </div>
           </div>
+          <div className="p-4">
+            {!editMode ? (
+              <button
+                onClick={() => setEditMode(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors"
+              >
+                <Edit size={16} />
+                <span>Edit Profile</span>
+              </button>
+            ) : (
+              <div className="flex gap-2">
+                <button
+                  onClick={handleCancel}
+                  className="flex items-center gap-2 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+                >
+                  <X size={16} />
+                  <span>Cancel</span>
+                </button>
+                <button
+                  onClick={handleSave}
+                  disabled={isLoading}
+                  className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors disabled:opacity-75"
+                >
+                  {isLoading ? (
+                    <div className="w-4 h-4 border-t-2 border-white border-solid rounded-full animate-spin"></div>
+                  ) : (
+                    <Save size={16} />
+                  )}
+                  <span>Save Changes</span>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Account Settings */}
@@ -426,7 +428,6 @@ export default function ProfilePage() {
                   checked={!!tempData.notifications} // ✅ Ensure it's always true or false
                   onChange={handleInputChange}
                   className="sr-only peer"
-                  // disabled={!editMode}
                 />
                 <div
                   className={`w-11 h-6 ${
@@ -450,10 +451,9 @@ export default function ProfilePage() {
                 <input
                   type="checkbox"
                   name="twoFactorEnabled"
-                  checked={tempData.twoFactorAuth}
+                  checked={!!tempData.twoFactorAuth}
                   onChange={handleInputChange}
                   className="sr-only peer"
-                  disabled={!editMode}
                 />
                 <div
                   className={`w-11 h-6 ${

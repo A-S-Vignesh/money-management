@@ -35,6 +35,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import IBudget from "@/types/budget";
+import { formatCurrency } from "@/utils/formatCurrency";
 
 type Range = "thisMonth" | "lastMonth";
 
@@ -175,21 +176,22 @@ export default function BudgetsPage() {
         <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
           <p className="text-gray-500 text-sm">Total Budget</p>
           <p className="text-xl font-bold">
-            ₹{totalAllocated.toLocaleString()}
+            {formatCurrency(totalAllocated)}
+        
           </p>
         </div>
 
         <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
           <p className="text-gray-500 text-sm">Amount Spent</p>
           <p className="text-xl font-bold text-red-600">
-            ₹{totalSpent.toLocaleString()}
+            {formatCurrency(totalSpent)}
           </p>
         </div>
 
         <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
           <p className="text-gray-500 text-sm">Amount Remaining</p>
           <p className="text-xl font-bold text-green-600">
-            ₹{remaining.toLocaleString()}
+            {formatCurrency(remaining)}
           </p>
         </div>
 
@@ -307,7 +309,7 @@ export default function BudgetsPage() {
                       <span className="text-gray-600">{category.name}</span>
                     </div>
                     <span className="font-medium">
-                      ₹{allocated.toLocaleString()}
+                      {formatCurrency(allocated)}
                     </span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
@@ -510,17 +512,18 @@ export default function BudgetsPage() {
                       {budget.period}
                     </td>
                     <td className="py-4 px-6 text-right font-medium">
-                      ₹{budget.allocated.toLocaleString()}
+                      {formatCurrency(budget.allocated)}
                     </td>
                     <td className="py-4 px-6 text-right font-medium text-red-600">
-                      ₹{spent.toLocaleString()}
+                      {formatCurrency(spent)}
                     </td>
                     <td
                       className={`py-4 px-6 text-right font-medium ${
                         remaining >= 0 ? "text-green-600" : "text-red-600"
                       }`}
                     >
-                      ₹{Math.abs(remaining).toLocaleString()}
+                      {/* ₹{Math.abs(remaining).toLocaleString()} */}
+                      {formatCurrency(remaining)}
                     </td>
                     <td className="py-4 px-6">
                       <div className="flex items-center">

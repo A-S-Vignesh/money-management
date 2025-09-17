@@ -12,14 +12,94 @@ import {
   Smartphone,
   Calendar,
   Users,
+  Target,
+  Check,
+  Star,
+  Award,
+  Shield,
   ChevronRight,
+  PiggyBank,
 } from "lucide-react";
 import Navbar from "@/landingcomponents/Navbar";
 
 export default function Landing() {
+   const features = [
+     {
+       icon: <PieChart className="h-8 w-8 text-indigo-600" />,
+       title: "Expense Tracking",
+       description:
+         "Track every dollar with automatic categorization and smart insights.",
+       link: "/features/expense-tracking",
+     },
+     {
+       icon: <Target className="h-8 w-8 text-indigo-600" />,
+       title: "Budget Planning",
+       description:
+         "Create custom budgets and get alerts when you're approaching limits.",
+       link: "/features/budget-planning",
+     },
+     {
+       icon: <TrendingUp className="h-8 w-8 text-indigo-600" />,
+       title: "Investment Tracking",
+       description:
+         "Monitor your portfolio performance and analyze investment returns.",
+       link: "/features/investments",
+     },
+     {
+       icon: <Bell className="h-8 w-8 text-indigo-600" />,
+       title: "Bill Reminders",
+       description:
+         "Never miss a payment with smart alerts and automated reminders.",
+       link: "/features/bill-reminders",
+     },
+     {
+       icon: <Award className="h-8 w-8 text-indigo-600" />,
+       title: "Financial Reports",
+       description:
+         "Generate comprehensive reports to understand your financial health.",
+       link: "/features/reports",
+     },
+     {
+       icon: <PiggyBank className="h-8 w-8 text-indigo-600" />,
+       title: "Savings Goals",
+       description:
+         "Set, track, and achieve your financial targets with smart goal management.",
+       link: "features/savings-goals",
+     },
+   ];
+
+   const testimonials = [
+     {
+       quote:
+         "Money Nest helped me save over $5,000 in my first year. The budgeting tools are incredible!",
+       name: "Sarah Johnson",
+       role: "Marketing Manager",
+       rating: 5,
+     },
+     {
+       quote:
+         "I've tried countless finance apps, but Money Nest is the only one that actually helped me understand my spending.",
+       name: "Michael Chen",
+       role: "Software Engineer",
+       rating: 5,
+     },
+     {
+       quote:
+         "As a freelancer, managing irregular income was stressful. Money Nest gave me peace of mind.",
+       name: "Jessica Williams",
+       role: "Graphic Designer",
+       rating: 5,
+     },
+   ];
+
+   const stats = [
+     { value: "50,000+", label: "Active Users" },
+     { value: "$2.3B+", label: "Assets Tracked" },
+     { value: "98%", label: "Customer Satisfaction" },
+     { value: "15+", label: "Countries Served" },
+   ];
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-
       {/* Hero Section */}
       <div className="relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24 flex flex-col md:flex-row items-center">
@@ -138,352 +218,225 @@ export default function Landing() {
       </div>
 
       {/* Features Section */}
-      <div id="features" className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Powerful Features to Manage Your Money
-            </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Everything you need to take control of your finances in one
-              intuitive platform.
-            </p>
-          </div>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+        {/* Features Section */}
+        <section className="py-16 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                Everything You Need to Manage Your Money
+              </h2>
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                Money Nest combines powerful tools with intuitive design to help
+                you take control of your financial life.
+              </p>
+            </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-            {[
-              {
-                icon: <PieChart className="w-10 h-10 text-indigo-600" />,
-                title: "Visual Analytics",
-                desc: "Interactive charts and reports to visualize your income, expenses, and savings patterns.",
-                highlight: "Understand your finances at a glance",
-              },
-              {
-                icon: <Bell className="w-10 h-10 text-indigo-600" />,
-                title: "Smart Alerts",
-                desc: "Get notified about unusual spending, bill due dates, and budget limits.",
-                highlight: "Never miss a payment again",
-              },
-              {
-                icon: <Lock className="w-10 h-10 text-indigo-600" />,
-                title: "Bank-Level Security",
-                desc: "256-bit encryption and multi-factor authentication to keep your data safe.",
-                highlight: "Your financial data is protected",
-              },
-              {
-                icon: <CreditCard className="w-10 h-10 text-indigo-600" />,
-                title: "Expense Tracking",
-                desc: "Automatically categorize transactions and track spending across all accounts.",
-                highlight: "Know where every dollar goes",
-              },
-              {
-                icon: <BarChart className="w-10 h-10 text-indigo-600" />,
-                title: "Budget Planning",
-                desc: "Create custom budgets and receive alerts when you're approaching limits.",
-                highlight: "Achieve your savings goals",
-              },
-              {
-                icon: <TrendingUp className="w-10 h-10 text-indigo-600" />,
-                title: "Investment Tracking",
-                desc: "Monitor your investment portfolio and analyze performance over time.",
-                highlight: "Grow your wealth confidently",
-              },
-            ].map((feature, idx) => (
-              <div
-                key={idx}
-                className="bg-gray-50 rounded-2xl p-6 border border-gray-100 hover:border-indigo-200 transition-all hover:shadow-md"
-              >
-                <div className="mb-4">{feature.icon}</div>
-                <h3 className="text-xl font-bold text-gray-800 mb-2">
-                  {feature.title}
-                </h3>
-                <p className="text-gray-600 mb-3">{feature.desc}</p>
-                <p className="text-indigo-600 font-medium">
-                  {feature.highlight}
-                </p>
-              </div>
-            ))}
-          </div>
-
-          <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl p-8 md:p-12 text-white">
-            <div className="flex flex-col md:flex-row items-center">
-              <div className="md:w-2/3 mb-8 md:mb-0">
-                <h3 className="text-2xl md:text-3xl font-bold mb-3">
-                  Ready to transform your financial life?
-                </h3>
-                <p className="text-blue-100 max-w-xl">
-                  Join thousands of users who have saved an average of $500 in
-                  their first three months.
-                </p>
-              </div>
-              <div className="md:w-1/3 flex justify-center md:justify-end">
-                <Link
-                  href="/login"
-                  className="px-8 py-3.5 bg-white text-indigo-600 font-bold rounded-xl hover:bg-gray-100 transition-all shadow-lg hover:shadow-xl"
-                >
-                  Start Free Trial
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {features.map((feature, index) => (
+                <Link key={index} href={feature.link}>
+                  <div className="bg-gray-50 rounded-xl p-6 border border-gray-100 hover:border-indigo-200 transition-all duration-300 hover:shadow-md group cursor-pointer">
+                    <div className="inline-flex items-center justify-center w-12 h-12 bg-indigo-100 rounded-lg mb-4">
+                      {feature.icon}
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-indigo-600 transition-colors">
+                      {feature.title}
+                    </h3>
+                    <p className="text-gray-600 mb-4">{feature.description}</p>
+                    <div className="flex items-center text-indigo-600 font-medium">
+                      Learn more
+                      <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                    </div>
+                  </div>
                 </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Stats Section */}
+        <section className="py-16 bg-gradient-to-r from-blue-500 to-indigo-600">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+              {stats.map((stat, index) => (
+                <div key={index} className="text-center">
+                  <div className="text-3xl md:text-4xl font-bold text-white mb-2">
+                    {stat.value}
+                  </div>
+                  <div className="text-blue-100 font-medium">{stat.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* How It Works Section */}
+        <section className="py-16 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                How Money Nest Works
+              </h2>
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                Getting started with Money Nest is simple. Here's how you can
+                transform your financial life in minutes.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {[
+                {
+                  step: "1",
+                  title: "Connect Your Accounts",
+                  description:
+                    "Securely link your bank, credit card, and investment accounts in minutes.",
+                },
+                {
+                  step: "2",
+                  title: "Track & Categorize",
+                  description:
+                    "Automatically categorize transactions and see where your money is going.",
+                },
+                {
+                  step: "3",
+                  title: "Achieve Your Goals",
+                  description:
+                    "Set budgets, track progress, and get insights to reach financial freedom.",
+                },
+              ].map((item, index) => (
+                <div key={index} className="text-center">
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-100 text-indigo-600 rounded-full text-xl font-bold mb-6 mx-auto">
+                    {item.step}
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-4">
+                    {item.title}
+                  </h3>
+                  <p className="text-gray-600">{item.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Testimonials Section */}
+        <section className="py-16 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                Trusted by Thousands of Users
+              </h2>
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                See what our users are saying about their experience with Money
+                Nest.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {testimonials.map((testimonial, index) => (
+                <div
+                  key={index}
+                  className="bg-white p-6 rounded-xl shadow-sm border border-gray-100"
+                >
+                  <div className="flex text-yellow-400 mb-4">
+                    {[...Array(testimonial.rating)].map((_, i) => (
+                      <Star key={i} className="h-5 w-5 fill-current" />
+                    ))}
+                  </div>
+                  <p className="text-gray-700 italic mb-6">
+                    "{testimonial.quote}"
+                  </p>
+                  <div className="flex items-center">
+                    <div className="bg-gray-200 rounded-full w-12 h-12 flex items-center justify-center">
+                      <Users className="h-6 w-6 text-gray-600" />
+                    </div>
+                    <div className="ml-4">
+                      <h4 className="font-bold text-gray-900">
+                        {testimonial.name}
+                      </h4>
+                      <p className="text-gray-600">{testimonial.role}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Security Section */}
+        <section className="py-16 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+              <div>
+                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+                  Bank-Level Security for Your Peace of Mind
+                </h2>
+                <p className="text-gray-600 mb-6">
+                  At Money Nest, we take security seriously. Your financial data
+                  is protected with the same level of security used by major
+                  banks.
+                </p>
+                <div className="space-y-4">
+                  {[
+                    "256-bit encryption for all data",
+                    "Two-factor authentication",
+                    "Regular security audits",
+                    "SOC 2 compliance",
+                    "Read-only access to your accounts",
+                  ].map((item, index) => (
+                    <div key={index} className="flex items-center">
+                      <Check className="h-5 w-5 text-green-500 mr-3" />
+                      <span className="text-gray-700">{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl p-8 text-white">
+                <div className="text-center">
+                  <Shield className="h-16 w-16 mx-auto mb-6" />
+                  <h3 className="text-2xl font-bold mb-4">
+                    Your Data is Safe With Us
+                  </h3>
+                  <p className="text-blue-100">
+                    We never store your banking credentials and use bank-level
+                    security protocols to ensure your information remains
+                    protected at all times.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
+        </section>
 
-      {/* Testimonials */}
-      <div id="testimonials" className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Trusted by Thousands
+        {/* CTA Section */}
+        <section className="py-16 bg-gradient-to-r from-blue-500 to-indigo-600">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
+              Ready to Transform Your Financial Life?
             </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Hear from our users who have transformed their financial lives.
+            <p className="text-blue-100 text-xl max-w-2xl mx-auto mb-8">
+              Join thousands of users who are taking control of their finances
+              with Money Nest.
+            </p>
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
+              <Link
+                href="/signup"
+                className="inline-flex items-center px-8 py-4 text-base font-medium rounded-md text-indigo-600 bg-white hover:bg-gray-100 shadow-lg transition-all"
+              >
+                Get Started Free
+              </Link>
+              <Link
+                href="/pricing"
+                className="inline-flex items-center px-8 py-4 border border-white text-base font-medium rounded-md text-white hover:bg-white hover:text-indigo-600 transition-all"
+              >
+                View Pricing
+              </Link>
+            </div>
+            <p className="text-blue-100 text-sm mt-4">
+              No credit card required. Start your free trial today.
             </p>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                quote:
-                  "Money Manager helped me pay off $15,000 in debt and start saving for the first time in my life. The budgeting tools are incredible!",
-                name: "Sarah Johnson",
-                role: "Marketing Manager",
-              },
-              {
-                quote:
-                  "I've tried countless budgeting apps, but Money Manager is the only one that actually helped me understand where my money was going.",
-                name: "Michael Chen",
-                role: "Software Engineer",
-              },
-              {
-                quote:
-                  "As a freelancer, managing irregular income was stressful. Money Manager's forecasting tools gave me peace of mind and helped me save consistently.",
-                name: "Jessica Williams",
-                role: "Graphic Designer",
-              },
-            ].map((testimonial, idx) => (
-              <div
-                key={idx}
-                className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100"
-              >
-                <div className="text-yellow-400 mb-4">{"★".repeat(5)}</div>
-                <p className="text-gray-700 italic mb-6">
-                  "{testimonial.quote}"
-                </p>
-                <div className="flex items-center">
-                  <div className="bg-gray-200 border-2 border-dashed rounded-xl w-16 h-16" />
-                  <div className="ml-4">
-                    <h4 className="font-bold text-gray-900">
-                      {testimonial.name}
-                    </h4>
-                    <p className="text-gray-600">{testimonial.role}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        </section>
       </div>
-
-      {/* Pricing */}
-      <div id="pricing" className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Simple, Transparent Pricing
-            </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Choose the plan that works best for you. All plans include core
-              features.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {[
-              {
-                name: "Starter",
-                price: "Free",
-                desc: "Perfect for getting started",
-                features: [
-                  "Track up to 3 accounts",
-                  "Basic expense tracking",
-                  "Monthly budget",
-                  "Email support",
-                  "Limited reports",
-                ],
-              },
-              {
-                name: "Pro",
-                price: "$6.99",
-                period: "/month",
-                desc: "Best for serious budgeters",
-                popular: true,
-                features: [
-                  "Unlimited accounts",
-                  "Advanced analytics",
-                  "Custom budgets",
-                  "Bill reminders",
-                  "Investment tracking",
-                  "Priority support",
-                ],
-              },
-              {
-                name: "Family",
-                price: "$12.99",
-                period: "/month",
-                desc: "Ideal for households",
-                features: [
-                  "All Pro features",
-                  "Up to 5 users",
-                  "Shared budgets",
-                  "Child accounts",
-                  "Family financial reports",
-                  "Dedicated account manager",
-                ],
-              },
-            ].map((plan, idx) => (
-              <div
-                key={idx}
-                className={`rounded-2xl border-2 ${
-                  plan.popular
-                    ? "border-indigo-500 shadow-xl relative"
-                    : "border-gray-200"
-                }`}
-              >
-                {plan.popular && (
-                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-indigo-500 text-white text-xs font-bold px-4 py-1 rounded-full">
-                    MOST POPULAR
-                  </div>
-                )}
-                <div
-                  className={`p-6 ${
-                    plan.popular ? "bg-indigo-50" : ""
-                  } rounded-t-2xl`}
-                >
-                  <h3 className="text-xl font-bold text-gray-900">
-                    {plan.name}
-                  </h3>
-                  <div className="mt-4 flex items-baseline">
-                    <span className="text-4xl font-bold text-gray-900">
-                      {plan.price}
-                    </span>
-                    {plan.period && (
-                      <span className="ml-1 text-gray-600">{plan.period}</span>
-                    )}
-                  </div>
-                  <p className="text-gray-600 mt-2">{plan.desc}</p>
-                </div>
-                <div className="p-6 border-t border-gray-200">
-                  <ul className="space-y-3">
-                    {plan.features.map((feature, featureIdx) => (
-                      <li key={featureIdx} className="flex items-start">
-                        <div className="flex-shrink-0">
-                          <svg
-                            className="h-5 w-5 text-green-500"
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                        </div>
-                        <p className="ml-3 text-gray-700">{feature}</p>
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="mt-8">
-                    <Link
-                      href="/signup"
-                      className={`w-full block text-center px-4 py-3 rounded-lg font-medium ${
-                        plan.popular
-                          ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700"
-                          : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                      }`}
-                    >
-                      Get Started
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* FAQ */}
-      <div id="faq" className="py-16 bg-gray-50">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Frequently Asked Questions
-            </h2>
-            <p className="text-lg text-gray-600 max-w-xl mx-auto">
-              Everything you need to know about Money Manager.
-            </p>
-          </div>
-
-          <div className="space-y-6">
-            {[
-              {
-                question: "Is my financial data secure?",
-                answer:
-                  "Absolutely. We use bank-grade 256-bit encryption and never store your banking credentials. Your data is always protected with multiple layers of security.",
-              },
-              {
-                question: "Can I connect my bank accounts?",
-                answer:
-                  "Yes, Money Manager supports over 10,000 financial institutions in the US and Canada. Connecting your accounts is simple and secure.",
-              },
-              {
-                question: "How much time does it take to set up?",
-                answer:
-                  "You can be up and running in under 5 minutes. Our setup wizard guides you through the process, and you can start tracking expenses immediately.",
-              },
-              {
-                question: "Can I use Money Manager with my family?",
-                answer:
-                  "Yes, our Family plan allows up to 5 users to share budgets and track expenses together while maintaining individual privacy for personal spending.",
-              },
-              {
-                question: "What if I need help?",
-                answer:
-                  "We offer comprehensive help documentation, video tutorials, and email support. Pro subscribers get priority support with faster response times.",
-              },
-            ].map((faq, idx) => (
-              <div
-                key={idx}
-                className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"
-              >
-                <button className="w-full flex justify-between items-center p-6 text-left">
-                  <span className="text-lg font-medium text-gray-900">
-                    {faq.question}
-                  </span>
-                  <svg
-                    className="h-6 w-6 text-indigo-600"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                </button>
-                <div className="px-6 pb-6 text-gray-600">{faq.answer}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-      
     </div>
   );
 }

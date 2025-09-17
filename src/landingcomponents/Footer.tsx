@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 export default function Footer() {
@@ -7,10 +8,17 @@ export default function Footer() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
             <div>
               <div className="flex items-center">
-                <div className="bg-gradient-to-r from-blue-500 to-indigo-600 w-8 h-8 rounded flex items-center justify-center">
-                  {/* <DollarSign className="h-5 w-5 text-white" /> */}
+                {/* <div className="bg-gradient-to-r from-blue-500 to-indigo-600 w-8 h-8 rounded flex items-center justify-center">
+                  <DollarSign className="h-5 w-5 text-white" />
                 </div>
-                <span className="ml-2 text-xl font-bold">MoneyManager</span>
+                <span className="ml-2 text-xl font-bold">Money Nest</span> */}
+                <Image
+                  src="/images/logo/mainlogo.png" // Update with your logo path
+                  alt="MoneyManager Logo"
+                  width={1500}
+                  height={500}
+                  className="rounded-lg"
+                />
               </div>
               <p className="mt-4 text-gray-400">
                 Take control of your finances and build a secure financial
@@ -105,8 +113,23 @@ export default function Footer() {
 
           <div className="pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-400">
-              © {new Date().getFullYear()} Money Nest. All rights reserved.
+              © {new Date().getFullYear()} MoneyNest. All rights reserved.
             </p>
+
+            {/* Codolve Credit */}
+            <p className="mt-2 md:mt-0 text-gray-400">
+              Developed by{" "}
+              <Link
+                href="https://codolve.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-400 font-semibold hover:opacity-80 transition"
+              >
+                Codolve
+              </Link>
+            </p>
+
+            {/* Social Icons */}
             <div className="mt-4 md:mt-0 flex space-x-6">
               <Link href="#" className="text-gray-400 hover:text-white">
                 <span className="sr-only">Twitter</span>

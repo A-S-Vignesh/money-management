@@ -764,7 +764,7 @@ export default function TransactionsPage() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Amount (₹)
+                      Amount
                     </label>
                     <input
                       type="number"

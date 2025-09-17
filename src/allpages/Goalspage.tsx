@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatCurrency } from "@/utils/formatCurrency";
 import Link from "next/link";
 import {
   Flag,
@@ -86,14 +87,6 @@ export default function GoalsPage() {
     updated.progress = Math.min(100, (updated.current / updated.target) * 100);
 
     await updateGoal(id, updated);
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-IN", {
-      style: "currency",
-      currency: "INR",
-      minimumFractionDigits: 0,
-    }).format(amount);
   };
 
   const daysUntilDeadline = (deadline: string | Date) => {
@@ -622,7 +615,7 @@ export default function GoalsPage() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Target Amount (₹)
+                        Target Amount
                       </label>
                       <input
                         type="number"

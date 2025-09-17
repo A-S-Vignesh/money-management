@@ -253,7 +253,8 @@ export default function DashboardPage() {
                     <div className="flex justify-between mb-2">
                       <span className="font-medium">{goal.name}</span>
                       <span className="text-gray-600">
-                        ₹{goal?.current || 0}/₹{goal.target.toLocaleString()}
+                        {/* ₹{goal?.current || 0}/₹{goal.target.toLocaleString()} */}
+                        {formatCurrency(goal?.current||0)}/ {formatCurrency(goal.target)}
                       </span>
                     </div>
 
@@ -375,8 +376,9 @@ export default function DashboardPage() {
                             : "text-red-600"
                         }`}
                       >
-                        {transaction.type === "income" ? "+" : "-"}₹
-                        {transaction.amount}
+                        {transaction.type === "income" ? "+" : "-"}
+                        {/* {transaction.amount} */}
+                        {formatCurrency(transaction.amount)}
                       </td>
                     </tr>
                   ))

@@ -19,6 +19,7 @@ export default function Navbar() {
     { name: "Investment Tracking", href: "/features/investments" },
     { name: "Bill Reminders", href: "/features/bill-reminders" },
     { name: "Financial Reports", href: "/features/reports" },
+    { name: "Savings Goals", href: "/features/savings-goals" },
   ];
 
   return (
@@ -37,9 +38,6 @@ export default function Navbar() {
                   className="rounded-lg"
                 />
               </div>
-              {/* <span className="ml-3 text-xl font-bold text-gray-800">
-                MoneyManager
-              </span> */}
             </Link>
           </div>
 
@@ -106,14 +104,14 @@ export default function Navbar() {
 
           {/* Auth Buttons */}
           <div className="hidden md:flex items-center space-x-3">
-            <Link
+            {/* <Link
               href="/login"
               className="px-4 py-2 text-gray-600 hover:text-indigo-600 font-medium transition-colors duration-200"
             >
               Sign In
-            </Link>
+            </Link> */}
             <Link
-              href="/signup"
+              href="/login"
               className="px-5 py-2.5 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-medium hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 shadow-md hover:shadow-lg"
             >
               Get Started Free

@@ -442,7 +442,7 @@ export default function DashboardLayout({
                   alt={userName}
                   width={40}
                   height={40}
-                  className="w-10 h-10 rounded-full border-2 border-gray-300"
+                  className="w-10 h-10 rounded-full border-2 border-gray-300 mr-2"
                 />
                 <span className="text-sm font-medium hidden sm:block">
                   {userName}
@@ -459,7 +459,7 @@ export default function DashboardLayout({
                         alt={userName}
                         width={40}
                         height={40}
-                        className="w-10 h-10 rounded-full border-2 border-gray-300"
+                        className="w-10 h-10 rounded-full border-2 border-gray-300 mr-2"
                       />
                       <div>
                         <p className="font-medium text-gray-900">{userName}</p>
