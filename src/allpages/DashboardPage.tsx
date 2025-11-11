@@ -103,7 +103,7 @@ export default function DashboardPage() {
                 isPositive ? "text-green-500" : "text-red-500"
               } bg-green-50 px-2 py-1 rounded text-sm`}
             >
-              {isPositive ? "+" : ""}₹{Math.abs(netChange)}
+              {isPositive ? "+" : ""}₹{formatCurrency(Math.abs(netChange))}
             </span>
           </div>
         </div>
