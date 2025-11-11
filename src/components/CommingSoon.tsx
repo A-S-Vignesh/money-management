@@ -1,4 +1,3 @@
-// pages/ComingSoonPage.js (or wherever your main component is)
 "use client";
 
 import { useState, useEffect } from "react";
@@ -12,16 +11,14 @@ import {
 } from "lucide-react";
 
 interface NewBubbleStylesType {
-    width: string;
-    height: string;
-    top: string;
-    left: string;
-    transform: string;
+  width: string;
+  height: string;
+  top: string;
+  left: string;
+  transform: string;
 }
 
-
-const FIXED_LAUNCH_DATE = new Date("2025-10-15T12:00:00");
-// FIXED_LAUNCH_DATE.setDate(FIXED_LAUNCH_DATE.getDate() + 30);
+const FIXED_LAUNCH_DATE = new Date("2026-01-15T12:00:00");
 
 export default function ComingSoonPage() {
   const [days, setDays] = useState(0);
@@ -29,19 +26,23 @@ export default function ComingSoonPage() {
   const [minutes, setMinutes] = useState(0);
   const [seconds, setSeconds] = useState(0);
   const [bubbleStyles, setBubbleStyles] = useState<NewBubbleStylesType[]>([]);
-
+  const [isLive, setIsLive] = useState(false); // 👈 track if launch date passed
 
   useEffect(() => {
+    let interval: NodeJS.Timeout; // 👈 declare first!
+
     const updateCountdown = () => {
       const now = new Date();
       const diff = FIXED_LAUNCH_DATE.getTime() - now.getTime();
 
       if (diff <= 0) {
+        setIsLive(true); // 👈 mark as live
         setDays(0);
         setHours(0);
         setMinutes(0);
         setSeconds(0);
-        clearInterval(interval);
+
+        clearInterval(interval); // ✅ now works fine
         return;
       }
 
@@ -59,7 +60,7 @@ export default function ComingSoonPage() {
     };
 
     updateCountdown();
-    const interval = setInterval(updateCountdown, 1000);
+    interval = setInterval(updateCountdown, 1000);
 
     const generateBubbles = () => {
       const newBubbleStyles = [];
@@ -80,6 +81,35 @@ export default function ComingSoonPage() {
     return () => clearInterval(interval);
   }, []);
 
+  // ✅ When the time has exceeded
+  // ✅ Same bubble background for the "live shortly" message
+  if (isLive) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-6 text-gray-800 relative overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden z-0">
+          {bubbleStyles.map((style, i) => (
+            <div
+              key={i}
+              className="absolute rounded-full opacity-5 bg-gradient-to-br from-indigo-500 to-purple-600"
+              style={style}
+            ></div>
+          ))}
+        </div>
+
+        <div className="z-10 text-center">
+          <Rocket className="w-12 h-12 text-indigo-600 mb-6 mx-auto animate-bounce" />
+          <h1 className="text-3xl font-bold text-gray-900 mb-3">
+            The page will be live shortly 🚀
+          </h1>
+          <p className="text-gray-600 max-w-md mx-auto">
+            We're just making the final touches. Please check back in a moment!
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // 🕒 Default Coming Soon Layout
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 text-gray-800 relative overflow-hidden">
       <div className="absolute inset-0 overflow-hidden z-0">
@@ -157,9 +187,6 @@ export default function ComingSoonPage() {
             ))}
           </div>
         </div>
-
-        {/* Notification form rendered dynamically */}
-        {/* <DynamicEmailSubscriptionForm /> */}
       </div>
     </div>
   );
