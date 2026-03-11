@@ -609,7 +609,7 @@ export default function ProfilePage() {
                     </button>
                   )}
               </div>
-              {pushNotif.subscription && (
+              {/* {pushNotif.subscription && (
                 <button
                   onClick={() =>
                     pushNotif.sendTestNotification(
@@ -621,7 +621,7 @@ export default function ProfilePage() {
                 >
                   Send Test Notification
                 </button>
-              )}
+              )} */}
             </div>
 
             {/* 2FA Toggle */}

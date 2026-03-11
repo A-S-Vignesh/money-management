@@ -32,7 +32,6 @@ const PushSubscriptionSchema: Schema<IPushSubscription> = new mongoose.Schema(
 );
 
 PushSubscriptionSchema.index({ userId: 1 });
-PushSubscriptionSchema.index({ endpoint: 1 }, { unique: true });
 
 const PushSubscription: Model<IPushSubscription> =
   mongoose.models.PushSubscription ||

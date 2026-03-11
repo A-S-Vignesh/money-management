@@ -3,7 +3,10 @@ import Transaction from "@/models/Transaction";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import Account from "@/models/Account";
+import Budget from "@/models/Budget";
+import Goal from "@/models/Goal";
 import { createTransactionSchema } from "@/validations/transaction";
+import { createNotification } from "@/lib/notifications";
 import mongoose from "mongoose";
 
 export async function GET(req: Request) {
@@ -208,6 +211,108 @@ export async function POST(req: Request) {
 
       await dbSession.commitTransaction();
       dbSession.endSession();
+
+      // ── Notification triggers (fire-and-forget, don't block response) ──
+      const category = parsed.data.category || "";
+      const notifPromises: Promise<unknown>[] = [];
+
+      // 1. Transaction notification
+      const typeLabel =
+        type === "income"
+          ? "Income"
+          : type === "expense"
+            ? "Expense"
+            : "Transfer";
+      notifPromises.push(
+        createNotification({
+          userId,
+          type: "transaction",
+          title: `${typeLabel}: ₹${amount.toLocaleString("en-IN")}`,
+          message: `${typeLabel} of ₹${amount.toLocaleString("en-IN")}${category ? ` in ${category}` : ""}`,
+        }),
+      );
+
+      // 2. Budget threshold check (only for expenses)
+      if (type === "expense" && category) {
+        notifPromises.push(
+          (async () => {
+            const now = new Date();
+            const budgets = await Budget.find({
+              userId,
+              category,
+              startDate: { $lte: now },
+              endDate: { $gte: now },
+            }).lean();
+
+            for (const budget of budgets) {
+              const spent = await Transaction.aggregate([
+                {
+                  $match: {
+                    userId: new mongoose.Types.ObjectId(userId),
+                    type: "expense",
+                    category,
+                    date: { $gte: budget.startDate, $lte: budget.endDate },
+                  },
+                },
+                { $group: { _id: null, total: { $sum: "$amount" } } },
+              ]);
+              const totalSpent = spent[0]?.total || 0;
+              const pct = Math.round((totalSpent / budget.allocated) * 100);
+
+              if (pct >= 100) {
+                await createNotification({
+                  userId,
+                  type: "budget",
+                  title: `Budget Exceeded: ${budget.name}`,
+                  message: `You've spent ₹${totalSpent.toLocaleString("en-IN")} of ₹${budget.allocated.toLocaleString("en-IN")} (${pct}%) on ${category}`,
+                });
+              } else if (pct >= 80) {
+                await createNotification({
+                  userId,
+                  type: "budget",
+                  title: `Budget Warning: ${budget.name}`,
+                  message: `You've used ${pct}% of your ${category} budget (₹${totalSpent.toLocaleString("en-IN")} / ₹${budget.allocated.toLocaleString("en-IN")})`,
+                });
+              }
+            }
+          })(),
+        );
+      }
+
+      // 3. Goal completion check (if money went into a goal account)
+      const targetAccountId =
+        type === "income"
+          ? toAccountId
+          : type === "transfer"
+            ? toAccountId
+            : null;
+      if (targetAccountId) {
+        notifPromises.push(
+          (async () => {
+            const goal = await Goal.findOne({
+              userId,
+              accountId: targetAccountId,
+              isCompleted: false,
+            });
+            if (goal) {
+              const account = await Account.findById(targetAccountId);
+              if (account && account.balance >= goal.target) {
+                goal.isCompleted = true;
+                await goal.save();
+                await createNotification({
+                  userId,
+                  type: "goal",
+                  title: `🎉 Goal Completed: ${goal.name}`,
+                  message: `You've reached your target of ₹${goal.target.toLocaleString("en-IN")}!`,
+                });
+              }
+            }
+          })(),
+        );
+      }
+
+      // Don't await — let them run in background
+      Promise.allSettled(notifPromises).catch(() => {});
 
       return Response.json(
         {

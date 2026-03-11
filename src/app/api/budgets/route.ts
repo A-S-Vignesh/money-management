@@ -3,6 +3,7 @@ import { authOptions } from "@/lib/authOptions";
 import Budget from "@/models/Budget";
 import { connectToDatabase } from "@/lib/mongodb";
 import { createBudgetSchema } from "@/validations/budget";
+import { createNotification } from "@/lib/notifications";
 
 // ✅ GET: Fetch budgets with pagination + period filter
 export async function GET(req: Request) {
@@ -100,6 +101,14 @@ export async function POST(req: Request) {
       ...parsed.data,
       createdAt: new Date(),
     });
+
+    // Fire-and-forget notification
+    createNotification({
+      userId,
+      type: "budget",
+      title: `New Budget: ${parsed.data.name}`,
+      message: `₹${parsed.data.allocated.toLocaleString("en-IN")} allocated for ${parsed.data.category} (${parsed.data.period})`,
+    }).catch(() => {});
 
     return Response.json(
       {

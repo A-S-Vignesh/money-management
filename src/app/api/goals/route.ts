@@ -4,6 +4,7 @@ import { connectToDatabase } from "@/lib/mongodb";
 import Goal from "@/models/Goal";
 import Account from "@/models/Account";
 import { createGoalSchema } from "@/validations/goal";
+import { createNotification } from "@/lib/notifications";
 
 // GET: /api/goals — with pagination + priority filter
 export async function GET(req: Request) {
@@ -119,6 +120,19 @@ export async function POST(req: Request) {
       userId: session.user._id,
       accountId: newAccount._id,
     });
+
+    // Fire-and-forget notification
+    const deadlineStr = deadlineDate.toLocaleDateString("en-IN", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+    createNotification({
+      userId: session.user._id,
+      type: "goal",
+      title: `New Goal: ${parsed.data.name}`,
+      message: `Target ₹${parsed.data.target.toLocaleString("en-IN")} by ${deadlineStr}`,
+    }).catch(() => {});
 
     return Response.json(
       {
