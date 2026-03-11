@@ -1,16 +1,15 @@
 import mongoose, { Schema, Document, Model } from "mongoose";
 
-// 1. Define the Notification interface extending mongoose.Document
 export interface INotification extends Document {
   userId: mongoose.Types.ObjectId;
   type: "budget" | "goal" | "transaction" | "system";
+  title: string;
   message: string;
   isRead: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
 
-// 2. Define schema with types
 const NotificationSchema: Schema<INotification> = new mongoose.Schema(
   {
     userId: {
@@ -23,16 +22,25 @@ const NotificationSchema: Schema<INotification> = new mongoose.Schema(
       enum: ["budget", "goal", "transaction", "system"],
       required: true,
     },
+    title: {
+      type: String,
+      required: true,
+      trim: true,
+    },
     message: {
       type: String,
       required: true,
+      trim: true,
     },
     isRead: { type: Boolean, default: false },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-// 3. Define model with types
+// Indexes for fast queries
+NotificationSchema.index({ userId: 1, isRead: 1, createdAt: -1 });
+NotificationSchema.index({ userId: 1, createdAt: -1 });
+
 const Notification: Model<INotification> =
   mongoose.models.Notification ||
   mongoose.model<INotification>("Notification", NotificationSchema);

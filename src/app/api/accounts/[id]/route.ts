@@ -4,11 +4,12 @@ import { authOptions } from "@/lib/authOptions";
 import { connectToDatabase } from "@/lib/mongodb";
 import Account from "@/models/Account";
 import Transaction from "@/models/Transaction";
+import { updateAccountSchema } from "@/validations/account";
 
 // ------------------ GET ------------------
 export async function GET(
   req: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const session = await getServerSession(authOptions);
   const userId = session?.user?._id;
@@ -16,7 +17,7 @@ export async function GET(
   if (!userId) {
     return Response.json(
       { message: "Unauthorized", type: "error" },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -28,7 +29,7 @@ export async function GET(
     if (!account) {
       return Response.json(
         { message: "Account not found", type: "error" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -38,13 +39,13 @@ export async function GET(
         type: "success",
         data: account,
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     console.error("GET /api/accounts error:", error);
     return Response.json(
       { message: "Failed to fetch account", type: "error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -52,7 +53,7 @@ export async function GET(
 // ------------------ PUT ------------------
 export async function PUT(
   req: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const session = await getServerSession(authOptions);
   const userId = session?.user?._id;
@@ -60,7 +61,7 @@ export async function PUT(
   if (!userId) {
     return Response.json(
       { message: "Unauthorized", type: "error" },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -72,14 +73,14 @@ export async function PUT(
     if (!account) {
       return Response.json(
         { message: "Account not found", type: "error" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     if (account.type === "system") {
       return Response.json(
         { message: "Cannot edit system accounts", type: "warning" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -89,12 +90,30 @@ export async function PUT(
           message: `Cannot edit ${account.type} accounts here`,
           type: "warning",
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
     const body = await req.json();
-    const updated = await Account.findByIdAndUpdate(id, body, { new: true });
+
+    // Validate with Zod
+    const parsed = updateAccountSchema.safeParse(body);
+    if (!parsed.success) {
+      const fieldErrors = parsed.error.flatten().fieldErrors;
+      return Response.json(
+        {
+          message: "Validation failed",
+          type: "error",
+          success: false,
+          errors: fieldErrors,
+        },
+        { status: 422 },
+      );
+    }
+
+    const updated = await Account.findByIdAndUpdate(id, parsed.data, {
+      new: true,
+    });
 
     return Response.json(
       {
@@ -102,13 +121,13 @@ export async function PUT(
         type: "success",
         data: updated,
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     console.error("PUT /api/accounts error:", error);
     return Response.json(
       { message: "Failed to update account", type: "error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -116,7 +135,7 @@ export async function PUT(
 // ------------------ DELETE ------------------
 export async function DELETE(
   req: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
   const session = await getServerSession(authOptions);
@@ -125,7 +144,7 @@ export async function DELETE(
   if (!userId) {
     return Response.json(
       { message: "Unauthorized", type: "error" },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -137,14 +156,14 @@ export async function DELETE(
     if (!account) {
       return Response.json(
         { message: "Account not found", type: "error" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     if (account.type === "system") {
       return Response.json(
         { message: "Cannot delete system accounts", type: "warning" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -154,30 +173,78 @@ export async function DELETE(
           message: `Cannot delete ${account.type} accounts here`,
           type: "warning",
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
-    // delete all related transactions
-    await Transaction.deleteMany({
+    // Bug #3 fix: Reverse counterparty balances before deleting transactions
+    const relatedTransactions = await Transaction.find({
       userId,
       $or: [{ fromAccountId: id }, { toAccountId: id }],
-    });
+    }).lean();
 
-    await Account.findByIdAndDelete(id);
+    const { default: mongoose } = await import("mongoose");
+    const dbSession = await mongoose.startSession();
+    dbSession.startTransaction();
 
-    return Response.json(
-      {
-        message: "Account and related transactions deleted successfully",
-        type: "success",
-      },
-      { status: 200 }
-    );
+    try {
+      // Reverse each transaction's effect on the OTHER account
+      for (const txn of relatedTransactions) {
+        if (txn.type === "income" && txn.toAccountId?.toString() === id) {
+          // Income was deposited into this account — no counterparty to fix
+        } else if (
+          txn.type === "expense" &&
+          txn.fromAccountId?.toString() === id
+        ) {
+          // Expense was deducted from this account — no counterparty to fix
+        } else if (txn.type === "transfer") {
+          if (txn.fromAccountId?.toString() === id && txn.toAccountId) {
+            // We sent money FROM this account TO another — reverse the credit
+            await Account.findByIdAndUpdate(
+              txn.toAccountId,
+              { $inc: { balance: -txn.amount } },
+              { session: dbSession },
+            );
+          } else if (txn.toAccountId?.toString() === id && txn.fromAccountId) {
+            // We received money INTO this account FROM another — reverse the debit
+            await Account.findByIdAndUpdate(
+              txn.fromAccountId,
+              { $inc: { balance: txn.amount } },
+              { session: dbSession },
+            );
+          }
+        }
+      }
+
+      // Delete all related transactions
+      await Transaction.deleteMany(
+        { userId, $or: [{ fromAccountId: id }, { toAccountId: id }] },
+        { session: dbSession },
+      );
+
+      // Delete the account itself
+      await Account.findByIdAndDelete(id, { session: dbSession });
+
+      await dbSession.commitTransaction();
+      dbSession.endSession();
+
+      return Response.json(
+        {
+          message: "Account and related transactions deleted successfully",
+          type: "success",
+        },
+        { status: 200 },
+      );
+    } catch (txError) {
+      await dbSession.abortTransaction();
+      dbSession.endSession();
+      throw txError;
+    }
   } catch (error) {
     console.error("DELETE /api/accounts error:", error);
     return Response.json(
       { message: "Failed to delete account", type: "error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

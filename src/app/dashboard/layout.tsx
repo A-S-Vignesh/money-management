@@ -3,28 +3,36 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
-import { useState, useEffect, useRef, use } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useToastStore } from "@/store/useToastStore";
-import { useTransactionStore } from "@/store/useTransactionStore";
 import { useProfileStore } from "@/store/useProfileStore";
 import { useAccountStore } from "@/store/useAccountStore";
 import { useBudgetStore } from "@/store/useBudgetStore";
 import { useGoalStore } from "@/store/useGoalStore";
 import Toast from "@/components/Toast";
+import { useAddTransaction } from "@/hooks/transactions/useAddTransaction";
+import { useNotifications } from "@/hooks/notifications/useNotifications";
+import { useUnreadCount } from "@/hooks/notifications/useUnreadCount";
+import { useMarkAsRead } from "@/hooks/notifications/useMarkAsRead";
+import { useMarkAllAsRead } from "@/hooks/notifications/useMarkAllAsRead";
+import { useAccounts } from "@/hooks/accounts/useAccounts";
+import {
+  createTransactionSchema,
+  categoryNames,
+  type CreateTransactionInput,
+} from "@/validations/transaction";
 import {
   Home,
   CreditCard,
   List,
   PieChart,
-  Settings,
   Bell,
   User,
   BarChart2,
   DollarSign,
   TrendingUp,
   Plus,
-  HelpCircle,
   LogOut,
   Menu,
   X,
@@ -32,6 +40,10 @@ import {
   ChevronsRight,
   Mail,
   MessageSquare,
+  Loader2,
+  ArrowDownCircle,
+  ArrowUpCircle,
+  ArrowLeftRight,
 } from "lucide-react";
 
 const menuItems = [
@@ -73,30 +85,16 @@ const secondaryItems = [
   // },
 ];
 
-// Notification data
-const notifications = [
-  {
-    id: 1,
-    title: "Payment Received",
-    description: "Your salary has been deposited",
-    time: "2 hours ago",
-    read: false,
-  },
-  {
-    id: 2,
-    title: "New Message",
-    description: "You have a new message from Alex",
-    time: "5 hours ago",
-    read: true,
-  },
-  {
-    id: 3,
-    title: "Account Alert",
-    description: "Unusual login activity detected",
-    time: "1 day ago",
-    read: false,
-  },
-];
+// ─── Form Errors type ────────────────────────────────────────────────────
+interface QuickAddErrors {
+  type?: string[];
+  description?: string[];
+  amount?: string[];
+  date?: string[];
+  category?: string[];
+  fromAccountId?: string[];
+  toAccountId?: string[];
+}
 
 export default function DashboardLayout({
   children,
@@ -106,11 +104,22 @@ export default function DashboardLayout({
   const { data: session } = useSession();
 
   const { toasts } = useToastStore();
-  const { fetchTransactions } = useTransactionStore();
   const { fetchAccounts } = useAccountStore();
   const { fetchProfile } = useProfileStore();
   const { fetchBudgets } = useBudgetStore();
   const { fetchGoals } = useGoalStore();
+
+  // React Query hooks for quick-add modal
+  const addTransaction = useAddTransaction();
+  const { data: accountsData } = useAccounts({ page: 1, limit: 100 });
+
+  // Notification hooks for bell dropdown
+  const { data: notifData } = useNotifications({ page: 1, limit: 5 });
+  const { data: unreadCount = 0 } = useUnreadCount();
+  const markAsRead = useMarkAsRead();
+  const markAllAsRead = useMarkAllAsRead();
+  const recentNotifications = notifData?.data ?? [];
+  const accounts = accountsData?.data ?? [];
 
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -118,6 +127,11 @@ export default function DashboardLayout({
   const [collapsed, setCollapsed] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [showQuickAdd, setShowQuickAdd] = useState(false);
+  const [quickType, setQuickType] = useState<"income" | "expense" | "transfer">(
+    "expense",
+  );
+  const [quickErrors, setQuickErrors] = useState<QuickAddErrors>({});
   const notifRef = useRef<HTMLDivElement | null>(null);
   const userMenuRef = useRef<HTMLDivElement | null>(null);
 
@@ -159,12 +173,46 @@ export default function DashboardLayout({
   }, []);
 
   useEffect(() => {
-    fetchTransactions();
     fetchAccounts();
     fetchProfile();
     fetchBudgets();
     fetchGoals();
   }, []);
+
+  // ── Quick-add handler ──────────────────────────────────────────────────
+  const handleQuickAdd = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setQuickErrors({});
+
+    const fd = new FormData(e.currentTarget);
+    const raw = {
+      type: quickType,
+      description: (fd.get("description")?.toString() || "").trim(),
+      amount: Number(fd.get("amount")) || 0,
+      date: fd.get("date")?.toString() || "",
+      category:
+        quickType === "transfer"
+          ? "Transfer"
+          : fd.get("category")?.toString() || "",
+      fromAccountId: fd.get("fromAccountId")?.toString() || undefined,
+      toAccountId: fd.get("toAccountId")?.toString() || undefined,
+    };
+
+    const result = createTransactionSchema.safeParse(raw);
+    if (!result.success) {
+      setQuickErrors(result.error.flatten().fieldErrors as QuickAddErrors);
+      return;
+    }
+
+    try {
+      await addTransaction.mutateAsync(result.data as CreateTransactionInput);
+      setShowQuickAdd(false);
+      setQuickErrors({});
+      (e.target as HTMLFormElement).reset();
+    } catch {
+      // handled by mutation onError
+    }
+  };
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
   const closeSidebar = () => setSidebarOpen(false);
@@ -238,6 +286,11 @@ export default function DashboardLayout({
         {/* Add Transaction Button */}
         <div className="my-4 px-4">
           <button
+            onClick={() => {
+              setShowQuickAdd(true);
+              setQuickErrors({});
+              setQuickType("expense");
+            }}
             className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-lg transition-all ${
               collapsed
                 ? "bg-indigo-600 hover:bg-indigo-700 justify-center px-0"
@@ -343,7 +396,8 @@ export default function DashboardLayout({
             <div>
               <h1 className="text-xl font-semibold text-gray-900">
                 {menuItems.find((item) => item.href === pathname)?.label ||
-                  secondaryItems.find((item) => item.href === pathname)?.label ||
+                  secondaryItems.find((item) => item.href === pathname)
+                    ?.label ||
                   "Dashboard"}
               </h1>
               <p className="text-sm text-gray-600">Your financial overview</p>
@@ -358,69 +412,138 @@ export default function DashboardLayout({
                 onClick={toggleNotif}
               >
                 <Bell size={20} />
-                <span className="absolute top-1 right-1 bg-red-500 text-white text-xs h-4 w-4 flex items-center justify-center rounded-full">
-                  3
-                </span>
+                {unreadCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] font-bold min-w-[18px] h-[18px] flex items-center justify-center rounded-full px-1">
+                    {unreadCount > 99 ? "99+" : unreadCount}
+                  </span>
+                )}
               </button>
 
               {/* Notification Dropdown Menu */}
               {isNotifOpen && (
-                <div className="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg overflow-hidden z-50 border border-gray-200">
-                  <div className="p-4 border-b border-gray-100">
-                    <div className="flex justify-between items-center">
+                <div className="absolute right-0 mt-2 w-96 bg-white rounded-2xl shadow-xl overflow-hidden z-50 border border-gray-200">
+                  <div className="p-4 border-b border-gray-100 flex justify-between items-center">
+                    <div>
                       <h3 className="font-semibold text-gray-900">
                         Notifications
                       </h3>
-                      <button className="text-xs text-indigo-600 hover:text-indigo-800">
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        {unreadCount > 0
+                          ? `${unreadCount} unread`
+                          : "All caught up!"}
+                      </p>
+                    </div>
+                    {unreadCount > 0 && (
+                      <button
+                        className="text-xs text-indigo-600 hover:text-indigo-800 font-medium"
+                        onClick={() => markAllAsRead.mutate()}
+                      >
                         Mark all as read
                       </button>
-                    </div>
+                    )}
                   </div>
-                  <div className="max-h-96 overflow-y-auto">
-                    {notifications.map((notification) => (
-                      <div
-                        key={notification.id}
-                        className={`px-4 py-3 hover:bg-gray-50 cursor-pointer ${
-                          !notification.read ? "bg-blue-50" : ""
-                        }`}
-                      >
-                        <div className="flex items-start">
-                          <div className="flex-shrink-0 pt-0.5">
-                            <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center">
-                              {notification.title.includes("Message") ? (
-                                <MessageSquare
-                                  size={16}
-                                  className="text-indigo-600"
-                                />
-                              ) : (
-                                <Mail size={16} className="text-indigo-600" />
-                              )}
-                            </div>
-                          </div>
-                          <div className="ml-3 flex-1">
-                            <p className="text-sm font-medium text-gray-900">
-                              {notification.title}
-                            </p>
-                            <p className="text-sm text-gray-500">
-                              {notification.description}
-                            </p>
-                            <p className="text-xs text-gray-400 mt-1">
-                              {notification.time}
-                            </p>
-                          </div>
-                          {!notification.read && (
-                            <div className="flex-shrink-0 ml-2">
-                              <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-                            </div>
-                          )}
+
+                  <div className="max-h-80 overflow-y-auto">
+                    {recentNotifications.length === 0 ? (
+                      <div className="py-10 text-center">
+                        <div className="w-12 h-12 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                          <Bell size={20} className="text-gray-400" />
                         </div>
+                        <p className="text-sm text-gray-500">
+                          No notifications yet
+                        </p>
                       </div>
-                    ))}
+                    ) : (
+                      recentNotifications.map(
+                        (n: {
+                          _id: string;
+                          type: string;
+                          title: string;
+                          message: string;
+                          isRead: boolean;
+                          createdAt: string;
+                        }) => (
+                          <div
+                            key={n._id}
+                            className={`px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-50 last:border-0 transition-colors ${
+                              !n.isRead ? "bg-indigo-50/50" : ""
+                            }`}
+                            onClick={() => {
+                              if (!n.isRead) markAsRead.mutate(n._id);
+                            }}
+                          >
+                            <div className="flex gap-3">
+                              <div
+                                className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                                  n.type === "budget"
+                                    ? "bg-orange-100"
+                                    : n.type === "goal"
+                                      ? "bg-green-100"
+                                      : n.type === "transaction"
+                                        ? "bg-blue-100"
+                                        : "bg-gray-100"
+                                }`}
+                              >
+                                {n.type === "budget" ? (
+                                  <PieChart
+                                    size={14}
+                                    className="text-orange-600"
+                                  />
+                                ) : n.type === "goal" ? (
+                                  <DollarSign
+                                    size={14}
+                                    className="text-green-600"
+                                  />
+                                ) : n.type === "transaction" ? (
+                                  <CreditCard
+                                    size={14}
+                                    className="text-blue-600"
+                                  />
+                                ) : (
+                                  <Bell size={14} className="text-gray-600" />
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <p
+                                    className={`text-sm truncate ${!n.isRead ? "font-semibold text-gray-900" : "font-medium text-gray-700"}`}
+                                  >
+                                    {n.title}
+                                  </p>
+                                  {!n.isRead && (
+                                    <span className="w-2 h-2 rounded-full bg-indigo-500 flex-shrink-0" />
+                                  )}
+                                </div>
+                                <p className="text-xs text-gray-500 truncate mt-0.5">
+                                  {n.message}
+                                </p>
+                                <p className="text-[11px] text-gray-400 mt-1">
+                                  {(() => {
+                                    const diff =
+                                      Date.now() -
+                                      new Date(n.createdAt).getTime();
+                                    const mins = Math.floor(diff / 60000);
+                                    if (mins < 1) return "Just now";
+                                    if (mins < 60) return `${mins}m ago`;
+                                    const hrs = Math.floor(mins / 60);
+                                    if (hrs < 24) return `${hrs}h ago`;
+                                    const days = Math.floor(hrs / 24);
+                                    return `${days}d ago`;
+                                  })()}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        ),
+                      )
+                    )}
                   </div>
+
                   <div className="p-3 text-center border-t border-gray-100">
                     <Link
                       href="/dashboard/notifications"
                       className="text-sm font-medium text-indigo-600 hover:text-indigo-800"
+                      onClick={() => setIsNotifOpen(false)}
                     >
                       View all notifications
                     </Link>
@@ -525,6 +648,262 @@ export default function DashboardLayout({
           &copy; {new Date().getFullYear()} Money Manager. All rights reserved.
         </footer>
       </main>
+
+      {/* ─── Quick Add Transaction Modal ──────────────────────── */}
+      {showQuickAdd && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[100]">
+          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl">
+            {/* Modal Header */}
+            <div className="flex justify-between items-center px-6 pt-5 pb-4 border-b border-gray-100">
+              <h2 className="text-lg font-bold text-gray-900">
+                Quick Add Transaction
+              </h2>
+              <button
+                onClick={() => {
+                  setShowQuickAdd(false);
+                  setQuickErrors({});
+                }}
+                className="text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-100"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleQuickAdd} className="p-6 space-y-4">
+              {/* Type Tabs */}
+              <div className="grid grid-cols-3 gap-1 bg-gray-100 p-1 rounded-xl">
+                {(
+                  [
+                    {
+                      value: "expense",
+                      label: "Expense",
+                      Icon: ArrowUpCircle,
+                      color: "text-red-600",
+                    },
+                    {
+                      value: "income",
+                      label: "Income",
+                      Icon: ArrowDownCircle,
+                      color: "text-green-600",
+                    },
+                    {
+                      value: "transfer",
+                      label: "Transfer",
+                      Icon: ArrowLeftRight,
+                      color: "text-blue-600",
+                    },
+                  ] as const
+                ).map(({ value, label, Icon, color }) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => {
+                      setQuickType(value);
+                      setQuickErrors({});
+                    }}
+                    className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg text-sm font-medium transition-all ${
+                      quickType === value
+                        ? "bg-white shadow text-gray-900"
+                        : "text-gray-500 hover:text-gray-700"
+                    }`}
+                  >
+                    <Icon
+                      size={14}
+                      className={quickType === value ? color : ""}
+                    />
+                    {label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Description
+                </label>
+                <input
+                  type="text"
+                  name="description"
+                  placeholder="e.g. Grocery shopping"
+                  className={`w-full px-3 py-2.5 border rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+                    quickErrors.description
+                      ? "border-red-300 bg-red-50"
+                      : "border-gray-300"
+                  }`}
+                />
+                {quickErrors.description && (
+                  <p className="mt-1 text-xs text-red-600">
+                    {quickErrors.description[0]}
+                  </p>
+                )}
+              </div>
+
+              {/* Amount + Date row */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Amount (₹)
+                  </label>
+                  <input
+                    type="number"
+                    name="amount"
+                    placeholder="0"
+                    min="0"
+                    step="0.01"
+                    className={`w-full px-3 py-2.5 border rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+                      quickErrors.amount
+                        ? "border-red-300 bg-red-50"
+                        : "border-gray-300"
+                    }`}
+                  />
+                  {quickErrors.amount && (
+                    <p className="mt-1 text-xs text-red-600">
+                      {quickErrors.amount[0]}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Date
+                  </label>
+                  <input
+                    type="date"
+                    name="date"
+                    defaultValue={new Date().toISOString().split("T")[0]}
+                    className={`w-full px-3 py-2.5 border rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+                      quickErrors.date
+                        ? "border-red-300 bg-red-50"
+                        : "border-gray-300"
+                    }`}
+                  />
+                  {quickErrors.date && (
+                    <p className="mt-1 text-xs text-red-600">
+                      {quickErrors.date[0]}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Category (not for transfer) */}
+              {quickType !== "transfer" && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Category
+                  </label>
+                  <select
+                    name="category"
+                    className={`w-full px-3 py-2.5 border rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+                      quickErrors.category
+                        ? "border-red-300 bg-red-50"
+                        : "border-gray-300"
+                    }`}
+                  >
+                    <option value="">Select category</option>
+                    {categoryNames.map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                  </select>
+                  {quickErrors.category && (
+                    <p className="mt-1 text-xs text-red-600">
+                      {quickErrors.category[0]}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* From Account (expense / transfer) */}
+              {(quickType === "expense" || quickType === "transfer") && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    {quickType === "transfer" ? "From Account" : "From Account"}
+                  </label>
+                  <select
+                    name="fromAccountId"
+                    className={`w-full px-3 py-2.5 border rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+                      quickErrors.fromAccountId
+                        ? "border-red-300 bg-red-50"
+                        : "border-gray-300"
+                    }`}
+                  >
+                    <option value="">Select account</option>
+                    {accounts.map((acc) => (
+                      <option key={acc._id} value={acc._id}>
+                        {acc.name} — ₹{acc.balance?.toLocaleString()}
+                      </option>
+                    ))}
+                  </select>
+                  {quickErrors.fromAccountId && (
+                    <p className="mt-1 text-xs text-red-600">
+                      {quickErrors.fromAccountId[0]}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* To Account (income / transfer) */}
+              {(quickType === "income" || quickType === "transfer") && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    To Account
+                  </label>
+                  <select
+                    name="toAccountId"
+                    className={`w-full px-3 py-2.5 border rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+                      quickErrors.toAccountId
+                        ? "border-red-300 bg-red-50"
+                        : "border-gray-300"
+                    }`}
+                  >
+                    <option value="">Select account</option>
+                    {accounts.map((acc) => (
+                      <option key={acc._id} value={acc._id}>
+                        {acc.name} — ₹{acc.balance?.toLocaleString()}
+                      </option>
+                    ))}
+                  </select>
+                  {quickErrors.toAccountId && (
+                    <p className="mt-1 text-xs text-red-600">
+                      {quickErrors.toAccountId[0]}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Actions */}
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowQuickAdd(false);
+                    setQuickErrors({});
+                  }}
+                  className="flex-1 px-4 py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-50 font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={addTransaction.isPending}
+                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm text-white rounded-xl font-medium transition-colors disabled:opacity-60 ${
+                    quickType === "expense"
+                      ? "bg-red-500 hover:bg-red-600"
+                      : quickType === "income"
+                        ? "bg-green-500 hover:bg-green-600"
+                        : "bg-blue-500 hover:bg-blue-600"
+                  }`}
+                >
+                  {addTransaction.isPending && (
+                    <Loader2 size={15} className="animate-spin" />
+                  )}
+                  Add {quickType.charAt(0).toUpperCase() + quickType.slice(1)}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

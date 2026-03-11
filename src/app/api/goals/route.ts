@@ -3,62 +3,95 @@ import { authOptions } from "@/lib/authOptions";
 import { connectToDatabase } from "@/lib/mongodb";
 import Goal from "@/models/Goal";
 import Account from "@/models/Account";
+import { createGoalSchema } from "@/validations/goal";
 
-// GET: /api/goals
-export async function GET() {
+// GET: /api/goals — with pagination + priority filter
+export async function GET(req: Request) {
   const session = await getServerSession(authOptions);
 
   if (!session || !session.user?._id) {
     return Response.json(
-      { message: "Unauthorized", type: "error" },
-      { status: 401 }
+      { message: "Unauthorized", type: "error", success: false },
+      { status: 401 },
     );
   }
 
-  await connectToDatabase();
-
   try {
-    const goals = await Goal.find({ userId: session.user._id }).sort({
-      createdAt: -1,
-    });
+    await connectToDatabase();
 
-    if (!goals || goals.length === 0) {
-      return Response.json(
-        { message: "No goals found", type: "info", data: [] },
-        { status: 200 }
-      );
+    const { searchParams } = new URL(req.url);
+    const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
+    const limit = Math.min(
+      100,
+      Math.max(1, parseInt(searchParams.get("limit") || "10", 10)),
+    );
+    const skip = (page - 1) * limit;
+
+    // Build filter query
+    const query: Record<string, unknown> = { userId: session.user._id };
+
+    const priorityFilter = searchParams.get("priority");
+    if (priorityFilter && priorityFilter !== "all") {
+      query.priority = priorityFilter;
     }
+
+    const [goals, total] = await Promise.all([
+      Goal.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit),
+      Goal.countDocuments(query),
+    ]);
 
     return Response.json({
       message: "Goals fetched successfully",
       type: "success",
+      success: true,
       data: goals,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
     });
   } catch (error) {
     console.error("Error fetching goals:", error);
     return Response.json(
-      { message: "Failed to fetch goals", type: "error" },
-      { status: 500 }
+      { message: "Failed to fetch goals", type: "error", success: false },
+      { status: 500 },
     );
   }
 }
 
-// POST: /api/goals
+// POST: /api/goals — with Zod validation
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
 
   if (!session || !session.user?._id) {
     return Response.json(
-      { message: "Unauthorized", type: "error" },
-      { status: 401 }
+      { message: "Unauthorized", type: "error", success: false },
+      { status: 401 },
     );
   }
 
-  await connectToDatabase();
-
   try {
+    await connectToDatabase();
     const body = await req.json();
-    const { deadline } = body;
+
+    // Validate with Zod
+    const parsed = createGoalSchema.safeParse(body);
+    if (!parsed.success) {
+      const fieldErrors = parsed.error.flatten().fieldErrors;
+      return Response.json(
+        {
+          message: "Validation failed",
+          type: "error",
+          success: false,
+          errors: fieldErrors,
+        },
+        { status: 422 },
+      );
+    }
+
+    const { deadline } = parsed.data;
     const deadlineDate = new Date(deadline);
 
     if (deadlineDate < new Date()) {
@@ -66,36 +99,41 @@ export async function POST(req: Request) {
         {
           message: "Deadline cannot be before today",
           type: "warning",
+          success: false,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    // Step 1: Create account first
+    // Step 1: Create linked account first
     const newAccount = await Account.create({
       userId: session.user._id,
-      name: body.name,
+      name: parsed.data.name,
       type: "goal",
       balance: 0,
     });
 
     // Step 2: Create goal and link the new account
     const newGoal = await Goal.create({
-      ...body,
+      ...parsed.data,
       userId: session.user._id,
       accountId: newAccount._id,
     });
 
-    return Response.json({
-      message: "Goal created successfully",
-      type: "success",
-      data: newGoal,
-    });
+    return Response.json(
+      {
+        message: "Goal created successfully",
+        type: "success",
+        success: true,
+        data: newGoal,
+      },
+      { status: 201 },
+    );
   } catch (error) {
     console.error("Error creating goal:", error);
     return Response.json(
-      { message: "Failed to create goal", type: "error" },
-      { status: 500 }
+      { message: "Failed to create goal", type: "error", success: false },
+      { status: 500 },
     );
   }
 }

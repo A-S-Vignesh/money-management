@@ -1,4 +1,4 @@
-// app/dashboard/page.tsx
+// allpages/DashboardPage.tsx
 "use client";
 import Link from "next/link";
 import {
@@ -12,158 +12,233 @@ import {
   Target,
   TrendingUp,
   Wallet,
+  AlertCircle,
+  Loader2,
 } from "lucide-react";
-import { useTransactionStore } from "@/store/useTransactionStore";
-import { useAccountStore } from "@/store/useAccountStore";
-import { useGoalStore } from "@/store/useGoalStore";
-import { useBudgetStore } from "@/store/useBudgetStore";
-import { categories } from "@/utils/categories";
+import { useDashboard } from "@/hooks/dashboard/useDashboard";
+import { categories, type CategoryName } from "@/utils/categories";
 import { formatCurrency } from "@/utils/formatCurrency";
+import { useSession } from "next-auth/react";
 
+// ─── Skeleton Components ─────────────────────────────────────────────
+function CardSkeleton() {
+  return (
+    <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 animate-pulse">
+      <div className="flex items-center mb-4">
+        <div className="w-11 h-11 bg-gray-200 rounded-lg mr-4" />
+        <div className="h-3 bg-gray-200 rounded w-24" />
+      </div>
+      <div className="flex items-end justify-between">
+        <div className="h-7 bg-gray-200 rounded w-28" />
+        <div className="h-5 bg-gray-100 rounded w-14" />
+      </div>
+    </div>
+  );
+}
+
+function TableSkeleton() {
+  return (
+    <div className="animate-pulse">
+      {[...Array(5)].map((_, i) => (
+        <div
+          key={i}
+          className="flex items-center gap-4 py-4 border-b border-gray-100"
+        >
+          <div className="w-8 h-8 bg-gray-200 rounded-lg" />
+          <div className="flex-1 space-y-2">
+            <div className="h-4 bg-gray-200 rounded w-1/3" />
+          </div>
+          <div className="h-4 bg-gray-200 rounded w-16" />
+          <div className="h-4 bg-gray-200 rounded w-20" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function GoalsSkeleton() {
+  return (
+    <div className="animate-pulse space-y-5">
+      {[...Array(3)].map((_, i) => (
+        <div key={i}>
+          <div className="flex justify-between mb-2">
+            <div className="h-4 bg-gray-200 rounded w-24" />
+            <div className="h-4 bg-gray-200 rounded w-32" />
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2.5" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── Helper for category color ───────────────────────────────────────
+const getCategoryBarColor = (categoryName: string): string => {
+  const cat = categories.find((c) => c.name === categoryName);
+  if (!cat) return "bg-gray-400";
+  // Extract bg color class from the combined color string e.g. "bg-red-100 text-red-800" → "bg-red-500"
+  const parts = cat.color.split(" ");
+  const bgPart = parts[0]; // e.g. "bg-red-100"
+  return bgPart.replace("100", "500");
+};
+
+// ─── Main Component ──────────────────────────────────────────────────
 export default function DashboardPage() {
-  const { transactions } = useTransactionStore();
-  const { accounts } = useAccountStore();
-  const { goals } = useGoalStore();
-  const { budgets } = useBudgetStore();
-  // const categoryTotals: Record<CategoryName, number> = {
-  //   Food: 0,
-  //   Housing: 0,
-  //   Transport: 0,
-  //   Lifestyle: 0,
-  //   Shopping: 0,
-  //   Learning: 0,
-  //   Personal: 0,
-  //   Salary: 0,
-  //   Transfer: 0,
-  //   Other: 0,
-  // };
+  const { data: session } = useSession();
+  const { data, isLoading, isError, error, refetch } = useDashboard();
 
-  // transactions.forEach((transaction) => {
-  //   if (transaction.type === "expense") {
-  //     categoryTotals[transaction.category] += transaction.amount;
-  //   }
-  // });
-  const categoryTotals = categories.map((cat) => {
-    const total = transactions
-      .filter((t) => t.type === "expense" && t.category === cat.name)
-      .reduce((sum, t) => sum + t.amount, 0);
+  const userName = session?.user?.name?.split(" ")[0] || "User";
 
-    return {
-      category: cat.name,
-      amount: total,
-      color: cat.color.replace("text-", "bg-"), // adapt if you want bar colors
-    };
-  });
-
-  // Find grand total for percentages
-  const grandTotal = categoryTotals.reduce((sum, c) => sum + c.amount, 0);
-
-  // Add percentage
-  const categoryWithPercentages = categoryTotals.map((c) => ({
-    ...c,
-    percentage: grandTotal ? ((c.amount / grandTotal) * 100).toFixed(1) : 0,
-  }));
-
-  // Calculate financial metrics
-  const income = transactions
-    .filter((t) => t.type === "income")
-    .reduce((sum, t) => sum + t.amount, 0);
-  const expense = transactions
-    .filter((t) => t.type === "expense")
-    .reduce((sum, t) => sum + t.amount, 0);
-  const available = accounts.map((a) => a.balance).reduce((a, b) => a + b, 0);
-  const netChange = income - expense;
-  const isPositive = netChange >= 0;
-  const recentTransactions = transactions.slice(0, 5);
+  // ── Error State ──────────────────────
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20">
+        <AlertCircle size={48} className="text-red-400 mb-4" />
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">
+          Failed to load dashboard
+        </h2>
+        <p className="text-gray-500 mb-4">
+          {(error as Error)?.message || "Something went wrong"}
+        </p>
+        <button
+          onClick={() => refetch()}
+          className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+        >
+          Try Again
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       {/* Welcome Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Welcome back, {}</h1>
+        <h1 className="text-2xl font-bold text-gray-900">
+          Welcome back, {userName}
+        </h1>
         <p className="text-gray-600">
-          Here's your financial overview for today
+          Here&apos;s your financial overview for today
         </p>
       </div>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* Total Balance Card */}
-        <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-          <div className="flex items-center mb-4">
-            <div className="bg-blue-100 p-3 rounded-lg mr-4">
-              <Wallet className="text-blue-600" size={20} />
+        {isLoading ? (
+          <>
+            <CardSkeleton />
+            <CardSkeleton />
+            <CardSkeleton />
+            <CardSkeleton />
+          </>
+        ) : (
+          <>
+            {/* Total Balance Card */}
+            <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+              <div className="flex items-center mb-4">
+                <div className="bg-blue-100 p-3 rounded-lg mr-4">
+                  <Wallet className="text-blue-600" size={20} />
+                </div>
+                <h3 className="text-gray-500 text-sm font-medium">
+                  Total Balance
+                </h3>
+              </div>
+              <div className="flex items-end justify-between">
+                <p className="text-2xl font-bold">
+                  {formatCurrency(data?.totalBalance ?? 0)}
+                </p>
+                <span
+                  className={`${
+                    (data?.netChange ?? 0) >= 0
+                      ? "text-green-500 bg-green-50"
+                      : "text-red-500 bg-red-50"
+                  } px-2 py-1 rounded text-sm`}
+                >
+                  {(data?.netChange ?? 0) >= 0 ? "+" : ""}
+                  {formatCurrency(Math.abs(data?.netChange ?? 0))}
+                </span>
+              </div>
             </div>
-            <h3 className="text-gray-500 text-sm font-medium">Total Balance</h3>
-          </div>
-          <div className="flex items-end justify-between">
-            <p className="text-2xl font-bold">{formatCurrency(available)}</p>
-            <span
-              className={`${
-                isPositive ? "text-green-500" : "text-red-500"
-              } bg-green-50 px-2 py-1 rounded text-sm`}
-            >
-              {isPositive ? "+" : ""}₹{formatCurrency(Math.abs(netChange))}
-            </span>
-          </div>
-        </div>
 
-        {/* Income Card */}
-        <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-          <div className="flex items-center mb-4">
-            <div className="bg-green-100 p-3 rounded-lg mr-4">
-              <ArrowUpRight className="text-green-600" size={20} />
+            {/* Income Card */}
+            <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+              <div className="flex items-center mb-4">
+                <div className="bg-green-100 p-3 rounded-lg mr-4">
+                  <ArrowUpRight className="text-green-600" size={20} />
+                </div>
+                <h3 className="text-gray-500 text-sm font-medium">
+                  Total Income
+                </h3>
+              </div>
+              <div className="flex items-end justify-between">
+                <p className="text-2xl font-bold text-green-600">
+                  {formatCurrency(data?.totalIncome ?? 0)}
+                </p>
+                {data?.incomeChange !== null &&
+                  data?.incomeChange !== undefined && (
+                    <span
+                      className={`${
+                        parseFloat(data.incomeChange) >= 0
+                          ? "text-green-500 bg-green-50"
+                          : "text-red-500 bg-red-50"
+                      } px-2 py-1 rounded text-sm`}
+                    >
+                      {parseFloat(data.incomeChange) >= 0 ? "+" : ""}
+                      {data.incomeChange}%
+                    </span>
+                  )}
+              </div>
             </div>
-            <h3 className="text-gray-500 text-sm font-medium">Total Income</h3>
-          </div>
-          <div className="flex items-end justify-between">
-            <p className="text-2xl font-bold text-green-600">
-              {formatCurrency(income)}
-            </p>
-            <span className="text-green-500 bg-green-50 px-2 py-1 rounded text-sm">
-              +12%
-            </span>
-          </div>
-        </div>
 
-        {/* Expenses Card */}
-        <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-          <div className="flex items-center mb-4">
-            <div className="bg-red-100 p-3 rounded-lg mr-4">
-              <ArrowDownRight className="text-red-600" size={20} />
+            {/* Expenses Card */}
+            <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+              <div className="flex items-center mb-4">
+                <div className="bg-red-100 p-3 rounded-lg mr-4">
+                  <ArrowDownRight className="text-red-600" size={20} />
+                </div>
+                <h3 className="text-gray-500 text-sm font-medium">
+                  Total Expenses
+                </h3>
+              </div>
+              <div className="flex items-end justify-between">
+                <p className="text-2xl font-bold text-red-600">
+                  {formatCurrency(data?.totalExpense ?? 0)}
+                </p>
+                {data?.expenseChange !== null &&
+                  data?.expenseChange !== undefined && (
+                    <span
+                      className={`${
+                        parseFloat(data.expenseChange) >= 0
+                          ? "text-red-500 bg-red-50"
+                          : "text-green-500 bg-green-50"
+                      } px-2 py-1 rounded text-sm`}
+                    >
+                      {parseFloat(data.expenseChange) >= 0 ? "+" : ""}
+                      {data.expenseChange}%
+                    </span>
+                  )}
+              </div>
             </div>
-            <h3 className="text-gray-500 text-sm font-medium">
-              Total Expenses
-            </h3>
-          </div>
-          <div className="flex items-end justify-between">
-            <p className="text-2xl font-bold text-red-600">
-              {formatCurrency(expense)}
-            </p>
-            <span className="text-red-500 bg-red-50 px-2 py-1 rounded text-sm">
-              -8%
-            </span>
-          </div>
-        </div>
 
-        {/* Net Worth Card */}
-        <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-          <div className="flex items-center mb-4">
-            <div className="bg-purple-100 p-3 rounded-lg mr-4">
-              <TrendingUp className="text-purple-600" size={20} />
+            {/* Net Worth Card */}
+            <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+              <div className="flex items-center mb-4">
+                <div className="bg-purple-100 p-3 rounded-lg mr-4">
+                  <TrendingUp className="text-purple-600" size={20} />
+                </div>
+                <h3 className="text-gray-500 text-sm font-medium">Net Worth</h3>
+              </div>
+              <div className="flex items-end justify-between">
+                <p className="text-2xl font-bold">
+                  {formatCurrency(data?.totalBalance ?? 0)}
+                </p>
+                <span className="text-gray-500 bg-gray-50 px-2 py-1 rounded text-sm">
+                  {data?.totalAccounts ?? 0} accounts
+                </span>
+              </div>
             </div>
-            <h3 className="text-gray-500 text-sm font-medium">Net Worth</h3>
-          </div>
-          <div className="flex items-end justify-between">
-            <p className="text-2xl font-bold">
-              {/* ₹{(available).toLocaleString()} */}
-              {formatCurrency(available)}
-            </p>
-            <span className="text-green-500 bg-green-50 px-2 py-1 rounded text-sm">
-              +5.2%
-            </span>
-          </div>
-        </div>
+          </>
+        )}
       </div>
 
       {/* Charts Section */}
@@ -205,22 +280,45 @@ export default function DashboardPage() {
             Spending Distribution
           </h2>
 
-          <div className="space-y-4">
-            {categoryWithPercentages.map((item, index) => (
-              <div key={index}>
-                <div className="flex justify-between mb-1">
-                  <span className="text-gray-600">{item.category}</span>
-                  <span className="font-medium">₹{item.amount}</span>
+          {isLoading ? (
+            <div className="animate-pulse space-y-4">
+              {[...Array(5)].map((_, i) => (
+                <div key={i}>
+                  <div className="flex justify-between mb-1">
+                    <div className="h-3 bg-gray-200 rounded w-16" />
+                    <div className="h-3 bg-gray-200 rounded w-12" />
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2" />
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    className={`${item.color} h-2 rounded-full`}
-                    style={{ width: `${item.percentage}%` }}
-                  ></div>
+              ))}
+            </div>
+          ) : data?.categoryBreakdown && data.categoryBreakdown.length > 0 ? (
+            <div className="space-y-4">
+              {data.categoryBreakdown.map((item, index) => (
+                <div key={index}>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-gray-600 text-sm">
+                      {item.category}
+                    </span>
+                    <span className="font-medium text-sm">
+                      {formatCurrency(item.amount)}
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div
+                      className={`${getCategoryBarColor(item.category)} h-2 rounded-full transition-all`}
+                      style={{ width: `${item.percentage}%` }}
+                    ></div>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-8">
+              <PieChart className="text-gray-300 mb-2" size={32} />
+              <p className="text-gray-400 text-sm">No expense data yet</p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -236,32 +334,37 @@ export default function DashboardPage() {
               href={"/dashboard/goals"}
               className="text-blue-600 text-sm font-medium"
             >
-              See all Goal
+              See all
             </Link>
           </div>
 
-          <div className="space-y-5">
-            {goals.length > 0 ? (
-              goals.map((goal, index) => {
+          {isLoading ? (
+            <GoalsSkeleton />
+          ) : data?.goals && data.goals.length > 0 ? (
+            <div className="space-y-5">
+              {data.goals.slice(0, 4).map((goal) => {
                 const progress = Math.min(
                   100,
-                  ((goal?.current || 0) / goal.target) * 100
+                  goal.target > 0 ? (goal.current / goal.target) * 100 : 0,
                 );
 
                 return (
-                  <div key={index}>
+                  <div key={goal._id}>
                     <div className="flex justify-between mb-2">
                       <span className="font-medium">{goal.name}</span>
-                      <span className="text-gray-600">
-                        {/* ₹{goal?.current || 0}/₹{goal.target.toLocaleString()} */}
-                        {formatCurrency(goal?.current||0)}/ {formatCurrency(goal.target)}
+                      <span className="text-gray-600 text-sm">
+                        {formatCurrency(goal.current)}/{" "}
+                        {formatCurrency(goal.target)}
                       </span>
                     </div>
 
                     <div className="w-full bg-gray-200 rounded-full h-2.5">
                       <div
-                        className="bg-blue-600 h-2.5 rounded-full"
-                        style={{ width: `${progress}%` }}
+                        className="h-2.5 rounded-full transition-all"
+                        style={{
+                          width: `${progress}%`,
+                          backgroundColor: goal.color || "#3B82F6",
+                        }}
                       ></div>
                     </div>
 
@@ -270,29 +373,25 @@ export default function DashboardPage() {
                     </p>
                   </div>
                 );
-              })
-            ) : (
-              <div className="flex flex-col items-center justify-center">
-                <Target className="text-gray-400 mx-auto mb-4" size={48} />
-                <h3 className="text-xl font-medium text-gray-900 mb-2">
-                  No goals found
-                </h3>
-                <p className="text-gray-500 max-w-md mb-6">
-                  You haven't set any financial goals yet.
-                </p>
-                {/* <button
-                  onClick={() => {
-                    setShowForm(true);
-                    setEditGoal(null);
-                  }}
-                  className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg"
-                >
-                  <Plus size={16} />
-                  <span>Create Your First Goal</span>
-                </button> */}
-              </div>
-            )}
-          </div>
+              })}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-6">
+              <Target className="text-gray-400 mx-auto mb-4" size={48} />
+              <h3 className="text-xl font-medium text-gray-900 mb-2">
+                No goals found
+              </h3>
+              <p className="text-gray-500 max-w-md mb-2 text-center text-sm">
+                You haven&apos;t set any financial goals yet.
+              </p>
+              <Link
+                href="/dashboard/goals"
+                className="text-blue-600 text-sm font-medium"
+              >
+                Create a goal →
+              </Link>
+            </div>
+          )}
         </div>
 
         {/* Recent Transactions */}
@@ -310,134 +409,171 @@ export default function DashboardPage() {
             </Link>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="text-gray-500 text-left border-b">
-                  <th className="pb-3">Type</th>
-                  <th className="pb-3">Date</th>
-                  <th className="pb-3">Category</th>
-                  <th className="pb-3 text-right">Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                {recentTransactions.length > 0 ? (
-                  recentTransactions.map((transaction) => (
-                    <tr
-                      key={transaction._id}
-                      className="border-b hover:bg-gray-50"
-                    >
-                      <td className="py-4">
-                        <div className="flex items-center">
-                          <div
-                            className={`p-2 rounded-lg mr-3 ${
-                              transaction.type === "income"
-                                ? "bg-green-100"
-                                : "bg-red-100"
-                            }`}
-                          >
-                            {transaction.type === "income" ? (
-                              <ArrowUpRight
-                                className="text-green-600"
-                                size={16}
-                              />
-                            ) : transaction.type === "expense" ? (
-                              <ArrowDownRight
-                                className="text-red-600"
-                                size={16}
-                              />
-                            ) : (
-                              <DollarSign className="text-gray-600" size={16} />
-                            )}
+          {isLoading ? (
+            <TableSkeleton />
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="text-gray-500 text-left border-b">
+                    <th className="pb-3 text-sm font-medium">Type</th>
+                    <th className="pb-3 text-sm font-medium">Date</th>
+                    <th className="pb-3 text-sm font-medium">Category</th>
+                    <th className="pb-3 text-right text-sm font-medium">
+                      Amount
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data?.recentTransactions &&
+                  data.recentTransactions.length > 0 ? (
+                    data.recentTransactions.map((transaction) => (
+                      <tr
+                        key={transaction._id}
+                        className="border-b hover:bg-gray-50 transition-colors"
+                      >
+                        <td className="py-4">
+                          <div className="flex items-center">
+                            <div
+                              className={`p-2 rounded-lg mr-3 ${
+                                transaction.type === "income"
+                                  ? "bg-green-100"
+                                  : transaction.type === "expense"
+                                    ? "bg-red-100"
+                                    : "bg-blue-100"
+                              }`}
+                            >
+                              {transaction.type === "income" ? (
+                                <ArrowUpRight
+                                  className="text-green-600"
+                                  size={16}
+                                />
+                              ) : transaction.type === "expense" ? (
+                                <ArrowDownRight
+                                  className="text-red-600"
+                                  size={16}
+                                />
+                              ) : (
+                                <DollarSign
+                                  className="text-blue-600"
+                                  size={16}
+                                />
+                              )}
+                            </div>
+                            <span className="text-sm">
+                              {transaction.description}
+                            </span>
                           </div>
-                          {transaction.category}
+                        </td>
+                        <td className="py-4 text-gray-600 text-sm">
+                          {new Date(transaction.date).toLocaleDateString(
+                            "en-GB",
+                            {
+                              day: "2-digit",
+                              month: "short",
+                              year: "numeric",
+                            },
+                          )}
+                        </td>
+
+                        <td className="py-4">
+                          <span className="bg-gray-100 text-gray-800 text-xs px-2.5 py-1 rounded-full">
+                            {transaction.category}
+                          </span>
+                        </td>
+                        <td
+                          className={`py-4 text-right font-medium ${
+                            transaction.type === "income"
+                              ? "text-green-600"
+                              : transaction.type === "expense"
+                                ? "text-red-600"
+                                : "text-blue-600"
+                          }`}
+                        >
+                          {transaction.type === "income"
+                            ? "+"
+                            : transaction.type === "expense"
+                              ? "-"
+                              : ""}
+                          {formatCurrency(transaction.amount)}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={4} className="py-12 text-center">
+                        <div className="flex flex-col items-center justify-center">
+                          <Search
+                            className="text-gray-400 mx-auto mb-4"
+                            size={40}
+                          />
+                          <h3 className="text-lg font-medium text-gray-900 mb-1">
+                            No transactions found
+                          </h3>
+                          <p className="text-gray-500 max-w-md">
+                            Start adding transactions to see them here
+                          </p>
                         </div>
                       </td>
-                      <td className="py-4 text-gray-600">
-                        {new Date(transaction.date).toLocaleDateString(
-                          "en-GB",
-                          {
-                            day: "2-digit",
-                            month: "short",
-                            year: "numeric",
-                          }
-                        )}
-                      </td>
-
-                      <td className="py-4">
-                        <span className="bg-gray-100 text-gray-800 text-xs px-2.5 py-1 rounded-full">
-                          {transaction.category}
-                        </span>
-                      </td>
-                      <td
-                        className={`py-4 text-right font-medium ${
-                          transaction.type === "income"
-                            ? "text-green-600"
-                            : "text-red-600"
-                        }`}
-                      >
-                        {transaction.type === "income" ? "+" : "-"}
-                        {/* {transaction.amount} */}
-                        {formatCurrency(transaction.amount)}
-                      </td>
                     </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={4} className="py-12 text-center">
-                      <div className="flex flex-col items-center justify-center">
-                        <Search
-                          className="text-gray-400 mx-auto mb-4"
-                          size={40}
-                        />
-                        <h3 className="text-lg font-medium text-gray-900 mb-1">
-                          No transactions found
-                        </h3>
-                        <p className="text-gray-500 max-w-md">
-                          It's looks like no transaction found. Start
-                          transaction to see here
-                        </p>
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-6 rounded-xl">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm opacity-80">Active Budgets</p>
-              <p className="text-2xl font-bold mt-1">{budgets.length || 0}</p>
+        {isLoading ? (
+          <>
+            {[...Array(3)].map((_, i) => (
+              <div
+                key={i}
+                className="bg-gray-200 animate-pulse p-6 rounded-xl h-24"
+              />
+            ))}
+          </>
+        ) : (
+          <>
+            <div className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-6 rounded-xl">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm opacity-80">Active Budgets</p>
+                  <p className="text-2xl font-bold mt-1">
+                    {data?.activeBudgets ?? 0}
+                  </p>
+                </div>
+                <PieChart className="text-white opacity-80" size={32} />
+              </div>
             </div>
-            <PieChart className="text-white opacity-80" size={32} />
-          </div>
-        </div>
 
-        <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white p-6 rounded-xl">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm opacity-80">Savings Rate</p>
-              <p className="text-2xl font-bold mt-1">22%</p>
+            <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white p-6 rounded-xl">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm opacity-80">Savings Rate</p>
+                  <p className="text-2xl font-bold mt-1">
+                    {data?.savingsRate ?? "0"}%
+                  </p>
+                </div>
+                <TrendingUp className="text-white opacity-80" size={32} />
+              </div>
             </div>
-            <TrendingUp className="text-white opacity-80" size={32} />
-          </div>
-        </div>
 
-        <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-white p-6 rounded-xl">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm opacity-80">Upcoming Bills</p>
-              <p className="text-2xl font-bold mt-1">2</p>
+            <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-white p-6 rounded-xl">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm opacity-80">Active Goals</p>
+                  <p className="text-2xl font-bold mt-1">
+                    {data?.totalGoals ?? 0}
+                  </p>
+                </div>
+                <Target className="text-white opacity-80" size={32} />
+              </div>
             </div>
-            <CreditCard className="text-white opacity-80" size={32} />
-          </div>
-        </div>
+          </>
+        )}
       </div>
     </div>
   );

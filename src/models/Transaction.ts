@@ -52,8 +52,13 @@ const TransactionSchema: Schema<ITransaction> = new mongoose.Schema(
       required: true,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
+
+// Bug #10 fix: Compound indexes for common query patterns
+TransactionSchema.index({ userId: 1, date: -1 });
+TransactionSchema.index({ userId: 1, type: 1, date: -1 });
+TransactionSchema.index({ userId: 1, category: 1, date: -1 });
 
 const Transaction: Model<ITransaction> =
   mongoose.models.Transaction ||

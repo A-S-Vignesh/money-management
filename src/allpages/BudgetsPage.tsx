@@ -1,13 +1,14 @@
-// app/dashboard/budgets/page.tsx
+// allpages/BudgetsPage.tsx
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import { useBudgetStore } from "@/store/useBudgetStore";
-import { useToastStore } from "@/store/useToastStore";
-import { useTransactionStore } from "@/store/useTransactionStore";
-import { calculateSpend } from "@/utils/calculateSpend";
+import { useState, useMemo } from "react";
+import { useBudgets } from "@/hooks/budgets/useBudgets";
+import { useAddBudget } from "@/hooks/budgets/useAddBudget";
+import { useUpdateBudget } from "@/hooks/budgets/useUpdateBudget";
+import { useDeleteBudget } from "@/hooks/budgets/useDeleteBudget";
+import { useTransactions } from "@/hooks/transactions/useTransactions";
 import { getPeriodRange } from "@/utils/getBudgetPeriod";
-import { categories, categoryMap, CategoryName } from "@/utils/categories"; // Assuming you have a categories.js file
+import { categories, categoryMap, CategoryName } from "@/utils/categories";
 import {
   PieChart as RPieChart,
   Pie,
@@ -21,34 +22,97 @@ import {
   Plus,
   DollarSign,
   TrendingUp,
-  ShoppingBag,
-  Home,
   PieChart,
-  Utensils,
-  Car,
-  Activity,
-  Smartphone,
-  BookOpen,
-  Gift,
   Edit,
   Trash2,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+  AlertCircle,
 } from "lucide-react";
 import IBudget from "@/types/budget";
 import { formatCurrency } from "@/utils/formatCurrency";
+import {
+  createBudgetSchema,
+  type CreateBudgetInput,
+} from "@/validations/budget";
 
 type Range = "thisMonth" | "lastMonth";
 
+// ─── Form Errors ────────────────────────────────────────────────────────
+interface FormErrors {
+  name?: string[];
+  category?: string[];
+  allocated?: string[];
+  period?: string[];
+}
+
+// ─── Skeleton Loaders ───────────────────────────────────────────────────
+function CardSkeleton() {
+  return (
+    <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 animate-pulse">
+      <div className="h-3 bg-gray-200 rounded w-20 mb-2" />
+      <div className="h-7 bg-gray-200 rounded w-28" />
+    </div>
+  );
+}
+
+function TableSkeleton() {
+  return (
+    <div className="animate-pulse">
+      {[...Array(5)].map((_, i) => (
+        <div
+          key={i}
+          className="flex items-center gap-4 px-6 py-4 border-b border-gray-100"
+        >
+          <div className="w-8 h-8 bg-gray-200 rounded-lg" />
+          <div className="flex-1 space-y-2">
+            <div className="h-4 bg-gray-200 rounded w-1/3" />
+            <div className="h-3 bg-gray-100 rounded w-1/4" />
+          </div>
+          <div className="h-4 bg-gray-200 rounded w-16" />
+          <div className="h-4 bg-gray-200 rounded w-20" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── Main Component ─────────────────────────────────────────────────────
 export default function BudgetsPage() {
-  const { budgets, addBudget, updateBudget, deleteBudget } = useBudgetStore();
-  const { transactions } = useTransactionStore();
+  // ── Pagination & filter state ─────────────────────
+  const [page, setPage] = useState(1);
+  const [sortPeriodBy, setSortPeriodBy] = useState("All");
+  const [sortBy, setSortBy] = useState("progress");
+  const limit = 10;
+
+  // ── React Query data ──────────────────────────────
+  const {
+    data: budgetsData,
+    isLoading: budgetsLoading,
+    isError: budgetsError,
+    error: budgetsErrorObj,
+    refetch: refetchBudgets,
+  } = useBudgets({ page, limit, period: sortPeriodBy });
+
+  const { data: transactionsData, isLoading: transactionsLoading } =
+    useTransactions();
+
+  const budgets = budgetsData?.data ?? [];
+  const pagination = budgetsData?.pagination;
+  const transactions = transactionsData?.data ?? [];
+
+  // ── Mutations ─────────────────────────────────────
+  const addMutation = useAddBudget();
+  const updateMutation = useUpdateBudget();
+  const deleteMutation = useDeleteBudget();
+
+  // ── UI state ──────────────────────────────────────
   const [showForm, setShowForm] = useState(false);
   const [editBudget, setEditBudget] = useState<IBudget | null>(null);
-  const [activeCategory, setActiveCategory] = useState("All");
-  const [sortBy, setSortBy] = useState("progress");
-  const [sortPeriodBy, setSortPeriodBy] = useState("All");
-  //   const { showToast } = useToastStore.getState();
-  const [selectedRange, setSelectedRange] = useState<Range>("thisMonth"); // 'this' or 'last'
+  const [formErrors, setFormErrors] = useState<FormErrors>({});
+  const [selectedRange, setSelectedRange] = useState<Range>("thisMonth");
 
   const COLORS = [
     "#8884d8",
@@ -63,90 +127,89 @@ export default function BudgetsPage() {
     "#ffcd56",
   ];
 
+  // ── Derived data ──────────────────────────────────
   const data = useMemo(
     () => getCategoryExpensePieData(transactions, selectedRange),
-    [transactions, selectedRange]
+    [transactions, selectedRange],
   );
   const isEmpty = data.length === 0 || data.every((d) => d.value === 0);
 
   const totalAllocated = budgets.reduce((sum, b) => sum + b.allocated, 0);
 
-  // Calculate totalSpent only using transactions that match a budget category
   const budgetCategories = budgets.map((b) => b.category);
   const totalSpent = transactions
-    .filter((txn) => budgetCategories.includes(txn.category))
+    .filter((txn) => budgetCategories.includes(txn.category as CategoryName))
     .reduce((sum, txn) => sum + txn.amount, 0);
 
   const remaining = totalAllocated - totalSpent;
   const utilization =
     totalAllocated > 0 ? (totalSpent / totalAllocated) * 100 : 0;
 
-  // Filter budgets by category
-  // const filteredBudgets =
-  //   activeCategory === "All"
-  //     ? budgets
-  //     : budgets.filter((b) => b.category === activeCategory);
-
-  // Filter budgets by period
-  const periodFilteredBudgets =
-    sortPeriodBy === "All"
-      ? budgets
-      : budgets.filter((b) => b.period === sortPeriodBy);
-
-  // Sort budgets
+  // Sort budgets client-side
   const sortedBudgets = [...budgets].sort((a, b) => {
-    // fallback if spent/allocated missing
-    if (!a?.spent || !b?.spent || !a?.allocated || !b?.allocated) {
-      return 0;
-    }
-
+    if (!a?.spent || !b?.spent || !a?.allocated || !b?.allocated) return 0;
     const aProgress = (a.spent / a.allocated) * 100;
     const bProgress = (b.spent / b.allocated) * 100;
-
-    if (sortBy === "progress") {
-      return bProgress - aProgress; // higher progress first
-    } else if (sortBy === "name") {
-      return a.name.localeCompare(b.name); // alphabetical
-    } else if (sortBy === "allocated") {
-      return b.allocated - a.allocated; // higher allocated first
-    }
-
-    return 0; // default no sorting
+    if (sortBy === "progress") return bProgress - aProgress;
+    if (sortBy === "name") return a.name.localeCompare(b.name);
+    if (sortBy === "allocated") return b.allocated - a.allocated;
+    return 0;
   });
 
-  // Handle form submission
+  // ── Handlers ──────────────────────────────────────
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setFormErrors({});
+
     const formData = new FormData(e.currentTarget);
     const period = (formData.get("period")?.toString() as Period) || "Monthly";
     const { startDate, endDate } = getPeriodRange(period);
 
-    const budget: IBudget = {
-      name: formData.get("name")?.toString() || "",
-      category:
-        (formData.get("category")?.toString() as CategoryName) || "Other",
+    const raw = {
+      name: (formData.get("name")?.toString() || "").trim(),
+      category: (formData.get("category")?.toString() || "") as CategoryName,
       allocated: Number(formData.get("allocated")) || 0,
       period,
       startDate,
       endDate,
     };
 
-    if (editBudget && editBudget._id) {
-      await updateBudget(editBudget._id, budget);
-      setEditBudget(null);
-    } else {
-      await addBudget(budget);
+    // Validate with Zod
+    const result = createBudgetSchema.safeParse(raw);
+    if (!result.success) {
+      setFormErrors(result.error.flatten().fieldErrors as FormErrors);
+      return;
     }
 
-    setShowForm(false);
+    try {
+      if (editBudget && editBudget._id) {
+        await updateMutation.mutateAsync({
+          id: editBudget._id,
+          data: result.data,
+        });
+        setEditBudget(null);
+      } else {
+        await addMutation.mutateAsync(result.data as CreateBudgetInput);
+      }
+      setShowForm(false);
+      setFormErrors({});
+    } catch {
+      // Error handled by mutation's onError
+    }
   };
 
-  // Handle delete
   const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this Budget?")) {
-      await deleteBudget(id);
+      try {
+        await deleteMutation.mutateAsync(id);
+      } catch {
+        // Error handled by mutation's onError
+      }
     }
   };
+
+  const isLoading = budgetsLoading || transactionsLoading;
+  const isMutating = addMutation.isPending || updateMutation.isPending;
 
   return (
     <div className="space-y-6">
@@ -163,6 +226,7 @@ export default function BudgetsPage() {
           onClick={() => {
             setShowForm(true);
             setEditBudget(null);
+            setFormErrors({});
           }}
           className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors"
         >
@@ -173,32 +237,42 @@ export default function BudgetsPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-          <p className="text-gray-500 text-sm">Total Budget</p>
-          <p className="text-xl font-bold">
-            {formatCurrency(totalAllocated)}
-        
-          </p>
-        </div>
+        {isLoading ? (
+          <>
+            <CardSkeleton />
+            <CardSkeleton />
+            <CardSkeleton />
+            <CardSkeleton />
+          </>
+        ) : (
+          <>
+            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+              <p className="text-gray-500 text-sm">Total Budget</p>
+              <p className="text-xl font-bold">
+                {formatCurrency(totalAllocated)}
+              </p>
+            </div>
 
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-          <p className="text-gray-500 text-sm">Amount Spent</p>
-          <p className="text-xl font-bold text-red-600">
-            {formatCurrency(totalSpent)}
-          </p>
-        </div>
+            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+              <p className="text-gray-500 text-sm">Amount Spent</p>
+              <p className="text-xl font-bold text-red-600">
+                {formatCurrency(totalSpent)}
+              </p>
+            </div>
 
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-          <p className="text-gray-500 text-sm">Amount Remaining</p>
-          <p className="text-xl font-bold text-green-600">
-            {formatCurrency(remaining)}
-          </p>
-        </div>
+            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+              <p className="text-gray-500 text-sm">Amount Remaining</p>
+              <p className="text-xl font-bold text-green-600">
+                {formatCurrency(remaining)}
+              </p>
+            </div>
 
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-          <p className="text-gray-500 text-sm">Utilization</p>
-          <p className="text-xl font-bold">{utilization.toFixed(1)}%</p>
-        </div>
+            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+              <p className="text-gray-500 text-sm">Utilization</p>
+              <p className="text-xl font-bold">{utilization.toFixed(1)}%</p>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Charts Section */}
@@ -209,7 +283,6 @@ export default function BudgetsPage() {
             <h2 className="text-lg font-semibold text-gray-800">
               Budget Overview
             </h2>
-
             <div className="flex space-x-2">
               <button
                 onClick={() => setSelectedRange("thisMonth")}
@@ -281,18 +354,12 @@ export default function BudgetsPage() {
           <div className="space-y-4">
             {categories.map((category, index) => {
               const categoryBudgets = budgets.filter(
-                (b) => b.category === category.name
+                (b) => b.category === category.name,
               );
               const allocated = categoryBudgets.reduce(
                 (sum, b) => sum + b.allocated,
-                0
+                0,
               );
-
-              const spent = categoryBudgets.reduce(
-                (sum, b) => sum + (b.spent ?? 0),
-                0
-              );
-
               const percentage =
                 totalAllocated > 0 ? (allocated / totalAllocated) * 100 : 0;
               const Icon = category.icon;
@@ -328,44 +395,18 @@ export default function BudgetsPage() {
       {/* Budget Controls */}
       <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex flex-wrap gap-2">
-            {/* <button
-              onClick={() => setActiveCategory("All")}
-              className={`px-3 py-1.5 rounded-full text-sm ${
-                activeCategory === "All"
-                  ? "bg-indigo-600 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
-            >
-              All Categories
-            </button>
-            {categories.map((category) => (
-              <button
-                key={category.name}
-                onClick={() => setActiveCategory(category.name)}
-                className={`px-3 py-1.5 rounded-full text-sm flex items-center ${
-                  activeCategory === category.name
-                    ? "bg-indigo-100 text-indigo-700"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-              >
-                <span
-                  className={`w-3 h-3 ${category.color} rounded-full mr-2`}
-                ></span>
-                {category.name}
-              </button>
-            ))} */}
-          </div>
+          <div className="flex flex-wrap gap-2"></div>
           <div className="flex flex-row gap-2">
             <div className="flex items-center gap-2">
-              <span className="text-gray-600 text-sm text-nowrap">
-                Sort by:
-              </span>
+              <span className="text-gray-600 text-sm text-nowrap">Period:</span>
               <div className="relative">
                 <select
                   className="appearance-none pl-3 pr-8 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   value={sortPeriodBy}
-                  onChange={(e) => setSortPeriodBy(e.target.value)}
+                  onChange={(e) => {
+                    setSortPeriodBy(e.target.value);
+                    setPage(1);
+                  }}
                 >
                   <option value="All">All Periods</option>
                   <option value="Weekly">Weekly</option>
@@ -404,215 +445,273 @@ export default function BudgetsPage() {
         </div>
       </div>
 
-      {/* Budgets List */}
+      {/* ─── Budgets Table ────────────────────────────────── */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="py-3 px-6 text-left text-sm font-medium text-gray-500">
-                  Budget
-                </th>
-                <th className="py-3 px-6 text-left text-sm font-medium text-gray-500">
-                  Category
-                </th>
-                <th className="py-3 px-6 text-left text-sm font-medium text-gray-500">
-                  Period
-                </th>
-                <th className="py-3 px-6 text-right text-sm font-medium text-gray-500">
-                  Allocated
-                </th>
+        {/* Error State */}
+        {budgetsError && (
+          <div className="px-6 py-12 text-center">
+            <AlertCircle className="mx-auto text-red-400 mb-3" size={40} />
+            <p className="text-gray-600 mb-2">
+              {budgetsErrorObj?.message || "Failed to load budgets"}
+            </p>
+            <button
+              onClick={() => refetchBudgets()}
+              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        )}
 
-                <th className="py-3 px-6 text-right text-sm font-medium text-gray-500">
-                  Spent
-                </th>
-                <th className="py-3 px-6 text-right text-sm font-medium text-gray-500">
-                  Remaining
-                </th>
-                <th className="py-3 px-6 text-center text-sm font-medium text-gray-500">
-                  Progress
-                </th>
-                <th className="py-3 px-6 text-right text-sm font-medium text-gray-500">
-                  Start Date
-                </th>
-                <th className="py-3 px-6 text-right text-sm font-medium text-gray-500">
-                  End Date
-                </th>
-                <th className="py-3 px-6 text-right text-sm font-medium text-gray-500">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {sortedBudgets.map((budget) => {
-                const startDate = budget.startDate
-                  ? new Date(budget.startDate)
-                  : null;
-                const endDate = budget.endDate
-                  ? new Date(budget.endDate)
-                  : null;
+        {/* Loading */}
+        {budgetsLoading && <TableSkeleton />}
 
-                // 🧠 Filter transactions for this budget
-                const budgetTransactions = transactions.filter((tx) => {
-                  if (!startDate || !endDate) return false; // ✅ ensure both exist
-                  return (
-                    tx.category === budget.category &&
-                    tx.type === "expense" &&
-                    new Date(tx.date) >= startDate &&
-                    new Date(tx.date) <= endDate
+        {/* Table */}
+        {!budgetsLoading && !budgetsError && (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="py-3 px-6 text-left text-sm font-medium text-gray-500">
+                    Budget
+                  </th>
+                  <th className="py-3 px-6 text-left text-sm font-medium text-gray-500">
+                    Category
+                  </th>
+                  <th className="py-3 px-6 text-left text-sm font-medium text-gray-500">
+                    Period
+                  </th>
+                  <th className="py-3 px-6 text-right text-sm font-medium text-gray-500">
+                    Allocated
+                  </th>
+                  <th className="py-3 px-6 text-right text-sm font-medium text-gray-500">
+                    Spent
+                  </th>
+                  <th className="py-3 px-6 text-right text-sm font-medium text-gray-500">
+                    Remaining
+                  </th>
+                  <th className="py-3 px-6 text-center text-sm font-medium text-gray-500">
+                    Progress
+                  </th>
+                  <th className="py-3 px-6 text-right text-sm font-medium text-gray-500">
+                    Start Date
+                  </th>
+                  <th className="py-3 px-6 text-right text-sm font-medium text-gray-500">
+                    End Date
+                  </th>
+                  <th className="py-3 px-6 text-right text-sm font-medium text-gray-500">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {sortedBudgets.map((budget) => {
+                  const startDate = budget.startDate
+                    ? new Date(budget.startDate)
+                    : null;
+                  const endDate = budget.endDate
+                    ? new Date(budget.endDate)
+                    : null;
+
+                  // Filter transactions for this budget
+                  const budgetTransactions = transactions.filter((tx) => {
+                    if (!startDate || !endDate) return false;
+                    return (
+                      tx.category === budget.category &&
+                      tx.type === "expense" &&
+                      new Date(tx.date) >= startDate &&
+                      new Date(tx.date) <= endDate
+                    );
+                  });
+
+                  const spent = budgetTransactions.reduce(
+                    (acc, tx) => acc + tx.amount,
+                    0,
                   );
-                });
 
-                // 💰 Total spent
-                const spent = budgetTransactions.reduce(
-                  (acc, tx) => acc + tx.amount,
-                  0
-                );
+                  const progress = (spent / budget.allocated) * 100;
+                  const isOverBudget = progress > 100;
+                  const budgetRemaining = budget.allocated - spent;
 
-                const progress = (spent / budget.allocated) * 100;
-                const isOverBudget = progress > 100;
-                const remaining = budget.allocated - spent;
+                  const Icon = categoryMap[budget.category]?.icon || DollarSign;
 
-                const category = categories.find(
-                  (c) => c.name === budget.category
-                ) || {
-                  color: "bg-gray-500",
-                };
-
-                const Icon = categoryMap[budget.category]?.icon || DollarSign;
-
-                return (
-                  <tr key={budget._id} className="hover:bg-gray-50">
-                    <td className="py-4 px-6">
-                      <div className="flex items-center">
-                        <span className="w-8 h-8 rounded-lg flex items-center justify-center mr-3">
-                          <Icon />
-                        </span>
-                        <div>
-                          <div className="font-medium text-gray-900">
-                            {budget.name}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {budget.category}
+                  return (
+                    <tr key={budget._id} className="hover:bg-gray-50">
+                      <td className="py-4 px-6">
+                        <div className="flex items-center">
+                          <span className="w-8 h-8 rounded-lg flex items-center justify-center mr-3">
+                            <Icon />
+                          </span>
+                          <div>
+                            <div className="font-medium text-gray-900">
+                              {budget.name}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {budget.category}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </td>
-                    <td className="py-4 px-6">
-                      <span
-                        className={`text-xs px-3 py-1 rounded-full ${
-                          categoryMap[budget.category]?.color ||
-                          "bg-gray-100 text-gray-700"
+                      </td>
+                      <td className="py-4 px-6">
+                        <span
+                          className={`text-xs px-3 py-1 rounded-full ${
+                            categoryMap[budget.category]?.color ||
+                            "bg-gray-100 text-gray-700"
+                          }`}
+                        >
+                          {budget.category}
+                        </span>
+                      </td>
+                      <td className="py-4 px-6 text-gray-600 capitalize">
+                        {budget.period}
+                      </td>
+                      <td className="py-4 px-6 text-right font-medium">
+                        {formatCurrency(budget.allocated)}
+                      </td>
+                      <td className="py-4 px-6 text-right font-medium text-red-600">
+                        {formatCurrency(spent)}
+                      </td>
+                      <td
+                        className={`py-4 px-6 text-right font-medium ${
+                          budgetRemaining >= 0
+                            ? "text-green-600"
+                            : "text-red-600"
                         }`}
                       >
-                        {budget.category}
-                      </span>
-                    </td>
-                    <td className="py-4 px-6 text-gray-600 capitalize">
-                      {budget.period}
-                    </td>
-                    <td className="py-4 px-6 text-right font-medium">
-                      {formatCurrency(budget.allocated)}
-                    </td>
-                    <td className="py-4 px-6 text-right font-medium text-red-600">
-                      {formatCurrency(spent)}
-                    </td>
-                    <td
-                      className={`py-4 px-6 text-right font-medium ${
-                        remaining >= 0 ? "text-green-600" : "text-red-600"
-                      }`}
-                    >
-                      {/* ₹{Math.abs(remaining).toLocaleString()} */}
-                      {formatCurrency(remaining)}
-                    </td>
-                    <td className="py-4 px-6">
-                      <div className="flex items-center">
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div
-                            className={`h-2 rounded-full ${
-                              isOverBudget
-                                ? "bg-red-500"
-                                : progress > 80
-                                ? "bg-amber-500"
-                                : "bg-green-500"
-                            }`}
-                            style={{ width: `${Math.min(progress, 100)}%` }}
-                          ></div>
+                        {formatCurrency(budgetRemaining)}
+                      </td>
+                      <td className="py-4 px-6">
+                        <div className="flex items-center">
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div
+                              className={`h-2 rounded-full ${
+                                isOverBudget
+                                  ? "bg-red-500"
+                                  : progress > 80
+                                    ? "bg-amber-500"
+                                    : "bg-green-500"
+                              }`}
+                              style={{
+                                width: `${Math.min(progress, 100)}%`,
+                              }}
+                            ></div>
+                          </div>
+                          <span className="text-xs text-gray-500 ml-2 w-10">
+                            {Math.round(progress)}%
+                          </span>
                         </div>
-                        <span className="text-xs text-gray-500 ml-2 w-10">
-                          {Math.round(progress)}%
+                      </td>
+                      <td className="py-4 px-6 text-right">
+                        <span className="text-gray-600">
+                          {startDate?.toLocaleDateString("en-IN", {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                          })}
                         </span>
-                      </div>
-                    </td>
-                    <td className="py-4 px-6 text-right">
-                      <span className="text-gray-600">
-                        {startDate?.toLocaleDateString("en-IN", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "numeric",
-                        })}
-                      </span>
-                    </td>
-                    <td className="py-4 px-6 text-right">
-                      <span className="text-gray-600">
-                        {endDate?.toLocaleDateString("en-IN", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "numeric",
-                        })}
-                      </span>
-                    </td>
-                    <td className="py-4 px-6 text-right">
-                      <div className="flex justify-end">
-                        <button
-                          className="p-1 text-gray-500 hover:text-indigo-600 rounded hover:bg-gray-100"
-                          onClick={() => {
-                            setEditBudget(budget);
-                            setShowForm(true);
-                          }}
-                        >
-                          <Edit size={16} />
-                        </button>
-                        <button
-                          className="p-1 text-gray-500 hover:text-red-500 rounded hover:bg-gray-100 ml-2"
-                          onClick={() => budget._id && handleDelete(budget._id)}
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                      </td>
+                      <td className="py-4 px-6 text-right">
+                        <span className="text-gray-600">
+                          {endDate?.toLocaleDateString("en-IN", {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                          })}
+                        </span>
+                      </td>
+                      <td className="py-4 px-6 text-right">
+                        <div className="flex justify-end">
+                          <button
+                            className="p-1 text-gray-500 hover:text-indigo-600 rounded hover:bg-gray-100"
+                            onClick={() => {
+                              setEditBudget(budget);
+                              setShowForm(true);
+                              setFormErrors({});
+                            }}
+                          >
+                            <Edit size={16} />
+                          </button>
+                          <button
+                            className="p-1 text-gray-500 hover:text-red-500 rounded hover:bg-gray-100 ml-2"
+                            onClick={() =>
+                              budget._id && handleDelete(budget._id)
+                            }
+                            disabled={deleteMutation.isPending}
+                          >
+                            {deleteMutation.isPending ? (
+                              <Loader2 size={16} className="animate-spin" />
+                            ) : (
+                              <Trash2 size={16} />
+                            )}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
 
-          {sortedBudgets.length === 0 && (
-            <div className="py-12 text-center">
-              <div className="flex flex-col items-center justify-center">
-                <PieChart className="text-gray-400 mx-auto mb-4" size={40} />
-                <h3 className="text-lg font-medium text-gray-900 mb-1">
-                  No budgets found
-                </h3>
-                <p className="text-gray-500 max-w-md mb-4">
-                  {activeCategory === "All"
-                    ? "You haven't created any budgets yet."
-                    : `No budgets found in the ${activeCategory} category.`}
-                </p>
-                <button
-                  onClick={() => {
-                    setShowForm(true);
-                    setEditBudget(null);
-                  }}
-                  className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg"
-                >
-                  <Plus size={16} />
-                  <span>Create Your First Budget</span>
-                </button>
+            {sortedBudgets.length === 0 && (
+              <div className="py-12 text-center">
+                <div className="flex flex-col items-center justify-center">
+                  <PieChart className="text-gray-400 mx-auto mb-4" size={40} />
+                  <h3 className="text-lg font-medium text-gray-900 mb-1">
+                    No budgets found
+                  </h3>
+                  <p className="text-gray-500 max-w-md mb-4">
+                    You haven&apos;t created any budgets yet.
+                  </p>
+                  <button
+                    onClick={() => {
+                      setShowForm(true);
+                      setEditBudget(null);
+                      setFormErrors({});
+                    }}
+                    className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg"
+                  >
+                    <Plus size={16} />
+                    <span>Create Your First Budget</span>
+                  </button>
+                </div>
               </div>
+            )}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {pagination && pagination.totalPages > 1 && (
+          <div className="border-t border-gray-200 px-6 py-4 flex items-center justify-between">
+            <p className="text-sm text-gray-600">
+              Showing {(pagination.page - 1) * pagination.limit + 1} to{" "}
+              {Math.min(pagination.page * pagination.limit, pagination.total)}{" "}
+              of {pagination.total} budgets
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={pagination.page <= 1}
+                className="flex items-center gap-1 px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronLeft size={14} />
+                Previous
+              </button>
+              <span className="px-3 py-1.5 text-sm font-medium text-gray-700">
+                Page {pagination.page} of {pagination.totalPages}
+              </span>
+              <button
+                onClick={() =>
+                  setPage((p) => Math.min(pagination.totalPages, p + 1))
+                }
+                disabled={pagination.page >= pagination.totalPages}
+                className="flex items-center gap-1 px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Next
+                <ChevronRight size={14} />
+              </button>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Budget Tips */}
@@ -625,7 +724,7 @@ export default function BudgetsPage() {
             <h3 className="font-medium text-blue-800">Budgeting Tip #1</h3>
           </div>
           <p className="text-blue-700">
-            Review your budgets weekly to ensure you're on track. Small
+            Review your budgets weekly to ensure you&apos;re on track. Small
             adjustments can prevent overspending.
           </p>
         </div>
@@ -657,6 +756,7 @@ export default function BudgetsPage() {
         </div>
       </div>
 
+      {/* ─── Create/Edit Budget Modal ────────────────────── */}
       {showForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-xl w-full max-w-md">
@@ -669,6 +769,7 @@ export default function BudgetsPage() {
                   onClick={() => {
                     setShowForm(false);
                     setEditBudget(null);
+                    setFormErrors({});
                   }}
                   className="text-gray-500 hover:text-gray-700"
                 >
@@ -687,10 +788,18 @@ export default function BudgetsPage() {
                       type="text"
                       name="name"
                       defaultValue={editBudget?.name || ""}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+                        formErrors.name
+                          ? "border-red-300 bg-red-50"
+                          : "border-gray-300"
+                      }`}
                       placeholder="e.g. Groceries, Rent"
-                      required
                     />
+                    {formErrors.name && (
+                      <p className="mt-1 text-sm text-red-600">
+                        {formErrors.name[0]}
+                      </p>
+                    )}
                   </div>
 
                   {/* Category */}
@@ -701,8 +810,11 @@ export default function BudgetsPage() {
                     <select
                       name="category"
                       defaultValue={editBudget?.category || ""}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                      required
+                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+                        formErrors.category
+                          ? "border-red-300 bg-red-50"
+                          : "border-gray-300"
+                      }`}
                     >
                       <option value="">Select a category</option>
                       {categories.map((category) => (
@@ -711,28 +823,38 @@ export default function BudgetsPage() {
                         </option>
                       ))}
                     </select>
+                    {formErrors.category && (
+                      <p className="mt-1 text-sm text-red-600">
+                        {formErrors.category[0]}
+                      </p>
+                    )}
                   </div>
 
                   {/* Period */}
-                  {editBudget && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Budget Period
-                      </label>
-
-                      <select
-                        name="period"
-                        defaultValue={editBudget?.period || "Monthly"}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                        required
-                      >
-                        <option value="Weekly">Weekly</option>
-                        <option value="Monthly">Monthly</option>
-                        <option value="Quarterly">Quarterly</option>
-                        <option value="Yearly">Yearly</option>
-                      </select>
-                    </div>
-                  )}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Budget Period
+                    </label>
+                    <select
+                      name="period"
+                      defaultValue={editBudget?.period || "Monthly"}
+                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+                        formErrors.period
+                          ? "border-red-300 bg-red-50"
+                          : "border-gray-300"
+                      }`}
+                    >
+                      <option value="Weekly">Weekly</option>
+                      <option value="Monthly">Monthly</option>
+                      <option value="Quarterly">Quarterly</option>
+                      <option value="Yearly">Yearly</option>
+                    </select>
+                    {formErrors.period && (
+                      <p className="mt-1 text-sm text-red-600">
+                        {formErrors.period[0]}
+                      </p>
+                    )}
+                  </div>
 
                   {/* Allocated */}
                   <div>
@@ -743,11 +865,19 @@ export default function BudgetsPage() {
                       type="number"
                       name="allocated"
                       defaultValue={editBudget?.allocated || ""}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+                        formErrors.allocated
+                          ? "border-red-300 bg-red-50"
+                          : "border-gray-300"
+                      }`}
                       placeholder="0"
                       min="0"
-                      required
                     />
+                    {formErrors.allocated && (
+                      <p className="mt-1 text-sm text-red-600">
+                        {formErrors.allocated[0]}
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -757,6 +887,7 @@ export default function BudgetsPage() {
                     onClick={() => {
                       setShowForm(false);
                       setEditBudget(null);
+                      setFormErrors({});
                     }}
                     className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
                   >
@@ -764,8 +895,12 @@ export default function BudgetsPage() {
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                    disabled={isMutating}
+                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 flex items-center gap-2"
                   >
+                    {isMutating && (
+                      <Loader2 size={16} className="animate-spin" />
+                    )}
                     {editBudget ? "Update" : "Create"} Budget
                   </button>
                 </div>

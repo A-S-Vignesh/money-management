@@ -1,8 +1,7 @@
-// app/dashboard/profile/page.tsx
+// allpages/ProfilePage.tsx
 "use client";
 
-import { useEffect, useState } from "react";
-import { useProfileStore } from "@/store/useProfileStore";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import {
   User,
@@ -11,105 +10,203 @@ import {
   X,
   Lock,
   Mail,
-  Phone,
-  MapPin,
   Calendar as CalendarIcon,
   ShieldCheck,
   CreditCard,
   Bell,
   Globe,
+  Loader2,
+  AlertCircle,
+  Phone,
 } from "lucide-react";
-import IProfile from "@/types/profile";
+import { useProfile } from "@/hooks/profile/useProfile";
+import { useUpdateProfile } from "@/hooks/profile/useUpdateProfile";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
+import {
+  updateProfileSchema,
+  currencies,
+  languages,
+  type UpdateProfileInput,
+} from "@/validations/profile";
 
-export default function ProfilePage() {
-  const { profile, updateProfile } = useProfileStore();
-  const [editMode, setEditMode] = useState<boolean>(false);
-  const [tempData, setTempData] = useState<IProfile>(
-    profile ?? {
-      _id: "",
-      name: "",
-      email: "",
-      image: "",
-      phoneNo: "",
-      dob: new Date(),
-      currency: "USD",
-      lang: "en",
-      notifications: false,
-      twoFactorAuth: false,
-    }
+// ─── Form Errors ─────────────────────────────────────────────────────
+interface FormErrors {
+  name?: string[];
+  phoneNo?: string[];
+  dob?: string[];
+  currency?: string[];
+  lang?: string[];
+  notifications?: string[];
+  twoFactorAuth?: string[];
+}
+
+// ─── Skeleton Loading ────────────────────────────────────────────────
+function ProfileSkeleton() {
+  return (
+    <div className="space-y-6 animate-pulse">
+      {/* Header */}
+      <div>
+        <div className="h-7 bg-gray-200 rounded w-48 mb-2" />
+        <div className="h-4 bg-gray-100 rounded w-72" />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Profile Card */}
+        <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="flex gap-6">
+            <div className="w-32 h-32 bg-gray-200 rounded-full" />
+            <div className="flex-1 space-y-4">
+              <div className="h-7 bg-gray-200 rounded w-40" />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <div className="h-3 bg-gray-100 rounded w-20" />
+                  <div className="h-5 bg-gray-200 rounded w-48" />
+                </div>
+                <div className="space-y-1">
+                  <div className="h-3 bg-gray-100 rounded w-20" />
+                  <div className="h-5 bg-gray-200 rounded w-32" />
+                </div>
+              </div>
+              <div className="space-y-1">
+                <div className="h-3 bg-gray-100 rounded w-20" />
+                <div className="h-5 bg-gray-200 rounded w-36" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Settings Skeleton */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="h-6 bg-gray-200 rounded w-36 mb-4" />
+          <div className="space-y-4">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="h-16 bg-gray-100 rounded-lg" />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
   );
-  const [showPasswordModal, setShowPasswordModal] = useState<boolean>(false);
-  type PasswordData = {
-    currentPassword: string;
-    newPassword: string;
-    confirmPassword: string;
-  };
-  const [passwordData, setPasswordData] = useState<PasswordData>({
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: "",
-  });
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+}
 
-  // Sync tempData with profile
+// ─── Main Component ──────────────────────────────────────────────────
+export default function ProfilePage() {
+  const { data: profile, isLoading, isError, error, refetch } = useProfile();
+  const updateMutation = useUpdateProfile();
+  const pushNotif = usePushNotifications();
+
+  const [editMode, setEditMode] = useState(false);
+  const [formErrors, setFormErrors] = useState<FormErrors>({});
+  const [tempData, setTempData] = useState<UpdateProfileInput>({});
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+
+  // Sync tempData with fetched profile
   useEffect(() => {
     if (profile) {
-      setTempData({ ...profile });
+      setTempData({
+        name: profile.name || "",
+        phoneNo: profile.phoneNo || "",
+        dob: profile.dob
+          ? new Date(profile.dob).toISOString().split("T")[0]
+          : "",
+        currency: profile.currency as UpdateProfileInput["currency"],
+        lang: profile.lang as UpdateProfileInput["lang"],
+        notifications: !!profile.notifications,
+        twoFactorAuth: !!profile.twoFactorAuth,
+      });
     }
   }, [profile]);
 
-  // console.log("Profile Data:", profile);
-  console.log("Temp Data:", tempData);
+  // ── Input Handler ──────────────────────
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
+    const target = e.target;
+    const { name, value } = target;
+    const isCheckbox =
+      target instanceof HTMLInputElement && target.type === "checkbox";
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, type, checked, value } = e.target;
-    setTempData((prev: IProfile) => ({
+    setTempData((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value,
+      [name]: isCheckbox ? (target as HTMLInputElement).checked : value,
     }));
   };
 
+  // ── Save Handler ───────────────────────
   const handleSave = async () => {
-    setIsLoading(true);
-    try {
-      await updateProfile(tempData); // Ensure `notifications` is in tempData
-      setEditMode(false);
-    } catch (err) {
-      console.error("Failed to update profile", err);
+    setFormErrors({});
+
+    const result = updateProfileSchema.safeParse(tempData);
+    if (!result.success) {
+      setFormErrors(result.error.flatten().fieldErrors as FormErrors);
+      return;
     }
-    setIsLoading(false);
+
+    try {
+      await updateMutation.mutateAsync(result.data);
+      setEditMode(false);
+      setFormErrors({});
+    } catch {
+      // Handled by mutation onError
+    }
   };
 
+  // ── Cancel Handler ─────────────────────
   const handleCancel = () => {
-    setTempData({ ...profile });
-    setEditMode(false);
-  };
-
-  const handlePasswordChange = (e: React.FormEvent<HTMLInputElement>) => {
-    const { name, value } = e.currentTarget;
-    setPasswordData({
-      ...passwordData,
-      [name]: value,
-    });
-  };
-
-  const handlePasswordSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsLoading(true);
-    // Simulate password change
-    setTimeout(() => {
-      setShowPasswordModal(false);
-      setPasswordData({
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: "",
+    if (profile) {
+      setTempData({
+        name: profile.name || "",
+        phoneNo: profile.phoneNo || "",
+        dob: profile.dob
+          ? new Date(profile.dob).toISOString().split("T")[0]
+          : "",
+        currency: profile.currency as UpdateProfileInput["currency"],
+        lang: profile.lang as UpdateProfileInput["lang"],
+        notifications: !!profile.notifications,
+        twoFactorAuth: !!profile.twoFactorAuth,
       });
-      setIsLoading(false);
-      alert("Password updated successfully!");
-    }, 1000);
+    }
+    setEditMode(false);
+    setFormErrors({});
   };
 
-  console.log("Profile", profile);
+  // ── Toggle Handler (auto-save) ─────────
+  const handleToggle = async (
+    field: "notifications" | "twoFactorAuth",
+    value: boolean,
+  ) => {
+    setTempData((prev) => ({ ...prev, [field]: value }));
+    try {
+      await updateMutation.mutateAsync({ [field]: value });
+    } catch {
+      // Revert on error
+      setTempData((prev) => ({ ...prev, [field]: !value }));
+    }
+  };
+
+  // ── Loading State ──────────────────────
+  if (isLoading) return <ProfileSkeleton />;
+
+  // ── Error State ────────────────────────
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20">
+        <AlertCircle size={48} className="text-red-400 mb-4" />
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">
+          Failed to load profile
+        </h2>
+        <p className="text-gray-500 mb-4">
+          {(error as Error)?.message || "Something went wrong"}
+        </p>
+        <button
+          onClick={() => refetch()}
+          className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+        >
+          Try Again
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -123,18 +220,16 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* Profile Card */}
-      {/* <div className="grid grid-cols-1 lg:grid-cols-3 gap-6"> */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Profile Details */}
+        {/* ── Profile Details Card ───────── */}
         <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-6">
           <div className="flex flex-col md:flex-row gap-6">
             {/* Profile Picture */}
             <div className="flex-shrink-0">
               <div className="relative">
-                {tempData.image ? (
+                {profile?.image ? (
                   <Image
-                    src={tempData.image}
+                    src={profile.image}
                     alt="Profile"
                     width={128}
                     height={128}
@@ -152,6 +247,7 @@ export default function ProfilePage() {
             <div className="flex-1">
               {editMode ? (
                 <div className="space-y-4">
+                  {/* Name */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Full Name
@@ -161,26 +257,22 @@ export default function ProfilePage() {
                       name="name"
                       value={tempData.name || ""}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className={`w-full px-3 py-2.5 border rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+                        formErrors.name
+                          ? "border-red-300 bg-red-50"
+                          : "border-gray-300"
+                      }`}
                       placeholder="Enter your name"
                     />
+                    {formErrors.name && (
+                      <p className="mt-1 text-xs text-red-600">
+                        {formErrors.name[0]}
+                      </p>
+                    )}
                   </div>
 
-                  {/* <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Bio
-                    </label>
-                    <textarea
-                      name="bio"
-                      value={tempData.bio}
-                      onChange={handleInputChange}
-                      rows="3"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                      placeholder="Tell us about yourself"
-                    ></textarea>
-                  </div> */}
-
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Email (read-only) */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Email Address
@@ -191,16 +283,15 @@ export default function ProfilePage() {
                         </div>
                         <input
                           type="email"
-                          name="email"
-                          value={tempData.email}
-                          className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                          placeholder="Enter your email"
+                          value={profile?.email || ""}
+                          className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 text-gray-500 cursor-not-allowed"
                           disabled
                         />
                       </div>
                     </div>
 
-                    {/* <div>
+                    {/* Phone */}
+                    <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Phone Number
                       </label>
@@ -210,34 +301,26 @@ export default function ProfilePage() {
                         </div>
                         <input
                           type="tel"
-                          name="phone"
-                          value={tempData.phone}
+                          name="phoneNo"
+                          value={tempData.phoneNo || ""}
                           onChange={handleInputChange}
-                          className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                          placeholder="Enter your phone number"
+                          className={`w-full pl-10 pr-4 py-2.5 border rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+                            formErrors.phoneNo
+                              ? "border-red-300 bg-red-50"
+                              : "border-gray-300"
+                          }`}
+                          placeholder="+91 9876543210"
                         />
                       </div>
-                    </div> */}
+                      {formErrors.phoneNo && (
+                        <p className="mt-1 text-xs text-red-600">
+                          {formErrors.phoneNo[0]}
+                        </p>
+                      )}
+                    </div>
                   </div>
 
-                  {/* <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Address
-                    </label>
-                    <div className="relative">
-                      <div className="absolute left-3 top-4 text-gray-400">
-                        <MapPin size={16} />
-                      </div>
-                      <textarea
-                        name="address"
-                        value={tempData.address}
-                        onChange={handleInputChange}
-                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                        placeholder="Enter your address"
-                      ></textarea>
-                    </div>
-                  </div> */}
-
+                  {/* Date of Birth */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Date of Birth
@@ -248,31 +331,94 @@ export default function ProfilePage() {
                       </div>
                       <input
                         type="date"
-                        name="dateOfBirth"
-                        value={
-                          tempData?.dob
-                            ? new Date(tempData.dob).toISOString().split("T")[0]
-                            : ""
-                        }
+                        name="dob"
+                        value={tempData.dob || ""}
                         onChange={handleInputChange}
-                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        className={`w-full pl-10 pr-4 py-2.5 border rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+                          formErrors.dob
+                            ? "border-red-300 bg-red-50"
+                            : "border-gray-300"
+                        }`}
                       />
+                    </div>
+                    {formErrors.dob && (
+                      <p className="mt-1 text-xs text-red-600">
+                        {formErrors.dob[0]}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Currency */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Currency
+                      </label>
+                      <select
+                        name="currency"
+                        value={tempData.currency || "INR"}
+                        onChange={handleInputChange}
+                        className={`w-full px-3 py-2.5 border rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+                          formErrors.currency
+                            ? "border-red-300 bg-red-50"
+                            : "border-gray-300"
+                        }`}
+                      >
+                        {currencies.map((c) => (
+                          <option key={c.value} value={c.value}>
+                            {c.label}
+                          </option>
+                        ))}
+                      </select>
+                      {formErrors.currency && (
+                        <p className="mt-1 text-xs text-red-600">
+                          {formErrors.currency[0]}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Language */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Language
+                      </label>
+                      <select
+                        name="lang"
+                        value={tempData.lang || "en"}
+                        onChange={handleInputChange}
+                        className={`w-full px-3 py-2.5 border rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+                          formErrors.lang
+                            ? "border-red-300 bg-red-50"
+                            : "border-gray-300"
+                        }`}
+                      >
+                        {languages.map((l) => (
+                          <option key={l.value} value={l.value}>
+                            {l.label}
+                          </option>
+                        ))}
+                      </select>
+                      {formErrors.lang && (
+                        <p className="mt-1 text-xs text-red-600">
+                          {formErrors.lang[0]}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
               ) : (
+                // ── View Mode ─────────────────
                 <div className="space-y-4">
                   <div>
                     <h2 className="text-2xl font-bold text-gray-900">
                       {profile?.name || "User Name"}
                     </h2>
-                    {/* <p className="text-gray-600 mt-1">{profile?.bio}</p> */}
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="flex items-start">
                       <Mail
-                        className="text-gray-500 mr-3 flex-shrink-0"
+                        className="text-gray-500 mr-3 flex-shrink-0 mt-0.5"
                         size={18}
                       />
                       <div>
@@ -281,32 +427,23 @@ export default function ProfilePage() {
                       </div>
                     </div>
 
-                    {/* <div className="flex items-start">
-                      <Phone
-                        className="text-gray-500 mr-3 flex-shrink-0"
-                        size={18}
-                      />
-                      <div>
-                        <p className="text-sm text-gray-600">Phone Number</p>
-                        <p className="font-medium">{profile?.phone}</p>
+                    {profile?.phoneNo && (
+                      <div className="flex items-start">
+                        <Phone
+                          className="text-gray-500 mr-3 flex-shrink-0 mt-0.5"
+                          size={18}
+                        />
+                        <div>
+                          <p className="text-sm text-gray-600">Phone Number</p>
+                          <p className="font-medium">{profile.phoneNo}</p>
+                        </div>
                       </div>
-                    </div> */}
+                    )}
                   </div>
-
-                  {/* <div className="flex items-start">
-                    <MapPin
-                      className="text-gray-500 mr-3 flex-shrink-0 mt-1"
-                      size={18}
-                    />
-                    <div>
-                      <p className="text-sm text-gray-600">Address</p>
-                      <p className="font-medium">{profile?.address}</p>
-                    </div>
-                  </div> */}
 
                   <div className="flex items-start">
                     <CalendarIcon
-                      className="text-gray-500 mr-3 flex-shrink-0"
+                      className="text-gray-500 mr-3 flex-shrink-0 mt-0.5"
                       size={18}
                     />
                     <div>
@@ -325,19 +462,21 @@ export default function ProfilePage() {
 
                   <div className="flex items-start">
                     <CalendarIcon
-                      className="text-gray-500 mr-3 flex-shrink-0"
+                      className="text-gray-500 mr-3 flex-shrink-0 mt-0.5"
                       size={18}
                     />
                     <div>
                       <p className="text-sm text-gray-600">Member Since</p>
                       <p className="font-medium">
-                        {new Date(profile?.createdAt ?? "").toLocaleDateString(
-                          "en-IN",
-                          {
-                            year: "numeric",
-                            month: "long",
-                          }
-                        )}
+                        {profile?.createdAt
+                          ? new Date(profile.createdAt).toLocaleDateString(
+                              "en-IN",
+                              {
+                                year: "numeric",
+                                month: "long",
+                              },
+                            )
+                          : "—"}
                       </p>
                     </div>
                   </div>
@@ -345,11 +484,13 @@ export default function ProfilePage() {
               )}
             </div>
           </div>
+
+          {/* Action Buttons */}
           <div className="p-4">
             {!editMode ? (
               <button
                 onClick={() => setEditMode(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors"
+                className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-colors text-sm font-medium"
               >
                 <Edit size={16} />
                 <span>Edit Profile</span>
@@ -358,18 +499,18 @@ export default function ProfilePage() {
               <div className="flex gap-2">
                 <button
                   onClick={handleCancel}
-                  className="flex items-center gap-2 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-50 font-medium"
                 >
                   <X size={16} />
                   <span>Cancel</span>
                 </button>
                 <button
                   onClick={handleSave}
-                  disabled={isLoading}
-                  className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors disabled:opacity-75"
+                  disabled={updateMutation.isPending}
+                  className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-colors disabled:opacity-60 text-sm font-medium"
                 >
-                  {isLoading ? (
-                    <div className="w-4 h-4 border-t-2 border-white border-solid rounded-full animate-spin"></div>
+                  {updateMutation.isPending ? (
+                    <Loader2 size={16} className="animate-spin" />
                   ) : (
                     <Save size={16} />
                   )}
@@ -380,13 +521,14 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Account Settings */}
+        {/* ── Account Settings Card ─────── */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">
             Account Settings
           </h3>
 
           <div className="space-y-4">
+            {/* Currency */}
             <div className="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
               <div className="flex items-center">
                 <Globe className="text-gray-600 mr-3" size={18} />
@@ -397,9 +539,14 @@ export default function ProfilePage() {
                   </p>
                 </div>
               </div>
-              <div className="font-medium">{profile?.currency}</div>
+              <div className="font-medium text-sm">
+                {currencies
+                  .find((c) => c.value === profile?.currency)
+                  ?.label?.split(" — ")[0] || profile?.currency}
+              </div>
             </div>
 
+            {/* Language */}
             <div className="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
               <div className="flex items-center">
                 <Globe className="text-gray-600 mr-3" size={18} />
@@ -408,40 +555,81 @@ export default function ProfilePage() {
                   <p className="text-sm text-gray-600">Interface language</p>
                 </div>
               </div>
-              <div className="font-medium">{profile?.lang}</div>
-            </div>
-
-            <div className="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
-              <div className="flex items-center">
-                <Bell className="text-gray-600 mr-3" size={18} />
-                <div>
-                  <p className="font-medium">Notifications</p>
-                  <p className="text-sm text-gray-600">
-                    Receive app notifications
-                  </p>
-                </div>
+              <div className="font-medium text-sm">
+                {languages.find((l) => l.value === profile?.lang)?.label ||
+                  profile?.lang}
               </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="notifications"
-                  checked={!!tempData.notifications} // ✅ Ensure it's always true or false
-                  onChange={handleInputChange}
-                  className="sr-only peer"
-                />
-                <div
-                  className={`w-11 h-6 ${
-                    tempData.notifications ? "bg-indigo-600" : "bg-gray-300"
-                  } peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all`}
-                ></div>
-              </label>
             </div>
 
+            {/* Push Notifications */}
+            <div className="p-4 bg-gray-50 rounded-lg space-y-3">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center">
+                  <Bell className="text-gray-600 mr-3" size={18} />
+                  <div>
+                    <p className="font-medium">Push Notifications</p>
+                    <p className="text-sm text-gray-600">
+                      {!pushNotif.isSupported
+                        ? "Not supported in this browser"
+                        : pushNotif.permissionState === "denied"
+                          ? "Blocked — enable in browser settings"
+                          : pushNotif.subscription
+                            ? "Enabled on this device"
+                            : "Receive budget alerts & goal updates"}
+                    </p>
+                  </div>
+                </div>
+                {pushNotif.isSupported &&
+                  pushNotif.permissionState !== "denied" && (
+                    <button
+                      onClick={async () => {
+                        if (pushNotif.subscription) {
+                          await pushNotif.unsubscribe();
+                        } else {
+                          const ok = await pushNotif.subscribe();
+                          if (ok) {
+                            await pushNotif.sendTestNotification(
+                              "Welcome to Money Nest! 🎉",
+                              "Push notifications are now enabled.",
+                            );
+                          }
+                        }
+                      }}
+                      disabled={pushNotif.isLoading}
+                      className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-colors ${
+                        pushNotif.subscription
+                          ? "text-red-600 bg-red-50 hover:bg-red-100"
+                          : "text-white bg-indigo-600 hover:bg-indigo-700"
+                      } disabled:opacity-60 flex items-center gap-1.5`}
+                    >
+                      {pushNotif.isLoading ? (
+                        <Loader2 size={14} className="animate-spin" />
+                      ) : null}
+                      {pushNotif.subscription ? "Disable" : "Enable"}
+                    </button>
+                  )}
+              </div>
+              {pushNotif.subscription && (
+                <button
+                  onClick={() =>
+                    pushNotif.sendTestNotification(
+                      "🔔 Test Notification",
+                      "Push notifications are working on Money Nest.",
+                    )
+                  }
+                  className="w-full py-2 text-sm text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors font-medium"
+                >
+                  Send Test Notification
+                </button>
+              )}
+            </div>
+
+            {/* 2FA Toggle */}
             <div className="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
               <div className="flex items-center">
                 <ShieldCheck className="text-gray-600 mr-3" size={18} />
                 <div>
-                  <p className="font-medium">Two-Factor Authentication</p>
+                  <p className="font-medium">Two-Factor Auth</p>
                   <p className="text-sm text-gray-600">
                     Extra layer of security
                   </p>
@@ -450,9 +638,10 @@ export default function ProfilePage() {
               <label className="relative inline-flex items-center cursor-pointer">
                 <input
                   type="checkbox"
-                  name="twoFactorEnabled"
                   checked={!!tempData.twoFactorAuth}
-                  onChange={handleInputChange}
+                  onChange={(e) =>
+                    handleToggle("twoFactorAuth", e.target.checked)
+                  }
                   className="sr-only peer"
                 />
                 <div
@@ -467,7 +656,7 @@ export default function ProfilePage() {
           <div className="mt-6 pt-4 border-t border-gray-200">
             <button
               onClick={() => setShowPasswordModal(true)}
-              className="w-full flex items-center justify-center gap-2 py-2.5 text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors"
+              className="w-full flex items-center justify-center gap-2 py-2.5 text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-colors text-sm font-medium"
             >
               <Lock size={16} />
               <span>Change Password</span>
@@ -488,7 +677,7 @@ export default function ProfilePage() {
               <h4 className="font-medium">Password</h4>
             </div>
             <p className="text-sm text-gray-600 mb-3">
-              Last changed: 3 months ago
+              Keep your account secure
             </p>
             <button
               onClick={() => setShowPasswordModal(true)}
@@ -522,7 +711,7 @@ export default function ProfilePage() {
               </div>
               <h4 className="font-medium">Connected Devices</h4>
             </div>
-            <p className="text-sm text-gray-600 mb-3">2 active sessions</p>
+            <p className="text-sm text-gray-600 mb-3">Active sessions</p>
             <button className="text-sm text-indigo-600 font-medium hover:text-indigo-800">
               View Sessions
             </button>
@@ -530,102 +719,97 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* Change Password Modal */}
+      {/* ── Change Password Modal ──────── */}
       {showPasswordModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl w-full max-w-md">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold">Change Password</h2>
-                <button
-                  onClick={() => setShowPasswordModal(false)}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  ✕
-                </button>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl">
+            <div className="flex justify-between items-center px-6 pt-5 pb-4 border-b border-gray-100">
+              <h2 className="text-lg font-bold text-gray-900">
+                Change Password
+              </h2>
+              <button
+                onClick={() => setShowPasswordModal(false)}
+                className="text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-100"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                // Password change not implemented for Google OAuth users
+                setShowPasswordModal(false);
+              }}
+              className="p-6 space-y-4"
+            >
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Current Password
+                </label>
+                <div className="relative">
+                  <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                    <Lock size={16} />
+                  </div>
+                  <input
+                    type="password"
+                    className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    placeholder="Enter current password"
+                    required
+                  />
+                </div>
               </div>
 
-              <form onSubmit={handlePasswordSubmit}>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Current Password
-                    </label>
-                    <div className="relative">
-                      <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                        <Lock size={16} />
-                      </div>
-                      <input
-                        type="password"
-                        name="currentPassword"
-                        value={passwordData.currentPassword}
-                        onChange={handlePasswordChange}
-                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                        placeholder="Enter current password"
-                        required
-                      />
-                    </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  New Password
+                </label>
+                <div className="relative">
+                  <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                    <Lock size={16} />
                   </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      New Password
-                    </label>
-                    <div className="relative">
-                      <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                        <Lock size={16} />
-                      </div>
-                      <input
-                        type="password"
-                        name="newPassword"
-                        value={passwordData.newPassword}
-                        onChange={handlePasswordChange}
-                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                        placeholder="Enter new password"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Confirm New Password
-                    </label>
-                    <div className="relative">
-                      <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                        <Lock size={16} />
-                      </div>
-                      <input
-                        type="password"
-                        name="confirmPassword"
-                        value={passwordData.confirmPassword}
-                        onChange={handlePasswordChange}
-                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                        placeholder="Confirm new password"
-                        required
-                      />
-                    </div>
-                  </div>
+                  <input
+                    type="password"
+                    className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    placeholder="Enter new password"
+                    required
+                  />
                 </div>
+              </div>
 
-                <div className="mt-6 flex justify-end gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setShowPasswordModal(false)}
-                    className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isLoading}
-                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-75"
-                  >
-                    {isLoading ? "Updating..." : "Update Password"}
-                  </button>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Confirm New Password
+                </label>
+                <div className="relative">
+                  <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                    <Lock size={16} />
+                  </div>
+                  <input
+                    type="password"
+                    className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    placeholder="Confirm new password"
+                    required
+                  />
                 </div>
-              </form>
-            </div>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowPasswordModal(false)}
+                  className="flex-1 px-4 py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-50 font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 px-4 py-2.5 text-sm text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl font-medium"
+                >
+                  Update Password
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

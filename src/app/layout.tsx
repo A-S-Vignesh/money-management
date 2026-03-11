@@ -19,7 +19,16 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Money Nest",
-  description: "A simple and beautiful personal finance app.",
+  description:
+    "A simple and beautiful personal finance app. Track spending, set budgets, and achieve your financial goals.",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Nest",
+  },
+  formatDetection: {
+    telephone: false,
+  },
 };
 
 export default function RootLayout({
@@ -30,17 +39,16 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <meta name="apple-mobile-web-app-title" content="Nest" />
+        <meta name="theme-color" content="#4f46e5" />
         <meta
           name="google-site-verification"
           content="rY46jA55lDxJARyTs3BCYKp079RBOphEEL6aDqQ_hB4"
         />
-        <link rel="manifest" href="/manifest.json"></link>
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {/* <ServiceWorkerProvider /> */}
+        <ServiceWorkerProvider />
         <LayoutWrapper>
           <Providers>{children}</Providers>
         </LayoutWrapper>

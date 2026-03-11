@@ -20,7 +20,6 @@ import {
   ChevronRight,
   PiggyBank,
 } from "lucide-react";
-import Navbar from "@/landingcomponents/Navbar";
 
 export default function Landing() {
    const features = [

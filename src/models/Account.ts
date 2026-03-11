@@ -42,8 +42,12 @@ const AccountSchema = new Schema<IAccount>(
   },
   {
     timestamps: true,
-  }
+  },
 );
+
+// Compound indexes for common queries
+AccountSchema.index({ userId: 1, type: 1 });
+AccountSchema.index({ userId: 1, createdAt: -1 });
 
 // 3. Export model with type safety
 const Account: Model<IAccount> =

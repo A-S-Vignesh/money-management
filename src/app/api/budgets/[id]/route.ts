@@ -2,17 +2,18 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { connectToDatabase } from "@/lib/mongodb";
 import Budget from "@/models/Budget";
+import { updateBudgetSchema } from "@/validations/budget";
 
 // ✅ GET: Fetch single budget by ID
 export async function GET(
   req: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const session = await getServerSession(authOptions);
   if (!session || !session.user?._id) {
     return Response.json(
       { message: "Unauthorized", type: "error", success: false },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -25,7 +26,7 @@ export async function GET(
     if (!budget) {
       return Response.json(
         { message: "Budget not found", type: "error", success: false },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -36,13 +37,13 @@ export async function GET(
         success: true,
         data: budget,
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     console.error("GET /api/budget/:id error:", error);
     return Response.json(
       { message: "Failed to fetch budget", type: "error", success: false },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -50,13 +51,13 @@ export async function GET(
 // ✅ PUT: Update budget
 export async function PUT(
   req: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const session = await getServerSession(authOptions);
   if (!session || !session.user?._id) {
     return Response.json(
       { message: "Unauthorized", type: "error", success: false },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -64,7 +65,24 @@ export async function PUT(
   await connectToDatabase();
 
   try {
-    const updates = await req.json();
+    const body = await req.json();
+
+    // Validate with Zod
+    const parsed = updateBudgetSchema.safeParse(body);
+    if (!parsed.success) {
+      const fieldErrors = parsed.error.flatten().fieldErrors;
+      return Response.json(
+        {
+          message: "Validation failed",
+          type: "error",
+          success: false,
+          errors: fieldErrors,
+        },
+        { status: 422 },
+      );
+    }
+
+    const updates = parsed.data;
 
     const existing = await Budget.findOne({
       _id: id,
@@ -73,20 +91,20 @@ export async function PUT(
     if (!existing) {
       return Response.json(
         { message: "Budget not found", type: "error", success: false },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     const updated = await Budget.findOneAndUpdate(
       { _id: id, userId: session.user._id },
       updates,
-      { new: true }
+      { new: true },
     );
 
     if (!updated) {
       return Response.json(
         { message: "Failed to update budget", type: "error", success: false },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -97,13 +115,13 @@ export async function PUT(
         success: true,
         data: updated,
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     console.error("PUT /api/budget/:id error:", error);
     return Response.json(
       { message: "Failed to update budget", type: "error", success: false },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -111,13 +129,13 @@ export async function PUT(
 // ✅ DELETE: Remove budget
 export async function DELETE(
   req: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const session = await getServerSession(authOptions);
   if (!session || !session.user?._id) {
     return Response.json(
       { message: "Unauthorized", type: "error", success: false },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -132,7 +150,7 @@ export async function DELETE(
     if (!existing) {
       return Response.json(
         { message: "Budget not found", type: "error", success: false },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -145,13 +163,13 @@ export async function DELETE(
         success: true,
         data: { id },
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     console.error("DELETE /api/budget/:id error:", error);
     return Response.json(
       { message: "Failed to delete budget", type: "error", success: false },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
