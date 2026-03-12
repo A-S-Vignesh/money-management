@@ -13,6 +13,7 @@ import { generateNetWorthHistory } from "@/utils/netWorthHistory";
 import { IAccount } from "@/types/account";
 import Link from "next/link";
 import { formatCurrency } from "@/utils/formatCurrency";
+import DeleteConfirmationModal from "@/components/DeleteConfirmationModal";
 import {
   createAccountSchema,
   type CreateAccountInput,
@@ -199,6 +200,7 @@ export default function BalancePage() {
   const [showEditForm, setShowEditForm] = useState(false);
   const [editAccount, setEditAccount] = useState<IAccount | null>(null);
   const [formErrors, setFormErrors] = useState<FormErrors>({});
+  const [accountToDelete, setAccountToDelete] = useState<string | null>(null);
 
   // ── Derived data ───────────────────────────────────
   const { totalAssets, totalLiabilities, netWorth, cashFlow } =
@@ -296,13 +298,13 @@ export default function BalancePage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (confirm("Are you sure you want to delete this account?")) {
-      try {
-        await deleteAccountMutation.mutateAsync(id);
-      } catch {
-        // Error handled by mutation's onError
-      }
+  const confirmDeleteAccount = async () => {
+    if (!accountToDelete) return;
+    try {
+      await deleteAccountMutation.mutateAsync(accountToDelete);
+      setAccountToDelete(null);
+    } catch {
+      // Error handled by mutation's onError
     }
   };
 
@@ -664,14 +666,9 @@ export default function BalancePage() {
                             </button>
                             <button
                               className="p-1 text-gray-500 hover:text-red-500 rounded hover:bg-gray-100 ml-2"
-                              onClick={() => handleDelete(account._id)}
-                              disabled={deleteAccountMutation.isPending}
+                              onClick={() => setAccountToDelete(account._id)}
                             >
-                              {deleteAccountMutation.isPending ? (
-                                <Loader2 size={16} className="animate-spin" />
-                              ) : (
-                                <Trash2 size={16} />
-                              )}
+                              <Trash2 size={16} />
                             </button>
                           </div>
                         </div>
@@ -1021,29 +1018,19 @@ export default function BalancePage() {
                     )}
                   </div>
                 </div>
-                <div className="mt-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Initial Balance (₹)
-                  </label>
-                  <input
-                    type="number"
-                    name="balance"
-                    defaultValue={editAccount?.balance || ""}
-                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
-                      formErrors.balance
-                        ? "border-red-300 bg-red-50"
-                        : "border-gray-300"
-                    }`}
-                    placeholder="0.00"
-                    min="0"
-                    step="0.01"
-                  />
-                  {formErrors.balance && (
-                    <p className="mt-1 text-sm text-red-600">
-                      {formErrors.balance[0]}
+                  {/* Balance — read-only, derived from transactions */}
+                  <div className="mt-4 p-3 rounded-lg bg-gray-50 border border-gray-200">
+                    <p className="text-xs text-gray-500 mb-1">Current Balance</p>
+                    <p className="text-lg font-semibold text-gray-800">
+                      {new Intl.NumberFormat("en-IN", {
+                        style: "currency",
+                        currency: "INR",
+                      }).format(editAccount?.balance ?? 0)}
                     </p>
-                  )}
-                </div>
+                    <p className="text-xs text-gray-400 mt-1">
+                      Balance is calculated from your transactions and cannot be edited directly.
+                    </p>
+                  </div>
                 <div className="mt-6 flex justify-end gap-3">
                   <button
                     type="button"
@@ -1072,6 +1059,16 @@ export default function BalancePage() {
           </div>
         </div>
       )}
+
+      {/* ─── Delete Account Modal ────────────────────────────────────── */}
+      <DeleteConfirmationModal
+        isOpen={!!accountToDelete}
+        onClose={() => setAccountToDelete(null)}
+        onConfirm={confirmDeleteAccount}
+        title="Delete Account"
+        description="Are you sure you want to delete this account and its associated data?"
+        isLoading={deleteAccountMutation.isPending}
+      />
     </div>
   );
 }

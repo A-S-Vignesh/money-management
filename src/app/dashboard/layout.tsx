@@ -104,14 +104,18 @@ export default function DashboardLayout({
   const { data: session } = useSession();
 
   const { toasts } = useToastStore();
-  const { fetchAccounts } = useAccountStore();
-  const { fetchProfile } = useProfileStore();
-  const { fetchBudgets } = useBudgetStore();
-  const { fetchGoals } = useGoalStore();
+  // const { fetchAccounts } = useAccountStore();
+  // const { fetchProfile } = useProfileStore();
+  // const { fetchBudgets } = useBudgetStore();
+  // const { fetchGoals } = useGoalStore();
 
   // React Query hooks for quick-add modal
   const addTransaction = useAddTransaction();
-  const { data: accountsData } = useAccounts({ page: 1, limit: 100 });
+  const { data: accountsData } = useAccounts({
+    page: 1,
+    limit: 100,
+    includeGoals: true,
+  });
 
   // Notification hooks for bell dropdown
   const { data: notifData } = useNotifications({ page: 1, limit: 5 });
@@ -172,12 +176,12 @@ export default function DashboardLayout({
     };
   }, []);
 
-  useEffect(() => {
-    fetchAccounts();
-    fetchProfile();
-    fetchBudgets();
-    fetchGoals();
-  }, []);
+  // useEffect(() => {
+  //   fetchAccounts();
+  //   fetchProfile();
+  //   fetchBudgets();
+  //   fetchGoals();
+  // }, []);
 
   // ── Quick-add handler ──────────────────────────────────────────────────
   const handleQuickAdd = async (e: React.FormEvent<HTMLFormElement>) => {

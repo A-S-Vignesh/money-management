@@ -6,6 +6,8 @@ import Account from "@/models/Account";
 import { updateTransactionSchema } from "@/validations/transaction";
 import mongoose from "mongoose";
 
+const isProd = process.env.NODE_ENV === "production";
+
 export async function GET(
   req: Request,
   { params }: { params: Promise<{ id: string }> },
@@ -89,46 +91,61 @@ export async function PUT(
       toAccountId: oldTo,
     } = oldTransaction;
 
-    // Bug #1 fix: Use MongoDB transaction for atomic undo + redo
-    const dbSession = await mongoose.startSession();
-    dbSession.startTransaction();
+    // MongoDB sessions/transactions only work on replica sets (not local standalone MongoDB)
+    let dbSession: mongoose.ClientSession | undefined = undefined;
+    if (isProd) {
+      dbSession = await mongoose.startSession();
+      dbSession.startTransaction();
+    }
 
     try {
-      // 🔹 Step 1: Undo old transaction
+      // 🔹 Step 1: Undo old transaction (skip if account was soft-deleted)
       if (oldType === "income") {
         if (oldTo) {
-          await Account.findByIdAndUpdate(
-            oldTo,
-            { $inc: { balance: -oldAmount } },
-            { session: dbSession },
-          );
+          const acc = await Account.findOne({ _id: oldTo, isDeleted: { $ne: true } });
+          if (acc) {
+            await Account.findByIdAndUpdate(
+              oldTo,
+              { $inc: { balance: -oldAmount } },
+              isProd ? { session: dbSession } : undefined,
+            );
+          }
         }
       } else if (oldType === "expense") {
         if (oldFrom) {
-          await Account.findByIdAndUpdate(
-            oldFrom,
-            { $inc: { balance: oldAmount } },
-            { session: dbSession },
-          );
+          const acc = await Account.findOne({ _id: oldFrom, isDeleted: { $ne: true } });
+          if (acc) {
+            await Account.findByIdAndUpdate(
+              oldFrom,
+              { $inc: { balance: oldAmount } },
+              isProd ? { session: dbSession } : undefined,
+            );
+          }
         }
       } else if (oldType === "transfer") {
         if (oldFrom) {
-          await Account.findByIdAndUpdate(
-            oldFrom,
-            { $inc: { balance: oldAmount } },
-            { session: dbSession },
-          );
+          const acc = await Account.findOne({ _id: oldFrom, isDeleted: { $ne: true } });
+          if (acc) {
+            await Account.findByIdAndUpdate(
+              oldFrom,
+              { $inc: { balance: oldAmount } },
+              isProd ? { session: dbSession } : undefined,
+            );
+          }
         }
         if (oldTo) {
-          await Account.findByIdAndUpdate(
-            oldTo,
-            { $inc: { balance: -oldAmount } },
-            { session: dbSession },
-          );
+          const acc = await Account.findOne({ _id: oldTo, isDeleted: { $ne: true } });
+          if (acc) {
+            await Account.findByIdAndUpdate(
+              oldTo,
+              { $inc: { balance: -oldAmount } },
+              isProd ? { session: dbSession } : undefined,
+            );
+          }
         }
       }
 
-      // 🔹 Step 2: Apply new transaction
+      // 🔹 Step 2: Apply new transaction (block if new account is soft-deleted)
       const {
         type: newType,
         amount: newAmount = 0,
@@ -136,12 +153,34 @@ export async function PUT(
         toAccountId: newTo,
       } = updatedData;
 
+      // Validate new accounts are active
+      const newAccIds = [newFrom, newTo].filter(Boolean);
+      if (newAccIds.length > 0) {
+        const activeNewAccs = await Account.find({
+          _id: { $in: newAccIds },
+          isDeleted: { $ne: true },
+        }).select("_id");
+        const activeNewIds = activeNewAccs.map((a) => a._id.toString());
+        for (const accId of newAccIds) {
+          if (!activeNewIds.includes(accId!)) {
+            if (isProd && dbSession) {
+              await dbSession.abortTransaction();
+              dbSession.endSession();
+            }
+            return Response.json(
+              { message: "One or more selected accounts are no longer available (deleted).", type: "error" },
+              { status: 400 },
+            );
+          }
+        }
+      }
+
       if (newType === "income") {
         if (newTo) {
           await Account.findByIdAndUpdate(
             newTo,
             { $inc: { balance: newAmount } },
-            { session: dbSession },
+            isProd ? { session: dbSession } : undefined,
           );
         }
       } else if (newType === "expense") {
@@ -149,7 +188,7 @@ export async function PUT(
           await Account.findByIdAndUpdate(
             newFrom,
             { $inc: { balance: -newAmount } },
-            { session: dbSession },
+            isProd ? { session: dbSession } : undefined,
           );
         }
       } else if (newType === "transfer") {
@@ -157,14 +196,14 @@ export async function PUT(
           await Account.findByIdAndUpdate(
             newFrom,
             { $inc: { balance: -newAmount } },
-            { session: dbSession },
+            isProd ? { session: dbSession } : undefined,
           );
         }
         if (newTo) {
           await Account.findByIdAndUpdate(
             newTo,
             { $inc: { balance: newAmount } },
-            { session: dbSession },
+            isProd ? { session: dbSession } : undefined,
           );
         }
       }
@@ -173,11 +212,13 @@ export async function PUT(
       const transaction = await Transaction.findOneAndUpdate(
         { _id: id, userId },
         updatedData,
-        { new: true, session: dbSession },
+        isProd ? { new: true, session: dbSession } : { new: true },
       );
 
-      await dbSession.commitTransaction();
-      dbSession.endSession();
+      if (isProd && dbSession) {
+        await dbSession.commitTransaction();
+        dbSession.endSession();
+      }
 
       return Response.json(
         {
@@ -188,8 +229,10 @@ export async function PUT(
         { status: 200 },
       );
     } catch (txError) {
-      await dbSession.abortTransaction();
-      dbSession.endSession();
+      if (isProd && dbSession) {
+        await dbSession.abortTransaction();
+        dbSession.endSession();
+      }
       throw txError;
     }
   } catch (error) {
@@ -229,50 +272,70 @@ export async function DELETE(
 
     const { type, amount, fromAccountId, toAccountId } = transaction;
 
-    // Bug #1 fix: Use MongoDB transaction for atomic delete + balance reversal
-    const dbSession = await mongoose.startSession();
-    dbSession.startTransaction();
+    // MongoDB sessions/transactions only work on replica sets (not local standalone MongoDB)
+    let dbSession: mongoose.ClientSession | undefined = undefined;
+    if (isProd) {
+      dbSession = await mongoose.startSession();
+      dbSession.startTransaction();
+    }
 
     try {
-      // 🔹 Reverse balance effect
+      // 🔹 Reverse balance effect (skip if account is soft-deleted)
       if (type === "income") {
         if (toAccountId) {
-          await Account.findByIdAndUpdate(
-            toAccountId,
-            { $inc: { balance: -amount } },
-            { session: dbSession },
-          );
+          const acc = await Account.findOne({ _id: toAccountId, isDeleted: { $ne: true } });
+          if (acc) {
+            await Account.findByIdAndUpdate(
+              toAccountId,
+              { $inc: { balance: -amount } },
+              isProd ? { session: dbSession } : undefined,
+            );
+          }
         }
       } else if (type === "expense") {
         if (fromAccountId) {
-          await Account.findByIdAndUpdate(
-            fromAccountId,
-            { $inc: { balance: amount } },
-            { session: dbSession },
-          );
+          const acc = await Account.findOne({ _id: fromAccountId, isDeleted: { $ne: true } });
+          if (acc) {
+            await Account.findByIdAndUpdate(
+              fromAccountId,
+              { $inc: { balance: amount } },
+              isProd ? { session: dbSession } : undefined,
+            );
+          }
         }
       } else if (type === "transfer") {
         if (fromAccountId) {
-          await Account.findByIdAndUpdate(
-            fromAccountId,
-            { $inc: { balance: amount } },
-            { session: dbSession },
-          );
+          const acc = await Account.findOne({ _id: fromAccountId, isDeleted: { $ne: true } });
+          if (acc) {
+            await Account.findByIdAndUpdate(
+              fromAccountId,
+              { $inc: { balance: amount } },
+              isProd ? { session: dbSession } : undefined,
+            );
+          }
         }
         if (toAccountId) {
-          await Account.findByIdAndUpdate(
-            toAccountId,
-            { $inc: { balance: -amount } },
-            { session: dbSession },
-          );
+          const acc = await Account.findOne({ _id: toAccountId, isDeleted: { $ne: true } });
+          if (acc) {
+            await Account.findByIdAndUpdate(
+              toAccountId,
+              { $inc: { balance: -amount } },
+              isProd ? { session: dbSession } : undefined,
+            );
+          }
         }
       }
 
       // 🔹 Now delete the transaction
-      await Transaction.findByIdAndDelete(id, { session: dbSession });
+      await Transaction.findByIdAndDelete(
+        id,
+        isProd ? { session: dbSession } : undefined,
+      );
 
-      await dbSession.commitTransaction();
-      dbSession.endSession();
+      if (isProd && dbSession) {
+        await dbSession.commitTransaction();
+        dbSession.endSession();
+      }
 
       return Response.json(
         {
@@ -282,8 +345,10 @@ export async function DELETE(
         { status: 200 },
       );
     } catch (txError) {
-      await dbSession.abortTransaction();
-      dbSession.endSession();
+      if (isProd && dbSession) {
+        await dbSession.abortTransaction();
+        dbSession.endSession();
+      }
       throw txError;
     }
   } catch (error) {

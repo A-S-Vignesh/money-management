@@ -17,13 +17,20 @@ interface AccountsResponse {
 interface UseAccountsOptions {
   page?: number;
   limit?: number;
+  includeGoals?: boolean;
 }
 
 async function fetchAccounts({
   page = 1,
   limit = 10,
+  includeGoals = false,
 }: UseAccountsOptions): Promise<AccountsResponse> {
-  const res = await fetch(`/api/accounts?page=${page}&limit=${limit}`);
+  const queryParams = new URLSearchParams({
+    page: page.toString(),
+    limit: limit.toString(),
+    includeGoals: includeGoals.toString(),
+  });
+  const res = await fetch(`/api/accounts?${queryParams.toString()}`);
   const data = await res.json();
 
   if (!res.ok) {
@@ -33,9 +40,13 @@ async function fetchAccounts({
   return data;
 }
 
-export function useAccounts({ page = 1, limit = 10 }: UseAccountsOptions = {}) {
+export function useAccounts({
+  page = 1,
+  limit = 10,
+  includeGoals = false,
+}: UseAccountsOptions = {}) {
   return useQuery({
-    queryKey: ["accounts", { page, limit }],
-    queryFn: () => fetchAccounts({ page, limit }),
+    queryKey: ["accounts", { page, limit, includeGoals }],
+    queryFn: () => fetchAccounts({ page, limit, includeGoals }),
   });
 }

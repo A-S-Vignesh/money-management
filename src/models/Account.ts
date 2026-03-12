@@ -8,6 +8,8 @@ export interface IAccount extends Document {
   name: string;
   balance: number;
   isSystem?: boolean;
+  isDeleted?: boolean;
+  deletedAt?: Date | null;
   type: "bank" | "cash" | "credit" | "investment" | "system" | "goal" | "other";
   createdAt: Date;
   updatedAt: Date;
@@ -34,6 +36,14 @@ const AccountSchema = new Schema<IAccount>(
       type: Boolean,
       default: false,
     },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
+    deletedAt: {
+      type: Date,
+      default: null,
+    },
     type: {
       type: String,
       enum: ["bank", "cash", "credit", "investment", "system", "goal", "other"],
@@ -48,6 +58,7 @@ const AccountSchema = new Schema<IAccount>(
 // Compound indexes for common queries
 AccountSchema.index({ userId: 1, type: 1 });
 AccountSchema.index({ userId: 1, createdAt: -1 });
+AccountSchema.index({ userId: 1, isDeleted: 1 });
 
 // 3. Export model with type safety
 const Account: Model<IAccount> =

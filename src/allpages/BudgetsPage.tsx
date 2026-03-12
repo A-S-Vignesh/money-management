@@ -817,11 +817,13 @@ export default function BudgetsPage() {
                       }`}
                     >
                       <option value="">Select a category</option>
-                      {categories.map((category) => (
-                        <option key={category.name} value={category.name}>
-                          {category.name}
-                        </option>
-                      ))}
+                      {categories
+                        .filter((category) => category.name !== "Salary")
+                        .map((category) => (
+                          <option key={category.name} value={category.name}>
+                            {category.name}
+                          </option>
+                        ))}
                     </select>
                     {formErrors.category && (
                       <p className="mt-1 text-sm text-red-600">

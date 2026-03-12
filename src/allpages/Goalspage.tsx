@@ -108,7 +108,11 @@ export default function GoalsPage() {
     refetch: refetchGoals,
   } = useGoals({ page, limit, priority: filter });
 
-  const { data: accountsData } = useAccounts({ page: 1, limit: 100 });
+  const { data: accountsData } = useAccounts({
+    page: 1,
+    limit: 100,
+    includeGoals: true,
+  });
 
   const goals = goalsData?.data ?? [];
   const pagination = goalsData?.pagination;

@@ -174,43 +174,70 @@ export async function POST(req: Request) {
       );
     }
 
-    // Bug #1 fix: Use MongoDB transaction for atomic balance updates
-    const dbSession = await mongoose.startSession();
-    dbSession.startTransaction();
+    // Spec: Block transaction if any referenced account is soft-deleted
+    const accountIdsToCheck = [fromAccountId, toAccountId].filter(Boolean);
+    if (accountIdsToCheck.length > 0) {
+      const activeAccounts = await Account.find({
+        _id: { $in: accountIdsToCheck },
+        isDeleted: { $ne: true },
+      }).select("_id");
+      const activeIds = activeAccounts.map((a) => a._id.toString());
+      for (const accId of accountIdsToCheck) {
+        if (!activeIds.includes(accId!)) {
+          return Response.json(
+            {
+              message: "One or more selected accounts are no longer available (deleted). Please select a different account.",
+              type: "error",
+            },
+            { status: 400 },
+          );
+        }
+      }
+    }
+
+    // MongoDB sessions/transactions only work on replica sets (not local standalone MongoDB)
+    const isProd = process.env.NODE_ENV === "production";
+    let dbSession: mongoose.ClientSession | undefined = undefined;
+    if (isProd) {
+      dbSession = await mongoose.startSession();
+      dbSession.startTransaction();
+    }
 
     try {
       const [newTransaction] = await Transaction.create(
         [{ ...parsed.data, userId }],
-        { session: dbSession },
+        isProd ? { session: dbSession } : undefined,
       );
 
       if (type === "transfer") {
         await Account.findByIdAndUpdate(
           fromAccountId,
           { $inc: { balance: -amount } },
-          { session: dbSession },
+          isProd ? { session: dbSession } : undefined,
         );
         await Account.findByIdAndUpdate(
           toAccountId,
           { $inc: { balance: amount } },
-          { session: dbSession },
+          isProd ? { session: dbSession } : undefined,
         );
       } else if (type === "income") {
         await Account.findByIdAndUpdate(
           toAccountId,
           { $inc: { balance: amount } },
-          { session: dbSession },
+          isProd ? { session: dbSession } : undefined,
         );
       } else if (type === "expense") {
         await Account.findByIdAndUpdate(
           fromAccountId,
           { $inc: { balance: -amount } },
-          { session: dbSession },
+          isProd ? { session: dbSession } : undefined,
         );
       }
 
-      await dbSession.commitTransaction();
-      dbSession.endSession();
+      if (isProd && dbSession) {
+        await dbSession.commitTransaction();
+        dbSession.endSession();
+      }
 
       // ── Notification triggers (fire-and-forget, don't block response) ──
       const category = parsed.data.category || "";
@@ -323,8 +350,10 @@ export async function POST(req: Request) {
         { status: 201 },
       );
     } catch (txError) {
-      await dbSession.abortTransaction();
-      dbSession.endSession();
+      if (isProd && dbSession) {
+        await dbSession.abortTransaction();
+        dbSession.endSession();
+      }
       throw txError;
     }
   } catch (error) {

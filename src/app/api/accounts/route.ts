@@ -26,9 +26,23 @@ export async function GET(req: Request) {
     );
     const skip = (page - 1) * limit;
 
+    const includeGoals = searchParams.get("includeGoals") === "true";
+
+    // Spec: Hide system accounts and soft-deleted accounts from the list
+    const excludedTypes = ["system"];
+    if (!includeGoals) {
+      excludedTypes.push("goal");
+    }
+
+    const query = {
+      userId,
+      isDeleted: { $ne: true },
+      type: { $nin: excludedTypes },
+    };
+
     const [accounts, total] = await Promise.all([
-      Account.find({ userId }).sort({ createdAt: -1 }).skip(skip).limit(limit),
-      Account.countDocuments({ userId }),
+      Account.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit),
+      Account.countDocuments(query),
     ]);
 
     return Response.json(

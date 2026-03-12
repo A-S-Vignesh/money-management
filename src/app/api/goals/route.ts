@@ -5,6 +5,7 @@ import Goal from "@/models/Goal";
 import Account from "@/models/Account";
 import { createGoalSchema } from "@/validations/goal";
 import { createNotification } from "@/lib/notifications";
+import mongoose from "mongoose";
 
 // GET: /api/goals — with pagination + priority filter
 export async function GET(req: Request) {
@@ -28,7 +29,6 @@ export async function GET(req: Request) {
     );
     const skip = (page - 1) * limit;
 
-    // Build filter query
     const query: Record<string, unknown> = { userId: session.user._id };
 
     const priorityFilter = searchParams.get("priority");
@@ -62,7 +62,7 @@ export async function GET(req: Request) {
   }
 }
 
-// POST: /api/goals — with Zod validation
+// POST: /api/goals — atomic: create account + goal in one session
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
 
@@ -77,7 +77,6 @@ export async function POST(req: Request) {
     await connectToDatabase();
     const body = await req.json();
 
-    // Validate with Zod
     const parsed = createGoalSchema.safeParse(body);
     if (!parsed.success) {
       const fieldErrors = parsed.error.flatten().fieldErrors;
@@ -106,20 +105,53 @@ export async function POST(req: Request) {
       );
     }
 
-    // Step 1: Create linked account first
-    const newAccount = await Account.create({
-      userId: session.user._id,
-      name: parsed.data.name,
-      type: "goal",
-      balance: 0,
-    });
+    // Spec: Create account + goal atomically
+    const isProd = process.env.NODE_ENV === "production";
+    let dbSession: mongoose.ClientSession | undefined = undefined;
 
-    // Step 2: Create goal and link the new account
-    const newGoal = await Goal.create({
-      ...parsed.data,
-      userId: session.user._id,
-      accountId: newAccount._id,
-    });
+    if (isProd) {
+      dbSession = await mongoose.startSession();
+      dbSession.startTransaction();
+    }
+
+    let newGoal;
+    try {
+      // Step 1: Create linked goal account
+      const [newAccount] = await Account.create(
+        [
+          {
+            userId: session.user._id,
+            name: parsed.data.name,
+            type: "goal",
+            balance: 0,
+          },
+        ],
+        isProd ? { session: dbSession } : undefined,
+      );
+
+      // Step 2: Create goal and link the new account
+      [newGoal] = await Goal.create(
+        [
+          {
+            ...parsed.data,
+            userId: session.user._id,
+            accountId: newAccount._id,
+          },
+        ],
+        isProd ? { session: dbSession } : undefined,
+      );
+
+      if (isProd && dbSession) {
+        await dbSession.commitTransaction();
+        dbSession.endSession();
+      }
+    } catch (txError) {
+      if (isProd && dbSession) {
+        await dbSession.abortTransaction();
+        dbSession.endSession();
+      }
+      throw txError;
+    }
 
     // Fire-and-forget notification
     const deadlineStr = deadlineDate.toLocaleDateString("en-IN", {

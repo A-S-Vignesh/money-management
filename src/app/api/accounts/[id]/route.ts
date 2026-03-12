@@ -5,6 +5,7 @@ import { connectToDatabase } from "@/lib/mongodb";
 import Account from "@/models/Account";
 import Transaction from "@/models/Transaction";
 import { updateAccountSchema } from "@/validations/account";
+import mongoose from "mongoose";
 
 // ------------------ GET ------------------
 export async function GET(
@@ -111,7 +112,12 @@ export async function PUT(
       );
     }
 
-    const updated = await Account.findByIdAndUpdate(id, parsed.data, {
+    // Spec: Balance is derived from transactions — never allow direct edits.
+    // Strip balance even if somehow sent in the request body.
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { balance: _ignored, ...safeUpdate } = parsed.data as Record<string, unknown>;
+
+    const updated = await Account.findByIdAndUpdate(id, safeUpdate, {
       new: true,
     });
 
@@ -151,7 +157,7 @@ export async function DELETE(
   await connectToDatabase();
 
   try {
-    const account = await Account.findOne({ _id: id, userId }).select("type");
+    const account = await Account.findOne({ _id: id, userId });
 
     if (!account) {
       return Response.json(
@@ -177,67 +183,95 @@ export async function DELETE(
       );
     }
 
-    // Bug #3 fix: Reverse counterparty balances before deleting transactions
+    // Spec: Block deletion if balance is not zero
+    if (account.balance !== 0) {
+      const formatted = new Intl.NumberFormat("en-IN", {
+        style: "currency",
+        currency: "INR",
+        maximumFractionDigits: 2,
+      }).format(Math.abs(account.balance));
+      return Response.json(
+        {
+          message: `This account has a balance of ${formatted}. Transfer or withdraw all funds before deleting.`,
+          type: "warning",
+        },
+        { status: 400 },
+      );
+    }
+
+    // Spec: Transactions are permanent history — DO NOT delete them.
+    // Only reverse counterparty balances for transfer transactions that touched OTHER accounts.
     const relatedTransactions = await Transaction.find({
       userId,
       $or: [{ fromAccountId: id }, { toAccountId: id }],
     }).lean();
 
-    const { default: mongoose } = await import("mongoose");
-    const dbSession = await mongoose.startSession();
-    dbSession.startTransaction();
+    const isProd = process.env.NODE_ENV === "production";
+    let dbSession: mongoose.ClientSession | undefined = undefined;
+
+    if (isProd) {
+      dbSession = await mongoose.startSession();
+      dbSession.startTransaction();
+    }
 
     try {
-      // Reverse each transaction's effect on the OTHER account
+      // Reverse counterparty balances for transfer transactions (only active accounts)
       for (const txn of relatedTransactions) {
-        if (txn.type === "income" && txn.toAccountId?.toString() === id) {
-          // Income was deposited into this account — no counterparty to fix
-        } else if (
-          txn.type === "expense" &&
-          txn.fromAccountId?.toString() === id
-        ) {
-          // Expense was deducted from this account — no counterparty to fix
-        } else if (txn.type === "transfer") {
+        if (txn.type === "transfer") {
           if (txn.fromAccountId?.toString() === id && txn.toAccountId) {
-            // We sent money FROM this account TO another — reverse the credit
-            await Account.findByIdAndUpdate(
-              txn.toAccountId,
-              { $inc: { balance: -txn.amount } },
-              { session: dbSession },
-            );
+            // We sent FROM this account → the counterparty received; reverse that credit
+            const counterparty = await Account.findOne({
+              _id: txn.toAccountId,
+              isDeleted: { $ne: true },
+            });
+            if (counterparty) {
+              await Account.findByIdAndUpdate(
+                txn.toAccountId,
+                { $inc: { balance: -txn.amount } },
+                isProd ? { session: dbSession } : undefined,
+              );
+            }
           } else if (txn.toAccountId?.toString() === id && txn.fromAccountId) {
-            // We received money INTO this account FROM another — reverse the debit
-            await Account.findByIdAndUpdate(
-              txn.fromAccountId,
-              { $inc: { balance: txn.amount } },
-              { session: dbSession },
-            );
+            // We received INTO this account → the counterparty was debited; reverse that debit
+            const counterparty = await Account.findOne({
+              _id: txn.fromAccountId,
+              isDeleted: { $ne: true },
+            });
+            if (counterparty) {
+              await Account.findByIdAndUpdate(
+                txn.fromAccountId,
+                { $inc: { balance: txn.amount } },
+                isProd ? { session: dbSession } : undefined,
+              );
+            }
           }
         }
       }
 
-      // Delete all related transactions
-      await Transaction.deleteMany(
-        { userId, $or: [{ fromAccountId: id }, { toAccountId: id }] },
-        { session: dbSession },
+      // Spec: Soft-delete the account — keep all transactions intact
+      await Account.findByIdAndUpdate(
+        id,
+        { isDeleted: true, deletedAt: new Date() },
+        isProd ? { session: dbSession } : undefined,
       );
 
-      // Delete the account itself
-      await Account.findByIdAndDelete(id, { session: dbSession });
-
-      await dbSession.commitTransaction();
-      dbSession.endSession();
+      if (isProd && dbSession) {
+        await dbSession.commitTransaction();
+        dbSession.endSession();
+      }
 
       return Response.json(
         {
-          message: "Account and related transactions deleted successfully",
+          message: "Account deleted successfully",
           type: "success",
         },
         { status: 200 },
       );
     } catch (txError) {
-      await dbSession.abortTransaction();
-      dbSession.endSession();
+      if (isProd && dbSession) {
+        await dbSession.abortTransaction();
+        dbSession.endSession();
+      }
       throw txError;
     }
   } catch (error) {

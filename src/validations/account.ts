@@ -27,8 +27,19 @@ export const createAccountSchema = z.object({
     .default(0),
 });
 
-// Schema for updating an account (all fields optional)
-export const updateAccountSchema = createAccountSchema.partial();
+// Schema for updating an account — balance is intentionally excluded.
+// Balance is always derived from transactions and must never be edited directly.
+export const updateAccountSchema = z.object({
+  name: z
+    .string()
+    .min(2, "Account name must be at least 2 characters")
+    .max(50, "Account name must be at most 50 characters")
+    .trim()
+    .optional(),
+  type: z.enum(accountTypes, {
+    message: "Please select a valid account type",
+  }).optional(),
+});
 
 // TypeScript types inferred from schemas
 export type CreateAccountInput = z.infer<typeof createAccountSchema>;

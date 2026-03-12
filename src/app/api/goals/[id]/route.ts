@@ -3,8 +3,8 @@ import { authOptions } from "@/lib/authOptions";
 import { connectToDatabase } from "@/lib/mongodb";
 import Goal from "@/models/Goal";
 import Account from "@/models/Account";
-import Transaction from "@/models/Transaction";
 import { updateGoalSchema } from "@/validations/goal";
+import mongoose from "mongoose";
 
 // GET: /api/goals/:id
 export async function GET(
@@ -68,7 +68,6 @@ export async function PUT(
   try {
     const body = await req.json();
 
-    // Validate with Zod
     const parsed = updateGoalSchema.safeParse(body);
     if (!parsed.success) {
       const fieldErrors = parsed.error.flatten().fieldErrors;
@@ -154,56 +153,68 @@ export async function DELETE(
       );
     }
 
-    // Get associated account
+    // Get associated goal account
     const account = await Account.findOne({
       _id: goal.accountId,
       userId: session.user._id,
     });
 
-    if (account && !goal.isCompleted && account.balance > 0) {
-      // Bug #8 fix: Auto-create "Deleted Account" if it doesn't exist
-      let deletedAccount = await Account.findOne({
-        userId: session.user._id,
-        name: "Deleted Account",
-        isSystem: true,
-      });
+    // Spec: Block deletion if goal account still has money
+    if (account && account.balance > 0) {
+      const formatted = new Intl.NumberFormat("en-IN", {
+        style: "currency",
+        currency: "INR",
+        maximumFractionDigits: 2,
+      }).format(account.balance);
+      return Response.json(
+        {
+          message: `This goal has ${formatted} saved. Transfer it to another account first.`,
+          type: "warning",
+        },
+        { status: 400 },
+      );
+    }
 
-      if (!deletedAccount) {
-        deletedAccount = await Account.create({
-          userId: session.user._id,
-          name: "Deleted Account",
-          type: "system",
-          isSystem: true,
-          balance: 0,
-        });
+    // Spec: Atomic delete — soft-delete the goal account, hard-delete only the Goal doc
+    // Transactions are permanent history — DO NOT delete them
+    const isProd = process.env.NODE_ENV === "production";
+    let dbSession: mongoose.ClientSession | undefined = undefined;
+
+    if (isProd) {
+      dbSession = await mongoose.startSession();
+      dbSession.startTransaction();
+    }
+
+    try {
+      // Spec: Soft-delete the goal account
+      if (account) {
+        await Account.findByIdAndUpdate(
+          account._id,
+          { isDeleted: true, deletedAt: new Date() },
+          isProd ? { session: dbSession } : undefined,
+        );
       }
 
-      deletedAccount.balance += account.balance;
-      await deletedAccount.save();
+      // Hard-delete the Goal document only
+      await Goal.deleteOne(
+        { _id: goal._id },
+        isProd ? { session: dbSession } : undefined,
+      );
 
-      account.balance = 0;
-      await account.save();
-    }
-
-    // Bug #4 fix: Use goal.accountId, not goal._id (id), to find related transactions
-    if (account) {
-      await Transaction.deleteMany({
-        userId: session.user._id,
-        $or: [
-          { fromAccountId: goal.accountId },
-          { toAccountId: goal.accountId },
-        ],
-      });
-    }
-
-    // Delete the goal and its associated account
-    await Goal.deleteOne({ _id: goal._id });
-    if (account) {
-      await Account.deleteOne({ _id: account._id });
+      if (isProd && dbSession) {
+        await dbSession.commitTransaction();
+        dbSession.endSession();
+      }
+    } catch (txError) {
+      if (isProd && dbSession) {
+        await dbSession.abortTransaction();
+        dbSession.endSession();
+      }
+      throw txError;
     }
 
     return Response.json({
-      message: "Goal deleted and funds transferred",
+      message: "Goal deleted successfully",
       type: "success",
     });
   } catch (error) {

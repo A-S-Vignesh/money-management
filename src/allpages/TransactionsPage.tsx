@@ -118,7 +118,11 @@ export default function TransactionsPage() {
   });
 
   // Fetch all accounts (unpaginated) for the account filter & form dropdowns
-  const { data: accountsData } = useAccounts({ page: 1, limit: 100 });
+  const { data: accountsData } = useAccounts({
+    page: 1,
+    limit: 100,
+    includeGoals: true,
+  });
 
   const transactions = txData?.data ?? [];
   const pagination = txData?.pagination;
@@ -864,11 +868,21 @@ export default function TransactionsPage() {
                     }`}
                   >
                     <option value="">Select category</option>
-                    {categories.map((cat) => (
-                      <option key={cat.name} value={cat.name}>
-                        {cat.name}
-                      </option>
-                    ))}
+                    {categories
+                      .filter((cat) => {
+                        if (transactionType === "income") {
+                          return cat.name === "Salary" || cat.name === "Other";
+                        }
+                        if (transactionType === "expense") {
+                          return cat.name !== "Salary";
+                        }
+                        return true;
+                      })
+                      .map((cat) => (
+                        <option key={cat.name} value={cat.name}>
+                          {cat.name}
+                        </option>
+                      ))}
                   </select>
                   {formErrors.category && (
                     <p className="mt-1 text-xs text-red-600">
@@ -900,7 +914,7 @@ export default function TransactionsPage() {
                     {accounts
                       .filter(
                         (acc) =>
-                          acc.type !== "goal" &&
+                          (transactionType === "transfer" || acc.type !== "goal") &&
                           acc.type !== "investment" &&
                           acc.name !== "Deleted Account",
                       )
@@ -940,7 +954,7 @@ export default function TransactionsPage() {
                     {accounts
                       .filter(
                         (acc) =>
-                          acc.type !== "goal" &&
+                          (transactionType === "transfer" || acc.type !== "goal") &&
                           acc.type !== "investment" &&
                           acc.name !== "Deleted Account",
                       )
