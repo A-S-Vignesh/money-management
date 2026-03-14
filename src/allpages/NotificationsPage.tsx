@@ -90,10 +90,10 @@ export default function NotificationsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
-          <p className="text-sm text-gray-600 mt-1">
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900">Notifications</h1>
+          <p className="text-xs md:text-sm text-gray-600 mt-1">
             {unreadCount > 0
               ? `${unreadCount} unread notification${unreadCount > 1 ? "s" : ""}`
               : "All caught up! No unread notifications."}
@@ -103,7 +103,7 @@ export default function NotificationsPage() {
           <button
             onClick={() => markAllAsRead.mutate()}
             disabled={markAllAsRead.isPending}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors disabled:opacity-60"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors disabled:opacity-60"
           >
             {markAllAsRead.isPending ? (
               <Loader2 size={16} className="animate-spin" />
@@ -143,20 +143,20 @@ export default function NotificationsPage() {
       {isLoading ? (
         <NotificationSkeleton />
       ) : notifications.length === 0 ? (
-        <div className="bg-white rounded-xl border border-gray-100 p-12 text-center">
-          <div className="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-4">
+        <div className="bg-white rounded-xl border border-gray-100 p-8 md:p-12 text-center">
+          <div className="w-12 h-12 md:w-16 md:h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-3 md:mb-4">
             {typeFilter !== "all" ? (
-              <Filter size={28} className="text-gray-400" />
+              <Filter size={24} className="text-gray-400 md:w-7 md:h-7" />
             ) : (
-              <Bell size={28} className="text-gray-400" />
+              <Bell size={24} className="text-gray-400 md:w-7 md:h-7" />
             )}
           </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-1">
+          <h3 className="text-base md:text-lg font-medium text-gray-900 mb-1">
             {typeFilter !== "all"
               ? `No ${typeFilter} notifications`
               : "No notifications yet"}
           </h3>
-          <p className="text-sm text-gray-500">
+          <p className="text-xs md:text-sm text-gray-500 max-w-[200px] md:max-w-none mx-auto">
             {typeFilter !== "all"
               ? "Try changing the filter to see other notifications."
               : "When something important happens, you'll see it here."}
@@ -167,15 +167,15 @@ export default function NotificationsPage() {
           {notifications.map((n) => (
             <div
               key={n._id}
-              className={`bg-white rounded-xl border transition-all group ${
+              className={`bg-white rounded-xl border transition-all group relative overflow-hidden ${
                 !n.isRead
                   ? "border-indigo-200 bg-indigo-50/30 shadow-sm"
                   : "border-gray-100 hover:border-gray-200"
               }`}
             >
-              <div className="p-4 flex gap-3">
+              <div className="p-3 md:p-4 flex gap-3 md:gap-4">
                 <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                  className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 md:mt-0 ${
                     n.type === "budget"
                       ? "bg-orange-100"
                       : n.type === "goal"
@@ -186,53 +186,53 @@ export default function NotificationsPage() {
                   }`}
                 >
                   {n.type === "budget" ? (
-                    <PieChart size={18} className="text-orange-600" />
+                    <PieChart className="w-4 h-4 md:w-5 md:h-5 text-orange-600" />
                   ) : n.type === "goal" ? (
-                    <DollarSign size={18} className="text-green-600" />
+                    <DollarSign className="w-4 h-4 md:w-5 md:h-5 text-green-600" />
                   ) : n.type === "transaction" ? (
-                    <CreditCard size={18} className="text-blue-600" />
+                    <CreditCard className="w-4 h-4 md:w-5 md:h-5 text-blue-600" />
                   ) : (
-                    <Bell size={18} className="text-gray-600" />
+                    <Bell className="w-4 h-4 md:w-5 md:h-5 text-gray-600" />
                   )}
                 </div>
 
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-2">
+                <div className="flex-1 min-w-0 pr-8 sm:pr-0">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1 sm:gap-2">
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
                         <p
-                          className={`text-sm ${!n.isRead ? "font-semibold text-gray-900" : "font-medium text-gray-700"}`}
+                          className={`text-sm md:text-base line-clamp-1 ${!n.isRead ? "font-semibold text-gray-900" : "font-medium text-gray-700"}`}
                         >
                           {n.title}
                         </p>
                         {!n.isRead && (
-                          <span className="w-2 h-2 rounded-full bg-indigo-500 flex-shrink-0" />
+                          <span className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-indigo-500 flex-shrink-0 inline-block align-middle" />
                         )}
                       </div>
-                      <p className="text-sm text-gray-500 mt-0.5">
+                      <p className="text-xs md:text-sm text-gray-500 mt-0.5 line-clamp-2 md:line-clamp-none">
                         {n.message}
                       </p>
-                      <p className="text-xs text-gray-400 mt-1">
+                      <p className="text-[10px] md:text-xs text-gray-400 mt-1 md:mt-1.5">
                         {timeAgo(n.createdAt)}
                       </p>
                     </div>
 
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                    <div className="absolute top-2 right-2 sm:relative sm:top-0 sm:right-0 flex items-center gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex-shrink-0">
                       {!n.isRead && (
                         <button
                           title="Mark as read"
                           onClick={() => markAsRead.mutate(n._id)}
-                          className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                          className="p-1.5 sm:p-2 text-indigo-400 sm:text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
                         >
-                          <CheckCheck size={16} />
+                          <CheckCheck size={18} className="sm:w-4 sm:h-4 w-5 h-5" />
                         </button>
                       )}
                       <button
                         title="Delete"
                         onClick={() => deleteNotification.mutate(n._id)}
-                        className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        className="p-1.5 sm:p-2 text-red-400 sm:text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                       >
-                        <Trash2 size={16} />
+                        <Trash2 size={18} className="sm:w-4 sm:h-4 w-5 h-5" />
                       </button>
                     </div>
                   </div>
@@ -245,27 +245,29 @@ export default function NotificationsPage() {
 
       {/* Pagination */}
       {pagination && pagination.totalPages > 1 && (
-        <div className="flex items-center justify-between bg-white rounded-xl border border-gray-100 px-4 py-3">
-          <p className="text-sm text-gray-600">
+        <div className="flex flex-col sm:flex-row items-center justify-between bg-white rounded-xl border border-gray-100 px-3 md:px-4 py-3 gap-3">
+          <p className="text-xs md:text-sm text-gray-600 order-2 sm:order-1">
             Page {pagination.page} of {pagination.totalPages} ·{" "}
             {pagination.total} total
           </p>
-          <div className="flex gap-2">
+          <div className="flex gap-2 order-1 sm:order-2 w-full sm:w-auto justify-between sm:justify-end">
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page <= 1}
-              className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="p-2 md:p-2 bg-gray-50 sm:bg-transparent rounded-lg hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
-              <ChevronLeft size={18} />
+              <ChevronLeft size={18} className="hidden sm:block" />
+              <span className="sm:hidden text-sm font-medium px-2 py-0.5">Previous</span>
             </button>
             <button
               onClick={() =>
                 setPage((p) => Math.min(pagination.totalPages, p + 1))
               }
               disabled={page >= pagination.totalPages}
-              className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="p-2 md:p-2 bg-gray-50 sm:bg-transparent rounded-lg hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
-              <ChevronRight size={18} />
+              <ChevronRight size={18} className="hidden sm:block" />
+              <span className="sm:hidden text-sm font-medium px-2 py-0.5">Next</span>
             </button>
           </div>
         </div>

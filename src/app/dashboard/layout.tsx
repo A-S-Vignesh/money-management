@@ -420,7 +420,7 @@ export default function DashboardLayout({
 
               {/* Notification Dropdown Menu */}
               {isNotifOpen && (
-                <div className="absolute right-0 mt-2 w-96 bg-white rounded-2xl shadow-xl overflow-hidden z-50 border border-gray-200">
+                <div className="fixed inset-x-4 top-20 sm:absolute sm:inset-auto sm:right-0 sm:top-10 sm:mt-2 w-auto sm:w-96 bg-white rounded-xl sm:rounded-2xl shadow-xl overflow-hidden z-[100] border border-gray-200">
                   <div className="p-4 border-b border-gray-100 flex justify-between items-center">
                     <div>
                       <h3 className="font-semibold text-gray-900">
