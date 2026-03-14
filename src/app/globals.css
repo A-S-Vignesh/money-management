@@ -1,7 +1,6 @@
 @import "tailwindcss";
 
 body, html {
-  overflow-x: hidden;
   /* Native app feel optimizations */
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior-y: none; /* Prevent pull-to-refresh bounce */

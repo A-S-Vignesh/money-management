@@ -17,10 +17,10 @@ export default function LayoutWrapper({
    const hideLayout = isDashboard || isLogin;
 
   return (
-    <>
+    <div className="relative overflow-x-hidden w-full">
       {!isDashboard && !isLogin && <Navbar />}
       {children}
       {!isDashboard && !isLogin && <Footer />}
-    </>
+    </div>
   );
 }
