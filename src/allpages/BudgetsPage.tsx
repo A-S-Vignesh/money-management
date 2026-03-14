@@ -236,7 +236,7 @@ export default function BudgetsPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
         {isLoading ? (
           <>
             <CardSkeleton />
@@ -246,30 +246,30 @@ export default function BudgetsPage() {
           </>
         ) : (
           <>
-            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-              <p className="text-gray-500 text-sm">Total Budget</p>
-              <p className="text-xl font-bold">
+            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-center">
+              <p className="text-gray-500 text-xs md:text-sm mb-1">Total Budget</p>
+              <p className="text-lg md:text-xl font-bold truncate">
                 {formatCurrency(totalAllocated)}
               </p>
             </div>
 
-            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-              <p className="text-gray-500 text-sm">Amount Spent</p>
-              <p className="text-xl font-bold text-red-600">
+            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-center">
+              <p className="text-gray-500 text-xs md:text-sm mb-1">Amount Spent</p>
+              <p className="text-lg md:text-xl font-bold text-red-600 truncate">
                 {formatCurrency(totalSpent)}
               </p>
             </div>
 
-            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-              <p className="text-gray-500 text-sm">Amount Remaining</p>
-              <p className="text-xl font-bold text-green-600">
+            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-center">
+              <p className="text-gray-500 text-xs md:text-sm mb-1">Amount Remaining</p>
+              <p className="text-lg md:text-xl font-bold text-green-600 truncate">
                 {formatCurrency(remaining)}
               </p>
             </div>
 
-            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-              <p className="text-gray-500 text-sm">Utilization</p>
-              <p className="text-xl font-bold">{utilization.toFixed(1)}%</p>
+            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-center">
+              <p className="text-gray-500 text-xs md:text-sm mb-1">Utilization</p>
+              <p className="text-lg md:text-xl font-bold truncate">{utilization.toFixed(1)}%</p>
             </div>
           </>
         )}
@@ -469,7 +469,7 @@ export default function BudgetsPage() {
         {/* Table */}
         {!budgetsLoading && !budgetsError && (
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full hidden md:table">
               <thead className="bg-gray-50">
                 <tr>
                   <th className="py-3 px-6 text-left text-sm font-medium text-gray-500">
@@ -652,6 +652,135 @@ export default function BudgetsPage() {
               </tbody>
             </table>
 
+            {/* Mobile List View */}
+            {sortedBudgets.length > 0 && (
+              <div className="md:hidden divide-y divide-gray-50">
+                {sortedBudgets.map((budget) => {
+                  const startDate = budget.startDate
+                    ? new Date(budget.startDate)
+                    : null;
+                  const endDate = budget.endDate
+                    ? new Date(budget.endDate)
+                    : null;
+
+                  const budgetTransactions = transactions.filter((tx) => {
+                    if (!startDate || !endDate) return false;
+                    return (
+                      tx.category === budget.category &&
+                      tx.type === "expense" &&
+                      new Date(tx.date) >= startDate &&
+                      new Date(tx.date) <= endDate
+                    );
+                  });
+
+                  const spent = budgetTransactions.reduce(
+                    (acc, tx) => acc + tx.amount,
+                    0,
+                  );
+
+                  const progress = (spent / budget.allocated) * 100;
+                  const isOverBudget = progress > 100;
+                  const budgetRemaining = budget.allocated - spent;
+
+                  const Icon = categoryMap[budget.category]?.icon || DollarSign;
+
+                  return (
+                    <div key={budget._id} className="p-4 bg-white">
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="flex items-center gap-3">
+                           <div className={`p-2.5 rounded-xl flex-shrink-0 ${categoryMap[budget.category]?.color?.replace("text", "bg").replace("bg-", "bg-opacity-20 ") || "bg-gray-100"}`}>
+                              <Icon className={categoryMap[budget.category]?.color || "text-gray-500"} size={20} />
+                           </div>
+                           <div>
+                             <h4 className="text-sm font-semibold text-gray-900 leading-tight mb-1">{budget.name}</h4>
+                             <span
+                                className={`text-[10px] px-2 py-0.5 rounded flex-shrink-0 ${
+                                  categoryMap[budget.category]?.color ||
+                                  "bg-gray-100 text-gray-700"
+                                }`}
+                              >
+                                {budget.category}
+                              </span>
+                           </div>
+                        </div>
+
+                        <div className="flex gap-3">
+                          <button
+                            className="text-gray-400 hover:text-gray-700"
+                            onClick={() => {
+                              setEditBudget(budget);
+                              setShowForm(true);
+                              setFormErrors({});
+                            }}
+                          >
+                            <Edit size={16} />
+                          </button>
+                          <button
+                            className="text-gray-400 hover:text-red-500 disabled:opacity-50"
+                            onClick={() => budget._id && handleDelete(budget._id)}
+                            disabled={deleteMutation.isPending}
+                          >
+                            {deleteMutation.isPending ? (
+                              <Loader2 size={16} className="animate-spin" />
+                            ) : (
+                              <Trash2 size={16} />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Progress Information */}
+                      <div className="mb-2">
+                        <div className="flex justify-between text-xs mb-1.5">
+                          <span className="text-gray-500">
+                             Spent: <span className="font-medium text-gray-900">{formatCurrency(spent)}</span>
+                          </span>
+                           <span className="text-gray-500">
+                             Total: <span className="font-medium text-gray-900">{formatCurrency(budget.allocated)}</span>
+                          </span>
+                        </div>
+                         
+                        <div className="w-full bg-gray-100 rounded-full h-2 mb-1.5 overflow-hidden">
+                          <div
+                            className={`h-full rounded-full ${
+                              isOverBudget
+                                ? "bg-red-500"
+                                : progress > 80
+                                  ? "bg-amber-500"
+                                  : "bg-green-500"
+                            }`}
+                            style={{
+                              width: `${Math.min(progress, 100)}%`,
+                            }}
+                          ></div>
+                        </div>
+                        
+                        <div className="flex justify-between text-[11px]">
+                           <span className={`font-medium ${budgetRemaining >= 0 ? "text-green-600" : "text-red-600"}`}>
+                             {budgetRemaining >= 0 ? `${formatCurrency(budgetRemaining)} left` : `${formatCurrency(Math.abs(budgetRemaining))} over`}
+                           </span>
+                           <span className="text-gray-400 capitalize">{budget.period}</span>
+                        </div>
+                      </div>
+
+                       {/* Date Range Footer */}
+                       {startDate && endDate && (
+                          <div className="mt-3 pt-3 border-t border-gray-50 flex justify-between text-[10px] text-gray-400">
+                            <span>
+                              Start: {startDate.toLocaleDateString("en-IN", { day: '2-digit', month: 'short' })}
+                            </span>
+                            <span>
+                               End: {endDate.toLocaleDateString("en-IN", { day: '2-digit', month: 'short' })}
+                            </span>
+                          </div>
+                       )}
+
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
             {sortedBudgets.length === 0 && (
               <div className="py-12 text-center">
                 <div className="flex flex-col items-center justify-center">
@@ -696,7 +825,7 @@ export default function BudgetsPage() {
                 <ChevronLeft size={14} />
                 Previous
               </button>
-              <span className="px-3 py-1.5 text-sm font-medium text-gray-700">
+              <span className="px-2 md:px-3 py-1.5 text-xs md:text-sm font-medium text-gray-700">
                 Page {pagination.page} of {pagination.totalPages}
               </span>
               <button
@@ -715,8 +844,8 @@ export default function BudgetsPage() {
       </div>
 
       {/* Budget Tips */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-blue-50 p-5 rounded-xl border border-blue-100">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mt-6 md:mt-0">
+        <div className="bg-blue-50 p-4 md:p-5 rounded-xl border border-blue-100">
           <div className="flex items-start mb-3">
             <div className="bg-blue-100 p-2 rounded-lg mr-3">
               <TrendingUp className="text-blue-600" size={20} />
@@ -758,59 +887,60 @@ export default function BudgetsPage() {
 
       {/* ─── Create/Edit Budget Modal ────────────────────── */}
       {showForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl w-full max-w-md">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold">
-                  {editBudget ? "Edit Budget" : "Create New Budget"}
-                </h2>
-                <button
-                  onClick={() => {
-                    setShowForm(false);
-                    setEditBudget(null);
-                    setFormErrors({});
-                  }}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  ✕
-                </button>
-              </div>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center z-[100] md:p-4">
+          <div className="bg-white rounded-t-[2rem] md:rounded-2xl w-full max-w-md shadow-2xl animate-slide-up md:animate-none flex flex-col max-h-[90vh]">
+            <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mt-4 mb-2 md:hidden"></div>
+            
+            <div className="flex justify-between items-center px-6 pt-2 md:pt-6 pb-4 border-b border-gray-100">
+              <h2 className="text-xl font-bold text-gray-900">
+                {editBudget ? "Edit Budget" : "Create Budget"}
+              </h2>
+              <button
+                onClick={() => {
+                  setShowForm(false);
+                  setEditBudget(null);
+                  setFormErrors({});
+                }}
+                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                ✕
+              </button>
+            </div>
 
-              <form onSubmit={handleSubmit}>
-                <div className="space-y-4">
-                  {/* Budget Name */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Budget Name
-                    </label>
-                    <input
-                      type="text"
-                      name="name"
-                      defaultValue={editBudget?.name || ""}
-                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
-                        formErrors.name
-                          ? "border-red-300 bg-red-50"
-                          : "border-gray-300"
-                      }`}
-                      placeholder="e.g. Groceries, Rent"
-                    />
-                    {formErrors.name && (
-                      <p className="mt-1 text-sm text-red-600">
-                        {formErrors.name[0]}
+            <div className="overflow-y-auto p-6 pb-24 md:pb-6 custom-scrollbar">
+              <form onSubmit={handleSubmit} className="space-y-5">
+                {/* Budget Name */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                    Budget Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    defaultValue={editBudget?.name || ""}
+                    className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
+                      formErrors.name
+                        ? "border-red-300 bg-red-50"
+                        : "border-gray-300 bg-white"
+                    }`}
+                    placeholder="e.g. Groceries, Rent"
+                  />
+                  {formErrors.name && (
+                    <p className="mt-1.5 text-xs text-red-600">
+                      {formErrors.name[0]}
                       </p>
                     )}
                   </div>
 
                   {/* Category */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Category
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                      Category <span className="text-red-500">*</span>
                     </label>
                     <select
                       name="category"
                       defaultValue={editBudget?.category || ""}
-                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+                      className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white transition-colors ${
                         formErrors.category
                           ? "border-red-300 bg-red-50"
                           : "border-gray-300"
@@ -826,7 +956,7 @@ export default function BudgetsPage() {
                         ))}
                     </select>
                     {formErrors.category && (
-                      <p className="mt-1 text-sm text-red-600">
+                      <p className="mt-1.5 text-xs text-red-600">
                         {formErrors.category[0]}
                       </p>
                     )}
@@ -834,13 +964,13 @@ export default function BudgetsPage() {
 
                   {/* Period */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Budget Period
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                      Budget Period <span className="text-red-500">*</span>
                     </label>
                     <select
                       name="period"
                       defaultValue={editBudget?.period || "Monthly"}
-                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+                      className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white transition-colors ${
                         formErrors.period
                           ? "border-red-300 bg-red-50"
                           : "border-gray-300"
@@ -852,7 +982,7 @@ export default function BudgetsPage() {
                       <option value="Yearly">Yearly</option>
                     </select>
                     {formErrors.period && (
-                      <p className="mt-1 text-sm text-red-600">
+                      <p className="mt-1.5 text-xs text-red-600">
                         {formErrors.period[0]}
                       </p>
                     )}
@@ -860,30 +990,29 @@ export default function BudgetsPage() {
 
                   {/* Allocated */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Allocated Amount (₹)
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                      Allocated Amount (₹) <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="number"
                       name="allocated"
                       defaultValue={editBudget?.allocated || ""}
-                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+                      className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
                         formErrors.allocated
                           ? "border-red-300 bg-red-50"
-                          : "border-gray-300"
+                          : "border-gray-300 bg-white"
                       }`}
                       placeholder="0"
                       min="0"
                     />
                     {formErrors.allocated && (
-                      <p className="mt-1 text-sm text-red-600">
+                      <p className="mt-1.5 text-xs text-red-600">
                         {formErrors.allocated[0]}
                       </p>
                     )}
-                  </div>
                 </div>
 
-                <div className="mt-6 flex justify-end gap-3">
+                <div className="flex gap-3 pt-6 mt-6 border-t border-gray-100">
                   <button
                     type="button"
                     onClick={() => {
@@ -891,14 +1020,14 @@ export default function BudgetsPage() {
                       setEditBudget(null);
                       setFormErrors({});
                     }}
-                    className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+                    className="flex-1 px-4 py-3 md:py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-50 font-medium cursor-pointer"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={isMutating}
-                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 flex items-center gap-2"
+                    className="flex-1 px-4 py-3 md:py-2.5 bg-indigo-600 text-white text-sm rounded-xl font-medium hover:bg-indigo-700 disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer transition-colors"
                   >
                     {isMutating && (
                       <Loader2 size={16} className="animate-spin" />

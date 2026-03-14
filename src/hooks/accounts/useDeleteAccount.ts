@@ -20,6 +20,7 @@ export function useDeleteAccount() {
     mutationFn: deleteAccount,
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["accounts"] });
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
       showToast(
         data.message || "Account deleted successfully",
         data.type || "success",

@@ -315,7 +315,7 @@ export default function BalancePage() {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="hidden md:flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Balance Overview</h1>
           <p className="text-gray-600">Your complete financial position</p>
@@ -323,7 +323,7 @@ export default function BalancePage() {
       </div>
 
       {/* Financial Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
         {accountsLoading || transactionsLoading ? (
           <>
             <CardSkeleton />
@@ -334,22 +334,22 @@ export default function BalancePage() {
         ) : (
           <>
             {/* Net Worth Card */}
-            <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-              <div className="flex items-center mb-4">
-                <div className="bg-blue-100 p-3 rounded-lg mr-4">
-                  <TrendingUp className="text-blue-600" size={20} />
+            <div className="bg-white p-4 md:p-5 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-center">
+              <div className="flex items-center mb-2 md:mb-4">
+                <div className="bg-blue-100 p-2 md:p-3 rounded-lg mr-2 md:mr-4">
+                  <TrendingUp className="text-blue-600 w-4 h-4 md:w-5 md:h-5" />
                 </div>
-                <div>
-                  <h3 className="text-gray-500 text-sm font-medium">
+                <div className="min-w-0">
+                  <h3 className="text-gray-500 text-xs md:text-sm font-medium truncate">
                     Net Worth
                   </h3>
-                  <p className="text-2xl font-bold">
+                  <p className="text-base md:text-2xl font-bold truncate">
                     {formatCurrency(netWorth)}
                   </p>
                 </div>
               </div>
               <div
-                className={`text-sm ${
+                className={`text-[10px] md:text-sm truncate ${
                   netWorth >= 0 ? "text-green-600" : "text-red-600"
                 }`}
               >
@@ -358,66 +358,65 @@ export default function BalancePage() {
             </div>
 
             {/* Total Assets Card */}
-            <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-              <div className="flex items-center mb-4">
-                <div className="bg-green-100 p-3 rounded-lg mr-4">
-                  <ArrowUpRight className="text-green-600" size={20} />
+            <div className="bg-white p-4 md:p-5 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-center">
+              <div className="flex items-center mb-2 md:mb-4">
+                <div className="bg-green-100 p-2 md:p-3 rounded-lg mr-2 md:mr-4">
+                  <ArrowUpRight className="text-green-600 w-4 h-4 md:w-5 md:h-5" />
                 </div>
-                <div>
-                  <h3 className="text-gray-500 text-sm font-medium">
+                <div className="min-w-0">
+                  <h3 className="text-gray-500 text-xs md:text-sm font-medium truncate">
                     Total Assets
                   </h3>
-                  <p className="text-2xl font-bold text-green-600">
+                  <p className="text-base md:text-2xl font-bold text-green-600 truncate">
                     {formatCurrency(totalAssets)}
                   </p>
                 </div>
               </div>
-              <div className="text-sm text-green-600">
+              <div className="text-[10px] md:text-sm text-green-600 truncate">
                 ▲ 3.8% from last month
               </div>
             </div>
 
             {/* Total Liabilities Card */}
-            <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-              <div className="flex items-center mb-4">
-                <div className="bg-red-100 p-3 rounded-lg mr-4">
-                  <ArrowDownRight className="text-red-600" size={20} />
+            <div className="bg-white p-4 md:p-5 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-center">
+              <div className="flex items-center mb-2 md:mb-4">
+                <div className="bg-red-100 p-2 md:p-3 rounded-lg mr-2 md:mr-4">
+                  <ArrowDownRight className="text-red-600 w-4 h-4 md:w-5 md:h-5" />
                 </div>
-                <div>
-                  <h3 className="text-gray-500 text-sm font-medium">
+                <div className="min-w-0">
+                  <h3 className="text-gray-500 text-xs md:text-sm font-medium truncate">
                     Total Liabilities
                   </h3>
-                  <p className="text-2xl font-bold text-red-600">
+                  <p className="text-base md:text-2xl font-bold text-red-600 truncate">
                     {formatCurrency(totalLiabilities)}
                   </p>
                 </div>
               </div>
-              <div className="text-sm text-green-600">
+              <div className="text-[10px] md:text-sm text-green-600 truncate">
                 ▼ 2.1% from last month
               </div>
             </div>
 
             {/* Cash Flow Card */}
-            <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-              <div className="flex items-center mb-4">
+            <div className="bg-white p-4 md:p-5 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-center">
+              <div className="flex items-center mb-2 md:mb-4">
                 <div
-                  className={`p-3 rounded-lg mr-4 ${
+                  className={`p-2 md:p-3 rounded-lg mr-2 md:mr-4 ${
                     isPositiveCashFlow ? "bg-green-100" : "bg-red-100"
                   }`}
                 >
                   <DollarSign
-                    className={
+                    className={`w-4 h-4 md:w-5 md:h-5 ${
                       isPositiveCashFlow ? "text-green-600" : "text-red-600"
-                    }
-                    size={20}
+                    }`}
                   />
                 </div>
-                <div>
-                  <h3 className="text-gray-500 text-sm font-medium">
+                <div className="min-w-0">
+                  <h3 className="text-gray-500 text-xs md:text-sm font-medium truncate">
                     Cash Flow
                   </h3>
                   <p
-                    className={`text-2xl font-bold ${
+                    className={`text-base md:text-2xl font-bold truncate ${
                       isPositiveCashFlow ? "text-green-600" : "text-red-600"
                     }`}
                   >
@@ -427,7 +426,7 @@ export default function BalancePage() {
                 </div>
               </div>
               <div
-                className={`text-sm ${
+                className={`text-[10px] md:text-sm truncate ${
                   isPositiveCashFlow ? "text-green-600" : "text-red-600"
                 }`}
               >
@@ -531,7 +530,7 @@ export default function BalancePage() {
               className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors"
             >
               <Plus size={16} />
-              <span>Add Account</span>
+              <span>Add</span>
             </button>
 
             <ExportCSVButton
@@ -563,7 +562,8 @@ export default function BalancePage() {
         {/* Accounts Table */}
         {!accountsLoading && !accountsError && (
           <div className="overflow-x-auto">
-            <table className="w-full">
+            {/* Desktop Table View */}
+            <table className="w-full hidden md:table">
               <thead className="bg-gray-50">
                 <tr>
                   <th className="py-3 px-6 text-left text-sm font-medium text-gray-500">
@@ -679,6 +679,102 @@ export default function BalancePage() {
               </tbody>
             </table>
 
+            {/* Mobile List View */}
+            {accounts.length > 0 && (
+              <div className="md:hidden divide-y divide-gray-50 border-t border-gray-100">
+                {accounts.map((account) => (
+                  <div key={account._id} className="p-4 bg-white">
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`p-2.5 rounded-xl flex-shrink-0 ${
+                            account.type === "bank"
+                              ? "bg-blue-100 text-blue-800"
+                              : account.type === "investment"
+                                ? "bg-green-100 text-green-800"
+                                : account.type === "credit"
+                                  ? "bg-red-100 text-red-800"
+                                  : "bg-yellow-100 text-yellow-800"
+                          }`}
+                        >
+                          {account.type === "bank" ? (
+                            <Wallet size={18} />
+                          ) : account.type === "investment" ? (
+                            <TrendingUp size={18} />
+                          ) : account.type === "credit" ? (
+                            <CreditCard size={18} />
+                          ) : (
+                            <DollarSign size={18} />
+                          )}
+                        </div>
+                        <div className="min-w-0 pr-2">
+                          <div className="font-medium text-gray-900 text-sm truncate">
+                            {account.name}
+                          </div>
+                          <div className="text-[11px] text-gray-500 capitalize mt-0.5 truncate">
+                            {account.type} •••• 1234
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <div
+                          className={`font-semibold text-sm ${
+                            account.balance >= 0 ? "text-green-600" : "text-red-600"
+                          }`}
+                        >
+                          {formatCurrency(account.balance)}
+                        </div>
+                        <div className="text-[10px] text-gray-400 mt-1">
+                          {new Date(account.updatedAt).toLocaleDateString("en-GB")}
+                        </div>
+                      </div>
+                    </div>
+                    {/* Actions */}
+                    <div className="flex justify-end pt-3 mt-1 border-t border-gray-50">
+                      {account.type === "system" ? (
+                        <span className="text-[11px] text-gray-400 italic">
+                          System account
+                        </span>
+                      ) : account.type === "goal" ? (
+                        <Link
+                          href="/dashboard/goals"
+                          className="text-[12px] text-blue-500 font-medium"
+                        >
+                          Go to Goals
+                        </Link>
+                      ) : account.type === "investment" ? (
+                        <Link
+                          href="/dashboard/investments"
+                          className="text-[12px] text-blue-500 font-medium"
+                        >
+                          Go to Investments
+                        </Link>
+                      ) : (
+                        <div className="flex gap-4">
+                          <button
+                            className="text-gray-500 flex items-center gap-1.5 hover:text-gray-700 text-[12px] font-medium"
+                            onClick={() => {
+                              setEditAccount(account);
+                              setShowEditForm(true);
+                              setFormErrors({});
+                            }}
+                          >
+                            <Edit size={14} /> Edit
+                          </button>
+                          <button
+                            className="text-red-500 flex items-center gap-1.5 hover:text-red-700 text-[12px] font-medium"
+                            onClick={() => setAccountToDelete(account._id)}
+                          >
+                            <Trash2 size={14} /> Delete
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
             {/* Empty State */}
             {accounts.length === 0 && (
               <div className="px-6 py-12 text-center">
@@ -751,7 +847,9 @@ export default function BalancePage() {
           {transactionsLoading ? (
             <TableSkeleton />
           ) : (
-            <table className="w-full">
+            <>
+            {/* Desktop Table View */}
+            <table className="w-full hidden md:table">
               <thead className="bg-gray-50">
                 <tr>
                   <th className="py-3 px-6 text-left text-sm font-medium text-gray-500">
@@ -823,29 +921,76 @@ export default function BalancePage() {
                   ))}
               </tbody>
             </table>
+
+            {/* Mobile List View */}
+            <div className="md:hidden divide-y divide-gray-50 border-t border-gray-100">
+              {[...transactions]
+                .sort(
+                  (a, b) =>
+                    new Date(b.date).getTime() - new Date(a.date).getTime(),
+                )
+                .slice(0, 5)
+                .map((transaction) => (
+                  <div key={transaction._id} className="p-4 bg-white flex justify-between items-center">
+                    <div className="flex items-center gap-3 min-w-0 pr-4">
+                      <div
+                        className={`p-2.5 rounded-xl flex-shrink-0 ${
+                          transaction.type === "income"
+                            ? "bg-green-100 text-green-600"
+                            : "bg-red-100 text-red-600"
+                        }`}
+                      >
+                        {transaction.type === "income" ? (
+                          <ArrowUpRight size={16} />
+                        ) : (
+                          <ArrowDownRight size={16} />
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-gray-900 leading-tight truncate">
+                          {transaction.description || "No description"}
+                        </p>
+                        <p className="text-[11px] text-gray-500 mt-1 truncate">
+                          {transaction.category} • {new Date(transaction.date).toLocaleDateString("en-GB")}
+                        </p>
+                      </div>
+                    </div>
+                    <div
+                      className={`font-semibold text-sm flex-shrink-0 ${
+                        transaction.type === "income" ? "text-green-600" : "text-red-600"
+                      }`}
+                    >
+                      {transaction.type === "income" ? "+" : "-"}
+                      {formatCurrency(transaction.amount)}
+                    </div>
+                  </div>
+                ))}
+            </div>
+            </>
           )}
         </div>
       </div>
 
       {/* ─── Add Account Modal ─────────────────────────────────────── */}
       {showAddForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl w-full max-w-md">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold">Add Account</h2>
-                <button
-                  onClick={() => {
-                    setShowAddForm(false);
-                    setFormErrors({});
-                  }}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  ✕
-                </button>
-              </div>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center z-[100] md:p-4">
+          <div className="bg-white w-full md:max-w-md rounded-t-[2rem] md:rounded-2xl shadow-2xl animate-slide-up md:animate-none flex flex-col max-h-[90vh]">
+            <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mt-4 mb-2 md:hidden"></div>
+            <div className="flex justify-between items-center px-6 pt-2 md:pt-6 pb-4 border-b border-gray-100">
+              <h2 className="text-xl font-bold">Add Account</h2>
+              <button
+                onClick={() => {
+                  setShowAddForm(false);
+                  setFormErrors({});
+                }}
+                className="text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-100"
+              >
+                ✕
+              </button>
+            </div>
 
-              <form onSubmit={handleAddAccount}>
+            <div className="overflow-y-auto overscroll-contain no-scrollbar pb-safe">
+              <form onSubmit={handleAddAccount} className="p-6">
                 <div className="space-y-4">
                   {/* Account Name */}
                   <div>
@@ -855,7 +1000,7 @@ export default function BalancePage() {
                     <input
                       type="text"
                       name="name"
-                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+                      className={`w-full px-4 py-2 border rounded-xl text-base md:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
                         formErrors.name
                           ? "border-red-300 bg-red-50"
                           : "border-gray-300"
@@ -877,7 +1022,7 @@ export default function BalancePage() {
                     <select
                       name="type"
                       defaultValue=""
-                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+                      className={`w-full px-4 py-2 border rounded-xl text-base md:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
                         formErrors.type
                           ? "border-red-300 bg-red-50"
                           : "border-gray-300"
@@ -905,7 +1050,7 @@ export default function BalancePage() {
                   <input
                     type="number"
                     name="balance"
-                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+                    className={`w-full px-4 py-2 border rounded-xl text-base md:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
                       formErrors.balance
                         ? "border-red-300 bg-red-50"
                         : "border-gray-300"
@@ -920,21 +1065,21 @@ export default function BalancePage() {
                     </p>
                   )}
                 </div>
-                <div className="mt-6 flex justify-end gap-3">
+                <div className="mt-8 flex gap-3">
                   <button
                     type="button"
                     onClick={() => {
                       setShowAddForm(false);
                       setFormErrors({});
                     }}
-                    className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+                    className="flex-1 px-4 py-3 md:py-2 text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-50 font-medium"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={addAccountMutation.isPending}
-                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 flex items-center gap-2"
+                    className="flex-1 px-4 py-3 md:py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 disabled:opacity-50 flex items-center justify-center gap-2 font-medium"
                   >
                     {addAccountMutation.isPending && (
                       <Loader2 size={16} className="animate-spin" />
@@ -950,24 +1095,25 @@ export default function BalancePage() {
 
       {/* ─── Edit Account Modal ────────────────────────────────────── */}
       {showEditForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl w-full max-w-md">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold">Edit Account</h2>
-                <button
-                  onClick={() => {
-                    setShowEditForm(false);
-                    setEditAccount(null);
-                    setFormErrors({});
-                  }}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  ✕
-                </button>
-              </div>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center z-[100] md:p-4">
+          <div className="bg-white w-full md:max-w-md rounded-t-[2rem] md:rounded-2xl shadow-2xl animate-slide-up md:animate-none flex flex-col max-h-[90vh]">
+            <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mt-4 mb-2 md:hidden"></div>
+            <div className="flex justify-between items-center px-6 pt-2 md:pt-6 pb-4 border-b border-gray-100">
+              <h2 className="text-xl font-bold">Edit Account</h2>
+              <button
+                onClick={() => {
+                  setShowEditForm(false);
+                  setEditAccount(null);
+                  setFormErrors({});
+                }}
+                className="text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-100"
+              >
+                ✕
+              </button>
+            </div>
 
-              <form onSubmit={handleEditAccount}>
+            <div className="overflow-y-auto overscroll-contain no-scrollbar pb-safe">
+              <form onSubmit={handleEditAccount} className="p-6">
                 <div className="space-y-4">
                   {/* Account Name */}
                   <div>
@@ -978,7 +1124,7 @@ export default function BalancePage() {
                       type="text"
                       name="name"
                       defaultValue={editAccount?.name || ""}
-                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+                      className={`w-full px-4 py-2 border rounded-xl text-base md:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
                         formErrors.name
                           ? "border-red-300 bg-red-50"
                           : "border-gray-300"
@@ -1000,7 +1146,7 @@ export default function BalancePage() {
                     <select
                       name="type"
                       defaultValue={editAccount?.type || ""}
-                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+                      className={`w-full px-4 py-2 border rounded-xl text-base md:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
                         formErrors.type
                           ? "border-red-300 bg-red-50"
                           : "border-gray-300"
@@ -1019,19 +1165,19 @@ export default function BalancePage() {
                   </div>
                 </div>
                   {/* Balance — read-only, derived from transactions */}
-                  <div className="mt-4 p-3 rounded-lg bg-gray-50 border border-gray-200">
+                  <div className="mt-4 p-4 rounded-xl bg-gray-50 border border-gray-200">
                     <p className="text-xs text-gray-500 mb-1">Current Balance</p>
-                    <p className="text-lg font-semibold text-gray-800">
+                    <p className="text-xl font-semibold text-gray-800">
                       {new Intl.NumberFormat("en-IN", {
                         style: "currency",
                         currency: "INR",
                       }).format(editAccount?.balance ?? 0)}
                     </p>
-                    <p className="text-xs text-gray-400 mt-1">
+                    <p className="text-xs text-gray-400 mt-2">
                       Balance is calculated from your transactions and cannot be edited directly.
                     </p>
                   </div>
-                <div className="mt-6 flex justify-end gap-3">
+                <div className="mt-8 flex gap-3">
                   <button
                     type="button"
                     onClick={() => {
@@ -1039,14 +1185,14 @@ export default function BalancePage() {
                       setEditAccount(null);
                       setFormErrors({});
                     }}
-                    className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+                    className="flex-1 px-4 py-3 md:py-2 text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-50 font-medium"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={updateAccountMutation.isPending}
-                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 flex items-center gap-2"
+                    className="flex-1 px-4 py-3 md:py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 disabled:opacity-50 flex items-center justify-center gap-2 font-medium"
                   >
                     {updateAccountMutation.isPending && (
                       <Loader2 size={16} className="animate-spin" />

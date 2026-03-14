@@ -2,15 +2,16 @@ import { create } from "zustand";
 
 type ToastType = "info" | "success" | "error" | "warning";
 
-interface Toast {
+interface ToastItem {
   id: number;
   message: string;
   type: ToastType;
 }
 
 interface ToastStore {
-  toasts: Toast[];
+  toasts: ToastItem[];
   showToast: (message: string, type?: ToastType) => void;
+  removeToast: (id: number) => void;
 }
 
 export const useToastStore = create<ToastStore>((set) => ({
@@ -18,15 +19,14 @@ export const useToastStore = create<ToastStore>((set) => ({
 
   showToast: (message, type = "info") => {
     const id = Date.now();
-
     set((state) => ({
       toasts: [...state.toasts, { id, message, type }],
     }));
+  },
 
-    setTimeout(() => {
-      set((state) => ({
-        toasts: state.toasts.filter((toast) => toast.id !== id),
-      }));
-    }, 4000);
+  removeToast: (id) => {
+    set((state) => ({
+      toasts: state.toasts.filter((t) => t.id !== id),
+    }));
   },
 }));

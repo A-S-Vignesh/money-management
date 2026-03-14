@@ -26,6 +26,7 @@ export function useAddBudget() {
     mutationFn: addBudget,
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["budgets"] });
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
       showToast(
         data.message || "Budget created successfully",
         data.type || "success",

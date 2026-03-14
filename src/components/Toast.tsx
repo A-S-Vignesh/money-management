@@ -1,43 +1,57 @@
 "use client";
 import React, { useEffect } from "react";
-import { CheckCircle, AlertTriangle, XCircle, Info } from "lucide-react";
+import { CheckCircle, AlertTriangle, XCircle, Info, X } from "lucide-react";
+
+// Using more vibrant, solid colors for high visibility
+const themeMap = {
+  success: "bg-emerald-600 border-emerald-500 text-white",
+  error: "bg-rose-600 border-rose-500 text-white",
+  warning: "bg-amber-500 border-amber-400 text-white",
+  info: "bg-sky-600 border-sky-500 text-white",
+};
 
 const iconMap = {
-  success: <CheckCircle className="text-green-500" size={20} />,
-  error: <XCircle className="text-red-500" size={20} />,
-  warning: <AlertTriangle className="text-yellow-500" size={20} />,
-  info: <Info className="text-blue-500" size={20} />,
+  success: <CheckCircle size={22} />,
+  error: <XCircle size={22} />,
+  warning: <AlertTriangle size={22} />,
+  info: <Info size={22} />,
 };
 
-const bgMap = {
-  success: "bg-green-50 border-green-200",
-  error: "bg-red-50 border-red-200",
-  warning: "bg-yellow-50 border-yellow-200",
-  info: "bg-blue-50 border-blue-200",
-};
-
-interface ToastPropsType{
-    message: string;
-    type?: "success" | "error" | "warning" | "info";
-    onClose?: () => void;
+interface ToastPropsType {
+  id: number;
+  message: string;
+  type?: "success" | "error" | "warning" | "info";
+  onClose: (id: number) => void;
 }
 
 const Toast: React.FC<ToastPropsType> = ({
+  id,
   message,
   type = "info",
   onClose,
 }) => {
   useEffect(() => {
-    const timer = setTimeout(() => onClose?.(), 4000);
+    const timer = setTimeout(() => onClose(id), 4500);
     return () => clearTimeout(timer);
-  }, [onClose]);
+  }, [id, onClose]);
 
   return (
     <div
-      className={`fixed top-5 right-5 z-50 border text-sm px-4 py-3 rounded-lg shadow-md flex items-center gap-2 transition-all duration-300 animate-slide-in ${bgMap[type]}`}
+      className={`pointer-events-auto flex items-center justify-between min-w-[300px] max-w-md p-4 rounded-xl shadow-2xl border-2 transform transition-all duration-500 animate-in fade-in slide-in-from-bottom-5 md:slide-in-from-bottom-0 md:slide-in-from-right-10 ${themeMap[type]}`}
     >
-      {iconMap[type]}
-      <span className="text-gray-800">{message}</span>
+      <div className="flex items-center gap-3">
+        <span className="shrink-0">{iconMap[type]}</span>
+        <p className="font-semibold text-sm leading-tight tracking-wide">
+          {message}
+        </p>
+      </div>
+
+      <button
+        onClick={() => onClose(id)}
+        className="ml-4 p-1 hover:bg-white/20 rounded-full transition-colors"
+      >
+        <X size={18} />
+      </button>
     </div>
   );
 };

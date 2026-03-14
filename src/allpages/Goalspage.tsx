@@ -230,7 +230,7 @@ export default function GoalsPage() {
       </div>
 
       {/* Goals Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
         {goalsLoading ? (
           <>
             <CardSkeleton />
@@ -240,74 +240,74 @@ export default function GoalsPage() {
           </>
         ) : (
           <>
-            <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-              <div className="flex items-center mb-4">
-                <div className="bg-indigo-100 p-3 rounded-lg mr-4">
-                  <Target className="text-indigo-600" size={20} />
+            <div className="bg-white p-4 md:p-5 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between">
+              <div className="flex items-center mb-2 md:mb-4">
+                <div className="bg-indigo-100 p-2 md:p-3 rounded-lg mr-3 md:mr-4">
+                  <Target className="text-indigo-600" size={18} />
                 </div>
                 <div>
-                  <h3 className="text-gray-500 text-sm font-medium">
+                  <h3 className="text-gray-500 text-[11px] md:text-sm font-medium">
                     Active Goals
                   </h3>
-                  <p className="text-2xl font-bold">
+                  <p className="text-lg md:text-2xl font-bold leading-tight">
                     {pagination?.total ?? goals.length}
                   </p>
                 </div>
               </div>
-              <div className="text-sm text-gray-600">
+              <div className="text-[10px] md:text-sm text-gray-600 truncate">
                 Working towards your dreams
               </div>
             </div>
 
-            <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-              <div className="flex items-center mb-4">
-                <div className="bg-green-100 p-3 rounded-lg mr-4">
-                  <TrendingUp className="text-green-600" size={20} />
+            <div className="bg-white p-4 md:p-5 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between">
+              <div className="flex items-center mb-2 md:mb-4">
+                <div className="bg-green-100 p-2 md:p-3 rounded-lg mr-3 md:mr-4">
+                  <TrendingUp className="text-green-600" size={18} />
                 </div>
                 <div>
-                  <h3 className="text-gray-500 text-sm font-medium">
+                  <h3 className="text-gray-500 text-[11px] md:text-sm font-medium">
                     Total Target
                   </h3>
-                  <p className="text-2xl font-bold">
+                  <p className="text-lg md:text-2xl font-bold leading-tight truncate max-w-[100px] md:max-w-none">
                     {formatCurrency(totalGoalsValue)}
                   </p>
                 </div>
               </div>
-              <div className="text-sm text-gray-600">Across all goals</div>
+              <div className="text-[10px] md:text-sm text-gray-600 truncate">Across all goals</div>
             </div>
 
-            <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-              <div className="flex items-center mb-4">
-                <div className="bg-blue-100 p-3 rounded-lg mr-4">
-                  <CircleDollarSign className="text-blue-600" size={20} />
+            <div className="bg-white p-4 md:p-5 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between">
+              <div className="flex items-center mb-2 md:mb-4">
+                <div className="bg-blue-100 p-2 md:p-3 rounded-lg mr-3 md:mr-4">
+                  <CircleDollarSign className="text-blue-600" size={18} />
                 </div>
                 <div>
-                  <h3 className="text-gray-500 text-sm font-medium">
+                  <h3 className="text-gray-500 text-[11px] md:text-sm font-medium">
                     Amount Saved
                   </h3>
-                  <p className="text-2xl font-bold text-green-600">
+                  <p className="text-lg md:text-2xl font-bold text-green-600 leading-tight truncate max-w-[100px] md:max-w-none">
                     {formatCurrency(totalSaved)}
                   </p>
                 </div>
               </div>
-              <div className="text-sm text-green-600">Keep it up!</div>
+              <div className="text-[10px] md:text-sm text-green-600 truncate">Keep it up!</div>
             </div>
 
-            <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-              <div className="flex items-center mb-4">
-                <div className="bg-amber-100 p-3 rounded-lg mr-4">
-                  <PieChart className="text-amber-600" size={20} />
+            <div className="bg-white p-4 md:p-5 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between">
+              <div className="flex items-center mb-2 md:mb-4">
+                <div className="bg-amber-100 p-2 md:p-3 rounded-lg mr-3 md:mr-4">
+                  <PieChart className="text-amber-600" size={18} />
                 </div>
                 <div>
-                  <h3 className="text-gray-500 text-sm font-medium">
+                  <h3 className="text-gray-500 text-[11px] md:text-sm font-medium">
                     Overall Progress
                   </h3>
-                  <p className="text-2xl font-bold">
+                  <p className="text-lg md:text-2xl font-bold leading-tight">
                     {overallProgress.toFixed(1)}%
                   </p>
                 </div>
               </div>
-              <div className="text-sm text-gray-600">Towards all goals</div>
+              <div className="text-[10px] md:text-sm text-gray-600 truncate">Towards all goals</div>
             </div>
           </>
         )}
@@ -423,7 +423,7 @@ export default function GoalsPage() {
 
       {/* Goals List */}
       {!goalsLoading && !goalsError && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
           {sortedGoals.length > 0 ? (
             sortedGoals.map((goal) => {
               const daysLeft = daysUntilDeadline(goal.deadline);
@@ -440,7 +440,7 @@ export default function GoalsPage() {
                   key={goal._id}
                   className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"
                 >
-                  <div className="p-6">
+                  <div className="p-4 md:p-6">
                     <div className="flex justify-between items-start mb-4">
                       <div>
                         <div className="flex items-center">
@@ -604,7 +604,7 @@ export default function GoalsPage() {
               );
             })
           ) : (
-            <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
+            <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-8 md:p-12 text-center">
               <div className="flex flex-col items-center justify-center">
                 <Target className="text-gray-400 mx-auto mb-4" size={48} />
                 <h3 className="text-xl font-medium text-gray-900 mb-2">
@@ -668,17 +668,17 @@ export default function GoalsPage() {
 
       {/* Completed Goals */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="border-b border-gray-200 px-6 py-4">
+        <div className="border-b border-gray-200 px-4 md:px-6 py-4">
           <h2 className="text-lg font-semibold text-gray-800">
             Completed Goals
           </h2>
         </div>
-        <div className="p-6">
+        <div className="p-4 md:p-6">
           {goals.filter((g) => {
             const acc = accounts.find((a) => a._id === g.accountId);
             return calculateProgress(acc?.balance || 0, g.target) >= 100;
           }).length > 0 ? (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
               {goals
                 .filter((g) => {
                   const acc = accounts.find((a) => a._id === g.accountId);
@@ -687,12 +687,12 @@ export default function GoalsPage() {
                 .map((goal) => (
                   <div
                     key={goal._id}
-                    className="border border-gray-200 rounded-lg p-5 flex items-center"
+                    className="border border-gray-200 rounded-lg p-4 md:p-5 flex items-center"
                   >
                     <div
-                      className={`w-12 h-12 ${goal.color} rounded-lg flex items-center justify-center mr-4`}
+                      className={`w-10 h-10 md:w-12 md:h-12 ${goal.color} rounded-lg flex items-center justify-center mr-3 md:mr-4 shrink-0`}
                     >
-                      <Trophy className="text-white" size={24} />
+                      <Trophy className="text-white w-5 h-5 md:w-6 md:h-6" />
                     </div>
                     <div>
                       <h3 className="font-medium text-gray-900">{goal.name}</h3>
@@ -726,8 +726,8 @@ export default function GoalsPage() {
       </div>
 
       {/* Tips Section */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-blue-50 p-5 rounded-xl border border-blue-100">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+        <div className="bg-blue-50 p-4 md:p-5 rounded-xl border border-blue-100">
           <div className="flex items-start mb-3">
             <div className="bg-blue-100 p-2 rounded-lg mr-3">
               <Target className="text-blue-600" size={20} />
@@ -740,7 +740,7 @@ export default function GoalsPage() {
           </p>
         </div>
 
-        <div className="bg-green-50 p-5 rounded-xl border border-green-100">
+        <div className="bg-green-50 p-4 md:p-5 rounded-xl border border-green-100">
           <div className="flex items-start mb-3">
             <div className="bg-green-100 p-2 rounded-lg mr-3">
               <TrendingUp className="text-green-600" size={20} />
@@ -753,7 +753,7 @@ export default function GoalsPage() {
           </p>
         </div>
 
-        <div className="bg-purple-50 p-5 rounded-xl border border-purple-100">
+        <div className="bg-purple-50 p-4 md:p-5 rounded-xl border border-purple-100">
           <div className="flex items-start mb-3">
             <div className="bg-purple-100 p-2 rounded-lg mr-3">
               <DollarSign className="text-purple-600" size={20} />
@@ -769,84 +769,85 @@ export default function GoalsPage() {
 
       {/* ─── Create/Edit Goal Modal ──────────────────────── */}
       {showForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl w-full max-w-md">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold">
-                  {editGoal ? "Edit Goal" : "Create New Goal"}
-                </h2>
-                <button
-                  onClick={() => {
-                    setShowForm(false);
-                    setEditGoal(null);
-                    setFormErrors({});
-                  }}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  ✕
-                </button>
-              </div>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center z-[100] md:p-4">
+          <div className="bg-white rounded-t-[2rem] md:rounded-2xl w-full max-w-md shadow-2xl animate-slide-up md:animate-none flex flex-col max-h-[90vh]">
+            <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mt-4 mb-2 md:hidden"></div>
+            
+            <div className="flex justify-between items-center px-6 pt-2 md:pt-6 pb-4 border-b border-gray-100">
+              <h2 className="text-xl font-bold text-gray-900">
+                {editGoal ? "Edit Goal" : "Create Goal"}
+              </h2>
+              <button
+                onClick={() => {
+                  setShowForm(false);
+                  setEditGoal(null);
+                  setFormErrors({});
+                }}
+                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                ✕
+              </button>
+            </div>
 
-              <form onSubmit={handleSubmit}>
-                <div className="space-y-4">
-                  {/* Goal Name */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Goal Name
-                    </label>
-                    <input
-                      type="text"
-                      name="name"
-                      defaultValue={editGoal?.name || ""}
-                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
-                        formErrors.name
-                          ? "border-red-300 bg-red-50"
-                          : "border-gray-300"
-                      }`}
-                      placeholder="e.g. Emergency Fund, Vacation"
-                    />
-                    {formErrors.name && (
-                      <p className="mt-1 text-sm text-red-600">
-                        {formErrors.name[0]}
-                      </p>
-                    )}
-                  </div>
+            <div className="overflow-y-auto p-6 pb-24 md:pb-6 custom-scrollbar">
+              <form onSubmit={handleSubmit} className="space-y-5">
+                {/* Goal Name */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                    Goal Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    defaultValue={editGoal?.name || ""}
+                    className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
+                      formErrors.name
+                        ? "border-red-300 bg-red-50"
+                        : "border-gray-300 bg-white"
+                    }`}
+                    placeholder="e.g. Emergency Fund, Vacation"
+                  />
+                  {formErrors.name && (
+                    <p className="mt-1.5 text-xs text-red-600">
+                      {formErrors.name[0]}
+                    </p>
+                  )}
+                </div>
 
-                  {/* Target Amount */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Target Amount (₹)
-                    </label>
-                    <input
-                      type="number"
-                      name="target"
-                      defaultValue={editGoal?.target || ""}
-                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
-                        formErrors.target
-                          ? "border-red-300 bg-red-50"
-                          : "border-gray-300"
-                      }`}
-                      placeholder="0"
-                      min="0"
-                    />
-                    {formErrors.target && (
-                      <p className="mt-1 text-sm text-red-600">
-                        {formErrors.target[0]}
-                      </p>
-                    )}
-                  </div>
+                {/* Target Amount */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                    Target Amount (₹) <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    name="target"
+                    defaultValue={editGoal?.target || ""}
+                    className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
+                      formErrors.target
+                        ? "border-red-300 bg-red-50"
+                        : "border-gray-300 bg-white"
+                    }`}
+                    placeholder="0"
+                    min="0"
+                  />
+                  {formErrors.target && (
+                    <p className="mt-1.5 text-xs text-red-600">
+                      {formErrors.target[0]}
+                    </p>
+                  )}
+                </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     {/* Category */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Category
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                        Category <span className="text-red-500">*</span>
                       </label>
                       <select
                         name="category"
                         defaultValue={editGoal?.category || ""}
-                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+                        className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white transition-colors ${
                           formErrors.category
                             ? "border-red-300 bg-red-50"
                             : "border-gray-300"
@@ -860,7 +861,7 @@ export default function GoalsPage() {
                         ))}
                       </select>
                       {formErrors.category && (
-                        <p className="mt-1 text-sm text-red-600">
+                        <p className="mt-1.5 text-xs text-red-600">
                           {formErrors.category[0]}
                         </p>
                       )}
@@ -868,13 +869,13 @@ export default function GoalsPage() {
 
                     {/* Priority */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Priority
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                        Priority <span className="text-red-500">*</span>
                       </label>
                       <select
                         name="priority"
                         defaultValue={editGoal?.priority || "Medium"}
-                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+                        className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white transition-colors ${
                           formErrors.priority
                             ? "border-red-300 bg-red-50"
                             : "border-gray-300"
@@ -887,7 +888,7 @@ export default function GoalsPage() {
                         ))}
                       </select>
                       {formErrors.priority && (
-                        <p className="mt-1 text-sm text-red-600">
+                        <p className="mt-1.5 text-xs text-red-600">
                           {formErrors.priority[0]}
                         </p>
                       )}
@@ -896,8 +897,8 @@ export default function GoalsPage() {
 
                   {/* Deadline */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Deadline
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                      Deadline <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="date"
@@ -909,14 +910,14 @@ export default function GoalsPage() {
                               .split("T")[0]
                           : ""
                       }
-                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+                      className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors bg-white ${
                         formErrors.deadline
                           ? "border-red-300 bg-red-50"
                           : "border-gray-300"
                       }`}
                     />
                     {formErrors.deadline && (
-                      <p className="mt-1 text-sm text-red-600">
+                      <p className="mt-1.5 text-xs text-red-600">
                         {formErrors.deadline[0]}
                       </p>
                     )}
@@ -924,13 +925,13 @@ export default function GoalsPage() {
 
                   {/* Color */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Color
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                      Color <span className="text-red-500">*</span>
                     </label>
                     <select
                       name="color"
                       defaultValue={editGoal?.color || "bg-blue-500"}
-                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+                      className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors bg-white ${
                         formErrors.color
                           ? "border-red-300 bg-red-50"
                           : "border-gray-300"
@@ -948,14 +949,13 @@ export default function GoalsPage() {
                       ))}
                     </select>
                     {formErrors.color && (
-                      <p className="mt-1 text-sm text-red-600">
+                      <p className="mt-1.5 text-xs text-red-600">
                         {formErrors.color[0]}
                       </p>
                     )}
                   </div>
-                </div>
 
-                <div className="mt-6 flex justify-end gap-3">
+                <div className="flex gap-3 pt-6 mt-6 border-t border-gray-100">
                   <button
                     type="button"
                     onClick={() => {
@@ -963,14 +963,14 @@ export default function GoalsPage() {
                       setEditGoal(null);
                       setFormErrors({});
                     }}
-                    className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+                    className="flex-1 px-4 py-3 md:py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-50 font-medium cursor-pointer"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={isMutating}
-                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 flex items-center gap-2"
+                    className="flex-1 px-4 py-3 md:py-2.5 bg-indigo-600 text-white text-sm rounded-xl font-medium hover:bg-indigo-700 disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer transition-colors"
                   >
                     {isMutating && (
                       <Loader2 size={16} className="animate-spin" />

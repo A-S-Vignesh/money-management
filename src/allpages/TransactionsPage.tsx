@@ -260,7 +260,7 @@ export default function TransactionsPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
         {txLoading ? (
           <>
             <CardSkeleton />
@@ -269,24 +269,24 @@ export default function TransactionsPage() {
           </>
         ) : (
           <>
-            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-              <p className="text-gray-500 text-sm">Total Income</p>
-              <p className="text-2xl font-bold text-green-600">
+            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-center">
+              <p className="text-gray-500 text-xs md:text-sm mb-1">Total Income</p>
+              <p className="text-lg md:text-2xl font-bold text-green-600 truncate">
                 {formatCurrency(summary?.totalIncome ?? 0)}
               </p>
             </div>
 
-            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-              <p className="text-gray-500 text-sm">Total Expenses</p>
-              <p className="text-2xl font-bold text-red-600">
+            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-center">
+              <p className="text-gray-500 text-xs md:text-sm mb-1">Total Expenses</p>
+              <p className="text-lg md:text-2xl font-bold text-red-600 truncate">
                 {formatCurrency(summary?.totalExpense ?? 0)}
               </p>
             </div>
 
-            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-              <p className="text-gray-500 text-sm">Net Cash Flow</p>
+            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-center col-span-2 md:col-span-1">
+              <p className="text-gray-500 text-xs md:text-sm mb-1">Net Cash Flow</p>
               <p
-                className={`text-2xl font-bold ${
+                className={`text-xl md:text-2xl font-bold truncate ${
                   (summary?.netFlow ?? 0) >= 0
                     ? "text-green-600"
                     : "text-red-600"
@@ -303,15 +303,15 @@ export default function TransactionsPage() {
       <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           {/* Search */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+          <div className="md:col-span-1">
+            <label className="hidden md:block text-sm font-medium text-gray-700 mb-1">
               Search
             </label>
             <div className="relative">
               <input
                 type="text"
-                placeholder="Description or category..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                placeholder="Search transactions..."
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl md:rounded-lg text-base md:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
@@ -322,100 +322,123 @@ export default function TransactionsPage() {
             </div>
           </div>
 
-          {/* Type Filter */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Type
-            </label>
-            <select
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-              value={filter}
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-                setFilter(
-                  e.target.value as "all" | "income" | "expense" | "transfer",
-                )
-              }
-            >
-              <option value="all">All Transactions</option>
-              <option value="income">Income</option>
-              <option value="expense">Expenses</option>
-              <option value="transfer">Transfer</option>
-            </select>
-          </div>
-
-          {/* Account Filter */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Account
-            </label>
-            <select
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-              value={selectedAccount}
-              onChange={(e) => setSelectedAccount(e.target.value)}
-            >
-              <option value="all">All Accounts</option>
-              {accounts.map((acc) => (
-                <option key={acc._id} value={acc._id}>
-                  {acc.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Date Range */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Start Date
-            </label>
-            <div className="relative">
-              <input
-                type="date"
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                value={dateRange.start}
-                onChange={(e) =>
-                  setDateRange({ ...dateRange, start: e.target.value })
+          <div className="grid grid-cols-2 md:grid-cols-4 md:col-span-4 gap-3 md:gap-4">
+            {/* Type Filter */}
+            <div>
+              <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">
+                Type
+              </label>
+              <select
+                className="w-full px-2 md:px-4 py-2 border border-gray-300 rounded-xl md:rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                value={filter}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                  setFilter(
+                    e.target.value as "all" | "income" | "expense" | "transfer",
+                  )
                 }
-              />
-              <Calendar
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                size={18}
-              />
+              >
+                <option value="all">All</option>
+                <option value="income">Income</option>
+                <option value="expense">Expenses</option>
+                <option value="transfer">Transfer</option>
+              </select>
             </div>
-          </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              End Date
-            </label>
-            <div className="relative">
-              <input
-                type="date"
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                value={dateRange.end}
-                onChange={(e) =>
-                  setDateRange({ ...dateRange, end: e.target.value })
-                }
-              />
-              <Calendar
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                size={18}
-              />
+            {/* Account Filter */}
+            <div>
+              <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">
+                Account
+              </label>
+              <select
+                className="w-full px-2 md:px-4 py-2 border border-gray-300 rounded-xl md:rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                value={selectedAccount}
+                onChange={(e) => setSelectedAccount(e.target.value)}
+              >
+                <option value="all">All Accounts</option>
+                {accounts.map((acc) => (
+                  <option key={acc._id} value={acc._id}>
+                    {acc.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Date Range Start */}
+            <div>
+              <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">
+                Start Date
+              </label>
+              <div className="relative flex items-center">
+                <input
+                  type="date"
+                  className="w-full pl-2 pr-1 md:pl-9 py-2 border border-gray-300 rounded-xl md:rounded-lg text-[13px] md:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 md:block hidden"
+                  value={dateRange.start}
+                  onChange={(e) =>
+                    setDateRange({ ...dateRange, start: e.target.value })
+                  }
+                />
+                 {/* Native date input for mobile looks better standard, using calendar icon */}
+                 <input
+                  type="date"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-xl md:hidden text-[13px] focus:ring-2 focus:ring-indigo-500"
+                  value={dateRange.start}
+                  onChange={(e) =>
+                    setDateRange({ ...dateRange, start: e.target.value })
+                  }
+                />
+                <Calendar
+                  className="hidden md:block absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"
+                  size={16}
+                />
+              </div>
+            </div>
+
+            {/* Date Range End */}
+            <div>
+              <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">
+                End Date
+              </label>
+              <div className="relative flex items-center">
+                <input
+                  type="date"
+                  className="w-full pl-2 pr-1 md:pl-9 py-2 border border-gray-300 rounded-xl md:rounded-lg text-[13px] md:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 md:block hidden"
+                  value={dateRange.end}
+                  onChange={(e) =>
+                    setDateRange({ ...dateRange, end: e.target.value })
+                  }
+                />
+                {/* Native date input for mobile */}
+                <input
+                  type="date"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-xl md:hidden text-[13px] focus:ring-2 focus:ring-indigo-500"
+                  value={dateRange.end}
+                  onChange={(e) =>
+                    setDateRange({ ...dateRange, end: e.target.value })
+                  }
+                />
+                <Calendar
+                  className="hidden md:block absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"
+                  size={16}
+                />
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="flex justify-end mt-4 gap-2">
+        <div className="flex justify-between md:justify-end mt-4 gap-2 border-t border-gray-50 pt-4 md:border-t-0 md:pt-0">
           <button
             onClick={resetFilters}
-            className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+            className="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-xl md:rounded-lg hover:bg-gray-50 flex-1 md:flex-none"
           >
             Reset Filters
           </button>
-          <ExportCSVButton
-            data={transactions}
-            filename="transactions.csv"
-            label="Export CSV"
-          />
+          <div className="flex-1 md:flex-none">
+            <ExportCSVButton
+              data={transactions}
+              filename="transactions.csv"
+              label="Export CSV"
+            />
+          </div>
         </div>
       </div>
 
@@ -443,7 +466,8 @@ export default function TransactionsPage() {
         {/* Table */}
         {!txLoading && !txError && (
           <div className="overflow-x-auto">
-            <table className="w-full">
+            {/* Desktop Table */}
+            <table className="w-full hidden md:table">
               <thead className="bg-gray-50">
                 <tr>
                   <th className="py-3 px-4 text-left text-sm font-medium text-gray-500">
@@ -476,7 +500,7 @@ export default function TransactionsPage() {
                       <td className="py-4 px-4">
                         <div className="flex items-center">
                           <div
-                            className={`p-2 rounded-lg mr-3 ${
+                            className={`p-2 rounded-lg mr-3 flex-shrink-0 ${
                               transaction.type === "income"
                                 ? "bg-green-100"
                                 : "bg-red-100"
@@ -618,34 +642,164 @@ export default function TransactionsPage() {
                 )}
               </tbody>
             </table>
+
+            {/* Mobile List View */}
+            {transactions.length > 0 && (
+              <div className="md:hidden divide-y divide-gray-50">
+                {transactions.map((transaction) => (
+                  <div key={transaction._id} className="p-4 bg-white">
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="flex items-center gap-3 min-w-0 pr-2">
+                        <div
+                          className={`p-2.5 rounded-xl flex-shrink-0 ${
+                            transaction.type === "income"
+                              ? "bg-green-100 text-green-600"
+                              : transaction.type === "transfer"
+                                ? "bg-blue-100 text-blue-600"
+                                : "bg-red-100 text-red-600"
+                          }`}
+                        >
+                          {transaction.type === "income" ? (
+                            <ArrowUpRight size={18} />
+                          ) : transaction.type === "transfer" ? (
+                            <ArrowRightLeft size={18} />
+                          ) : (
+                            <ArrowDownRight size={18} />
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-gray-900 leading-tight truncate">
+                            {transaction.description || "No description"}
+                          </p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span
+                              className={`text-[10px] px-2 py-0.5 rounded flex-shrink-0 ${
+                                categories.find(
+                                  (c) => c.name === transaction.category,
+                                )?.color || "bg-gray-100 text-gray-600"
+                              }`}
+                            >
+                              {transaction.category}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <div
+                          className={`font-semibold text-sm ${
+                            transaction.type === "income"
+                              ? "text-green-600"
+                              : transaction.type === "transfer"
+                                ? "text-blue-600"
+                                : "text-red-600"
+                          }`}
+                        >
+                          {transaction.type === "expense" ? "-" : transaction.type === "income" ? "+" : ""}
+                          {formatCurrency(transaction.amount)}
+                        </div>
+                        <div className="text-[10px] text-gray-400 mt-1">
+                          {new Date(transaction.date).toLocaleDateString("en-GB")}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-50">
+                       <span className="text-[11px] text-gray-500 truncate pr-4">
+                          {transaction.type === "expense" &&
+                            `From: ${
+                              accounts.find(
+                                (acc) => acc._id === transaction.fromAccountId,
+                              )?.name || "Unknown"
+                            }`}
+
+                          {transaction.type === "income" &&
+                            `To: ${
+                              accounts.find(
+                                (acc) => acc._id === transaction.toAccountId,
+                              )?.name || "Unknown"
+                            }`}
+
+                          {transaction.type === "transfer" &&
+                            `${
+                              accounts.find(
+                                (acc) => acc._id === transaction.fromAccountId,
+                              )?.name || "Unknown"
+                            } → ${
+                              accounts.find(
+                                (acc) => acc._id === transaction.toAccountId,
+                              )?.name || "Unknown"
+                            }`}
+                        </span>
+
+                      <div className="flex gap-4">
+                        <button
+                          className="text-gray-500 flex items-center gap-1.5 hover:text-gray-700 text-[12px] font-medium"
+                          onClick={() => {
+                            setEditTransaction(transaction);
+                            setShowForm(true);
+                            setFormErrors({});
+                          }}
+                        >
+                          <Edit size={14} /> Edit
+                        </button>
+                        <button
+                          className="text-red-500 flex items-center gap-1.5 hover:text-red-700 text-[12px] font-medium disabled:opacity-50"
+                          onClick={() => handleDelete(transaction._id)}
+                          disabled={deleteMutation.isPending}
+                        >
+                          {deleteMutation.isPending ? (
+                            <Loader2 size={14} className="animate-spin" />
+                          ) : (
+                            <Trash2 size={14} />
+                          )} 
+                          Del
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            {/* Empty State Mobile */}
+            {transactions.length === 0 && (
+              <div className="md:hidden px-4 py-8 text-center bg-white">
+                <Filter
+                  className="text-gray-300 mx-auto mb-3"
+                  size={32}
+                />
+                <h3 className="text-base font-medium text-gray-900 mb-1">
+                  No transactions found
+                </h3>
+                <p className="text-sm text-gray-500">
+                  Try adjusting your filters.
+                </p>
+              </div>
+            )}
           </div>
         )}
 
-        {/* Pagination */}
-        {pagination && pagination.totalPages > 1 && (
-          <div className="border-t border-gray-200 px-4 py-3 flex items-center justify-between">
-            <div className="text-sm text-gray-700">
-              Showing{" "}
-              <span className="font-medium">
-                {(pagination.page - 1) * pagination.limit + 1}
-              </span>{" "}
-              to{" "}
-              <span className="font-medium">
-                {Math.min(pagination.page * pagination.limit, pagination.total)}
-              </span>{" "}
-              of <span className="font-medium">{pagination.total}</span> results
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-                disabled={pagination.page <= 1}
-                className="flex items-center gap-1 px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                <ChevronLeft size={14} />
-                Previous
-              </button>
+      {/* Pagination */}
+      {pagination && pagination.totalPages > 1 && (
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4 py-2">
+          <div className="text-sm text-gray-500 order-2 md:order-1">
+            Showing <span className="font-medium text-gray-900">{(pagination.page - 1) * pagination.limit + 1}</span> to{" "}
+            <span className="font-medium text-gray-900">
+              {Math.min(pagination.page * pagination.limit, pagination.total)}
+            </span>{" "}
+            of <span className="font-medium text-gray-900">{pagination.total}</span>
+          </div>
+          
+          <div className="flex items-center gap-1.5 order-1 md:order-2 self-stretch md:self-auto justify-between md:justify-start">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+              disabled={pagination.page <= 1}
+              className="flex items-center justify-center p-2 md:px-3 md:py-1.5 min-w-[40px] md:min-w-[auto] border border-gray-300 rounded-xl md:rounded-lg text-sm font-medium hover:bg-gray-50 disabled:opacity-50 transition-colors bg-white"
+            >
+              <ChevronLeft size={16} />
+              <span className="hidden md:inline ml-1">Prev</span>
+            </button>
 
-              {/* Page number buttons */}
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
               {Array.from(
                 { length: Math.min(pagination.totalPages, 5) },
                 (_, i) => {
@@ -663,10 +817,10 @@ export default function TransactionsPage() {
                     <button
                       key={pageNum}
                       onClick={() => setCurrentPage(pageNum)}
-                      className={`px-3 py-1.5 text-sm border border-gray-300 rounded-lg transition-colors ${
+                      className={`min-w-[36px] h-[36px] flex items-center justify-center text-sm font-medium rounded-xl md:rounded-lg transition-colors border ${
                         currentPage === pageNum
-                          ? "bg-indigo-600 text-white border-indigo-600"
-                          : "text-gray-600 hover:bg-gray-50"
+                          ? "bg-indigo-600 border-indigo-600 text-white"
+                          : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
                       }`}
                     >
                       {pageNum}
@@ -674,29 +828,31 @@ export default function TransactionsPage() {
                   );
                 },
               )}
-
-              <button
-                onClick={() =>
-                  setCurrentPage((p) => Math.min(p + 1, pagination.totalPages))
-                }
-                disabled={pagination.page >= pagination.totalPages}
-                className="flex items-center gap-1 px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                Next
-                <ChevronRight size={14} />
-              </button>
             </div>
+
+            <button
+              onClick={() =>
+                setCurrentPage((p) => Math.min(p + 1, pagination.totalPages))
+              }
+              disabled={pagination.page >= pagination.totalPages}
+              className="flex items-center justify-center p-2 md:px-3 md:py-1.5 min-w-[40px] md:min-w-[auto] border border-gray-300 rounded-xl md:rounded-lg text-sm font-medium hover:bg-gray-50 disabled:opacity-50 transition-colors bg-white"
+            >
+              <span className="hidden md:inline mr-1">Next</span>
+              <ChevronRight size={16} />
+            </button>
           </div>
-        )}
+        </div>
+      )}
       </div>
 
       {/* ─── Add/Edit Transaction Modal ─────────────────────── */}
       {showForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center z-[100] md:p-4">
+          <div className="bg-white rounded-t-[2rem] md:rounded-2xl w-full max-w-md shadow-2xl animate-slide-up md:animate-none flex flex-col max-h-[90vh]">
+            <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mt-4 mb-2 md:hidden"></div>
             {/* Modal Header */}
-            <div className="flex justify-between items-center px-6 pt-5 pb-4 border-b border-gray-100">
-              <h2 className="text-lg font-bold text-gray-900">
+            <div className="flex justify-between items-center px-6 pt-2 md:pt-6 pb-4 border-b border-gray-100">
+              <h2 className="text-xl font-bold text-gray-900">
                 {editTransaction ? "Edit Transaction" : "Add Transaction"}
               </h2>
               <button
@@ -707,27 +863,15 @@ export default function TransactionsPage() {
                 }}
                 className="text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-100"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
+                ✕
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              {/* Type Tabs */}
-              <div>
-                <div className="grid grid-cols-3 gap-1 bg-gray-100 p-1 rounded-xl">
+            <div className="overflow-y-auto overscroll-contain no-scrollbar pb-safe">
+              <form onSubmit={handleSubmit} className="p-6 space-y-5">
+                {/* Type Tabs */}
+                <div>
+                  <div className="grid grid-cols-3 gap-1 bg-gray-100 p-1.5 rounded-xl">
                   {(
                     [
                       {
@@ -767,245 +911,247 @@ export default function TransactionsPage() {
                       {icon} {label}
                     </button>
                   ))}
+                  </div>
+                  {editTransaction && (
+                    <p className="mt-1.5 text-xs text-gray-400 text-center">
+                      Type cannot be changed when editing
+                    </p>
+                  )}
                 </div>
-                {editTransaction && (
-                  <p className="mt-1.5 text-xs text-gray-400 text-center">
-                    Type cannot be changed when editing
-                  </p>
-                )}
-              </div>
-              <input type="hidden" name="type" value={transactionType} />
+                <input type="hidden" name="type" value={transactionType} />
 
-              {/* Description */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Description
-                </label>
-                <input
-                  type="text"
-                  name="description"
-                  defaultValue={editTransaction?.description || ""}
-                  placeholder="e.g. Grocery shopping"
-                  className={`w-full px-3 py-2.5 border rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
-                    formErrors.description
-                      ? "border-red-300 bg-red-50"
-                      : "border-gray-300"
-                  }`}
-                />
-                {formErrors.description && (
-                  <p className="mt-1 text-xs text-red-600">
-                    {formErrors.description[0]}
-                  </p>
-                )}
-              </div>
-
-              {/* Amount + Date */}
-              <div className="grid grid-cols-2 gap-3">
+                {/* Description */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Amount (₹)
+                    Description
                   </label>
                   <input
-                    type="number"
-                    name="amount"
-                    defaultValue={editTransaction?.amount || ""}
-                    placeholder="0"
-                    min="0"
-                    step="0.01"
-                    className={`w-full px-3 py-2.5 border rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
-                      formErrors.amount
+                    type="text"
+                    name="description"
+                    defaultValue={editTransaction?.description || ""}
+                    placeholder="e.g. Grocery shopping"
+                    className={`w-full px-4 py-2 border rounded-xl text-base md:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+                      formErrors.description
                         ? "border-red-300 bg-red-50"
                         : "border-gray-300"
                     }`}
                   />
-                  {formErrors.amount && (
+                  {formErrors.description && (
                     <p className="mt-1 text-xs text-red-600">
-                      {formErrors.amount[0]}
+                      {formErrors.description[0]}
                     </p>
                   )}
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Date
-                  </label>
-                  <input
-                    type="date"
-                    name="date"
-                    defaultValue={
-                      editTransaction?.date
-                        ? new Date(editTransaction.date)
-                            .toISOString()
-                            .split("T")[0]
-                        : new Date().toISOString().split("T")[0]
-                    }
-                    className={`w-full px-3 py-2.5 border rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
-                      formErrors.date
-                        ? "border-red-300 bg-red-50"
-                        : "border-gray-300"
-                    }`}
-                  />
-                  {formErrors.date && (
-                    <p className="mt-1 text-xs text-red-600">
-                      {formErrors.date[0]}
-                    </p>
-                  )}
-                </div>
-              </div>
 
-              {/* Category (not for transfer) */}
-              {transactionType !== "transfer" && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Category
-                  </label>
-                  <select
-                    name="category"
-                    defaultValue={editTransaction?.category || ""}
-                    className={`w-full px-3 py-2.5 border rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
-                      formErrors.category
-                        ? "border-red-300 bg-red-50"
-                        : "border-gray-300"
+                {/* Amount + Date */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Amount (₹)
+                    </label>
+                    <input
+                      type="number"
+                      name="amount"
+                      defaultValue={editTransaction?.amount || ""}
+                      placeholder="0"
+                      min="0"
+                      step="0.01"
+                      className={`w-full px-4 py-2 border rounded-xl text-base md:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+                        formErrors.amount
+                          ? "border-red-300 bg-red-50"
+                          : "border-gray-300"
+                      }`}
+                    />
+                    {formErrors.amount && (
+                      <p className="mt-1 text-xs text-red-600">
+                        {formErrors.amount[0]}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Date
+                    </label>
+                    <input
+                      type="date"
+                      name="date"
+                      defaultValue={
+                        editTransaction?.date
+                          ? new Date(editTransaction.date)
+                              .toISOString()
+                              .split("T")[0]
+                          : new Date().toISOString().split("T")[0]
+                      }
+                      className={`w-full px-4 py-2 border rounded-xl text-base md:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+                        formErrors.date
+                          ? "border-red-300 bg-red-50"
+                          : "border-gray-300"
+                      }`}
+                    />
+                    {formErrors.date && (
+                      <p className="mt-1 text-xs text-red-600">
+                        {formErrors.date[0]}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Category (not for transfer) */}
+                {transactionType !== "transfer" && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Category
+                    </label>
+                    <select
+                      name="category"
+                      defaultValue={editTransaction?.category || ""}
+                      className={`w-full px-4 py-2 border rounded-xl text-base md:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+                        formErrors.category
+                          ? "border-red-300 bg-red-50"
+                          : "border-gray-300"
+                      }`}
+                    >
+                      <option value="">Select category</option>
+                      {categories
+                        .filter((cat) => {
+                          if (transactionType === "income") {
+                            return cat.name === "Salary" || cat.name === "Other";
+                          }
+                          if (transactionType === "expense") {
+                            return cat.name !== "Salary";
+                          }
+                          return true;
+                        })
+                        .map((cat) => (
+                          <option key={cat.name} value={cat.name}>
+                            {cat.name}
+                          </option>
+                        ))}
+                    </select>
+                    {formErrors.category && (
+                      <p className="mt-1 text-xs text-red-600">
+                        {formErrors.category[0]}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* From Account — expense & transfer */}
+                {(transactionType === "expense" ||
+                  transactionType === "transfer") && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      {transactionType === "transfer"
+                        ? "From Account"
+                        : "Account (Spent From)"}
+                    </label>
+                    <select
+                      name="fromAccountId"
+                      defaultValue={editTransaction?.fromAccountId || ""}
+                      className={`w-full px-4 py-2 border rounded-xl text-base md:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+                        formErrors.fromAccountId
+                          ? "border-red-300 bg-red-50"
+                          : "border-gray-300"
+                      }`}
+                    >
+                      <option value="">Select account</option>
+                      {accounts
+                        .filter(
+                          (acc) =>
+                            (transactionType === "transfer" || acc.type !== "goal") &&
+                            acc.type !== "investment" &&
+                            acc.name !== "Deleted Account",
+                        )
+                        .map((acc) => (
+                          <option key={acc._id} value={acc._id}>
+                            {acc.name} — ₹{acc.balance?.toLocaleString()}
+                          </option>
+                        ))}
+                    </select>
+                    {formErrors.fromAccountId && (
+                      <p className="mt-1 text-xs text-red-600">
+                        {formErrors.fromAccountId[0]}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* To Account — income & transfer */}
+                {(transactionType === "income" ||
+                  transactionType === "transfer") && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      {transactionType === "transfer"
+                        ? "To Account"
+                        : "Account (Received Into)"}
+                    </label>
+                    <select
+                      name="toAccountId"
+                      defaultValue={editTransaction?.toAccountId || ""}
+                      className={`w-full px-4 py-2 border rounded-xl text-base md:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+                        formErrors.toAccountId
+                          ? "border-red-300 bg-red-50"
+                          : "border-gray-300"
+                      }`}
+                    >
+                      <option value="">Select account</option>
+                      {accounts
+                        .filter(
+                          (acc) =>
+                            (transactionType === "transfer" || acc.type !== "goal") &&
+                            acc.type !== "investment" &&
+                            acc.name !== "Deleted Account",
+                        )
+                        .map((acc) => (
+                          <option key={acc._id} value={acc._id}>
+                            {acc.name} — ₹{acc.balance?.toLocaleString()}
+                          </option>
+                        ))}
+                    </select>
+                    {formErrors.toAccountId && (
+                      <p className="mt-1 text-xs text-red-600">
+                        {formErrors.toAccountId[0]}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Actions */}
+                <div className="flex gap-3 pt-6 mt-6 border-t border-gray-100">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowForm(false);
+                      setEditTransaction(null);
+                      setFormErrors({});
+                    }}
+                    className="flex-1 px-4 py-3 md:py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-50 font-medium"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isMutating}
+                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 md:py-2.5 text-sm text-white rounded-xl font-medium transition-colors disabled:opacity-60 ${
+                      transactionType === "expense"
+                        ? "bg-red-500 hover:bg-red-600"
+                        : transactionType === "income"
+                          ? "bg-green-500 hover:bg-green-600"
+                          : "bg-blue-500 hover:bg-blue-600"
                     }`}
                   >
-                    <option value="">Select category</option>
-                    {categories
-                      .filter((cat) => {
-                        if (transactionType === "income") {
-                          return cat.name === "Salary" || cat.name === "Other";
-                        }
-                        if (transactionType === "expense") {
-                          return cat.name !== "Salary";
-                        }
-                        return true;
-                      })
-                      .map((cat) => (
-                        <option key={cat.name} value={cat.name}>
-                          {cat.name}
-                        </option>
-                      ))}
-                  </select>
-                  {formErrors.category && (
-                    <p className="mt-1 text-xs text-red-600">
-                      {formErrors.category[0]}
-                    </p>
-                  )}
+                    {isMutating && <Loader2 size={16} className="animate-spin" />}
+                    {editTransaction ? "Update" : "Save"}{" "}
+                    {transactionType.charAt(0).toUpperCase() +
+                      transactionType.slice(1)}
+                  </button>
                 </div>
-              )}
-
-              {/* From Account — expense & transfer */}
-              {(transactionType === "expense" ||
-                transactionType === "transfer") && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    {transactionType === "transfer"
-                      ? "From Account"
-                      : "Account (Spent From)"}
-                  </label>
-                  <select
-                    name="fromAccountId"
-                    defaultValue={editTransaction?.fromAccountId || ""}
-                    className={`w-full px-3 py-2.5 border rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
-                      formErrors.fromAccountId
-                        ? "border-red-300 bg-red-50"
-                        : "border-gray-300"
-                    }`}
-                  >
-                    <option value="">Select account</option>
-                    {accounts
-                      .filter(
-                        (acc) =>
-                          (transactionType === "transfer" || acc.type !== "goal") &&
-                          acc.type !== "investment" &&
-                          acc.name !== "Deleted Account",
-                      )
-                      .map((acc) => (
-                        <option key={acc._id} value={acc._id}>
-                          {acc.name} — ₹{acc.balance?.toLocaleString()}
-                        </option>
-                      ))}
-                  </select>
-                  {formErrors.fromAccountId && (
-                    <p className="mt-1 text-xs text-red-600">
-                      {formErrors.fromAccountId[0]}
-                    </p>
-                  )}
-                </div>
-              )}
-
-              {/* To Account — income & transfer */}
-              {(transactionType === "income" ||
-                transactionType === "transfer") && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    {transactionType === "transfer"
-                      ? "To Account"
-                      : "Account (Received Into)"}
-                  </label>
-                  <select
-                    name="toAccountId"
-                    defaultValue={editTransaction?.toAccountId || ""}
-                    className={`w-full px-3 py-2.5 border rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
-                      formErrors.toAccountId
-                        ? "border-red-300 bg-red-50"
-                        : "border-gray-300"
-                    }`}
-                  >
-                    <option value="">Select account</option>
-                    {accounts
-                      .filter(
-                        (acc) =>
-                          (transactionType === "transfer" || acc.type !== "goal") &&
-                          acc.type !== "investment" &&
-                          acc.name !== "Deleted Account",
-                      )
-                      .map((acc) => (
-                        <option key={acc._id} value={acc._id}>
-                          {acc.name} — ₹{acc.balance?.toLocaleString()}
-                        </option>
-                      ))}
-                  </select>
-                  {formErrors.toAccountId && (
-                    <p className="mt-1 text-xs text-red-600">
-                      {formErrors.toAccountId[0]}
-                    </p>
-                  )}
-                </div>
-              )}
-
-              {/* Actions */}
-              <div className="flex gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowForm(false);
-                    setEditTransaction(null);
-                    setFormErrors({});
-                  }}
-                  className="flex-1 px-4 py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-50 font-medium"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isMutating}
-                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm text-white rounded-xl font-medium transition-colors disabled:opacity-60 ${
-                    transactionType === "expense"
-                      ? "bg-red-500 hover:bg-red-600"
-                      : transactionType === "income"
-                        ? "bg-green-500 hover:bg-green-600"
-                        : "bg-blue-500 hover:bg-blue-600"
-                  }`}
-                >
-                  {isMutating && <Loader2 size={15} className="animate-spin" />}
-                  {editTransaction ? "Update" : "Add"}{" "}
-                  {transactionType.charAt(0).toUpperCase() +
-                    transactionType.slice(1)}
-                </button>
-              </div>
-            </form>
+              </form>
+            </div>
           </div>
         </div>
       )}
-    </div>
+      </div>
+    
   );
 }

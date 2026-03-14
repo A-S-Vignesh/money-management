@@ -26,6 +26,7 @@ export function useAddAccount() {
     mutationFn: addAccount,
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["accounts"] });
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
       showToast(
         data.message || "Account created successfully",
         data.type || "success",

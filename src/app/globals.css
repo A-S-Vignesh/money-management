@@ -1,14 +1,41 @@
 @import "tailwindcss";
 
-body,html{
+body, html {
   overflow-x: hidden;
+  /* Native app feel optimizations */
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none; /* Prevent pull-to-refresh bounce */
+}
+
+/* Prevent text selection on UI elements, but allow on inputs */
+*:not(input):not(textarea) {
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none; /* Safari */
+  user-select: none; /* Non-prefixed version, currently supported by Chrome, Edge, Opera and Firefox */
+}
+
+input, textarea {
+  -webkit-user-select: auto;
+  user-select: auto;
 }
 
 button {
   cursor: pointer;
+  /* Ensure no tap highlight on buttons */
+  -webkit-tap-highlight-color: transparent;
 }
 
 button:disabled {
   cursor: not-allowed;
 }
 
+/* Hide scrollbar for Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}

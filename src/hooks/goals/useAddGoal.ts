@@ -27,6 +27,7 @@ export function useAddGoal() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["goals"] });
       queryClient.invalidateQueries({ queryKey: ["accounts"] });
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
       showToast(
         data.message || "Goal created successfully",
         data.type || "success",

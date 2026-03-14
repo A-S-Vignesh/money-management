@@ -21,6 +21,7 @@ export function useDeleteGoal() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["goals"] });
       queryClient.invalidateQueries({ queryKey: ["accounts"] });
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
       showToast(
         data.message || "Goal deleted successfully",
         data.type || "success",

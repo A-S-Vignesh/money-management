@@ -23,14 +23,14 @@ import { useSession } from "next-auth/react";
 // ─── Skeleton Components ─────────────────────────────────────────────
 function CardSkeleton() {
   return (
-    <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 animate-pulse">
-      <div className="flex items-center mb-4">
-        <div className="w-11 h-11 bg-gray-200 rounded-lg mr-4" />
-        <div className="h-3 bg-gray-200 rounded w-24" />
+    <div className="bg-white p-4 md:p-5 rounded-xl shadow-sm border border-gray-100 animate-pulse">
+      <div className="flex flex-col md:flex-row md:items-center mb-3 md:mb-4">
+        <div className="w-9 h-9 md:w-11 md:h-11 bg-gray-200 rounded-lg md:mr-4 mb-2 md:mb-0" />
+        <div className="h-3 bg-gray-200 rounded w-20 md:w-24" />
       </div>
-      <div className="flex items-end justify-between">
-        <div className="h-7 bg-gray-200 rounded w-28" />
-        <div className="h-5 bg-gray-100 rounded w-14" />
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-2">
+        <div className="h-6 md:h-7 bg-gray-200 rounded w-20 md:w-28" />
+        <div className="h-4 md:h-5 bg-gray-100 rounded w-12 md:w-14" />
       </div>
     </div>
   );
@@ -123,7 +123,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         {isLoading ? (
           <>
             <CardSkeleton />
@@ -134,17 +134,17 @@ export default function DashboardPage() {
         ) : (
           <>
             {/* Total Balance Card */}
-            <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-              <div className="flex items-center mb-4">
-                <div className="bg-blue-100 p-3 rounded-lg mr-4">
-                  <Wallet className="text-blue-600" size={20} />
+            <div className="bg-white p-4 md:p-5 rounded-xl shadow-sm border border-gray-100">
+              <div className="flex flex-col md:flex-row md:items-center mb-3 md:mb-4">
+                <div className="bg-blue-100 p-2 md:p-3 rounded-lg md:mr-4 w-fit mb-2 md:mb-0">
+                  <Wallet className="text-blue-600 w-5 h-5 md:w-5 md:h-5" />
                 </div>
-                <h3 className="text-gray-500 text-sm font-medium">
+                <h3 className="text-gray-500 text-xs md:text-sm font-medium">
                   Total Balance
                 </h3>
               </div>
-              <div className="flex items-end justify-between">
-                <p className="text-2xl font-bold">
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-1 md:gap-0">
+                <p className="text-lg md:text-2xl font-bold truncate">
                   {formatCurrency(data?.totalBalance ?? 0)}
                 </p>
                 <span
@@ -152,7 +152,7 @@ export default function DashboardPage() {
                     (data?.netChange ?? 0) >= 0
                       ? "text-green-500 bg-green-50"
                       : "text-red-500 bg-red-50"
-                  } px-2 py-1 rounded text-sm`}
+                  } px-2 py-0.5 md:py-1 rounded text-[10px] md:text-sm w-fit font-medium`}
                 >
                   {(data?.netChange ?? 0) >= 0 ? "+" : ""}
                   {formatCurrency(Math.abs(data?.netChange ?? 0))}
@@ -161,17 +161,17 @@ export default function DashboardPage() {
             </div>
 
             {/* Income Card */}
-            <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-              <div className="flex items-center mb-4">
-                <div className="bg-green-100 p-3 rounded-lg mr-4">
-                  <ArrowUpRight className="text-green-600" size={20} />
+            <div className="bg-white p-4 md:p-5 rounded-xl shadow-sm border border-gray-100">
+              <div className="flex flex-col md:flex-row md:items-center mb-3 md:mb-4">
+                <div className="bg-green-100 p-2 md:p-3 rounded-lg md:mr-4 w-fit mb-2 md:mb-0">
+                  <ArrowUpRight className="text-green-600 w-5 h-5 md:w-5 md:h-5" />
                 </div>
-                <h3 className="text-gray-500 text-sm font-medium">
+                <h3 className="text-gray-500 text-xs md:text-sm font-medium">
                   Total Income
                 </h3>
               </div>
-              <div className="flex items-end justify-between">
-                <p className="text-2xl font-bold text-green-600">
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-1 md:gap-0">
+                <p className="text-lg md:text-2xl font-bold text-green-600 truncate">
                   {formatCurrency(data?.totalIncome ?? 0)}
                 </p>
                 {data?.incomeChange !== null &&
@@ -181,7 +181,7 @@ export default function DashboardPage() {
                         parseFloat(data.incomeChange) >= 0
                           ? "text-green-500 bg-green-50"
                           : "text-red-500 bg-red-50"
-                      } px-2 py-1 rounded text-sm`}
+                      } px-2 py-0.5 md:py-1 rounded text-[10px] md:text-sm w-fit font-medium`}
                     >
                       {parseFloat(data.incomeChange) >= 0 ? "+" : ""}
                       {data.incomeChange}%
@@ -191,17 +191,17 @@ export default function DashboardPage() {
             </div>
 
             {/* Expenses Card */}
-            <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-              <div className="flex items-center mb-4">
-                <div className="bg-red-100 p-3 rounded-lg mr-4">
-                  <ArrowDownRight className="text-red-600" size={20} />
+            <div className="bg-white p-4 md:p-5 rounded-xl shadow-sm border border-gray-100">
+              <div className="flex flex-col md:flex-row md:items-center mb-3 md:mb-4">
+                <div className="bg-red-100 p-2 md:p-3 rounded-lg md:mr-4 w-fit mb-2 md:mb-0">
+                  <ArrowDownRight className="text-red-600 w-5 h-5 md:w-5 md:h-5" />
                 </div>
-                <h3 className="text-gray-500 text-sm font-medium">
+                <h3 className="text-gray-500 text-xs md:text-sm font-medium">
                   Total Expenses
                 </h3>
               </div>
-              <div className="flex items-end justify-between">
-                <p className="text-2xl font-bold text-red-600">
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-1 md:gap-0">
+                <p className="text-lg md:text-2xl font-bold text-red-600 truncate">
                   {formatCurrency(data?.totalExpense ?? 0)}
                 </p>
                 {data?.expenseChange !== null &&
@@ -211,7 +211,7 @@ export default function DashboardPage() {
                         parseFloat(data.expenseChange) >= 0
                           ? "text-red-500 bg-red-50"
                           : "text-green-500 bg-green-50"
-                      } px-2 py-1 rounded text-sm`}
+                      } px-2 py-0.5 md:py-1 rounded text-[10px] md:text-sm w-fit font-medium`}
                     >
                       {parseFloat(data.expenseChange) >= 0 ? "+" : ""}
                       {data.expenseChange}%
@@ -221,19 +221,19 @@ export default function DashboardPage() {
             </div>
 
             {/* Net Worth Card */}
-            <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-              <div className="flex items-center mb-4">
-                <div className="bg-purple-100 p-3 rounded-lg mr-4">
-                  <TrendingUp className="text-purple-600" size={20} />
+            <div className="bg-white p-4 md:p-5 rounded-xl shadow-sm border border-gray-100">
+              <div className="flex flex-col md:flex-row md:items-center mb-3 md:mb-4">
+                <div className="bg-purple-100 p-2 md:p-3 rounded-lg md:mr-4 w-fit mb-2 md:mb-0">
+                  <TrendingUp className="text-purple-600 w-5 h-5 md:w-5 md:h-5" />
                 </div>
-                <h3 className="text-gray-500 text-sm font-medium">Net Worth</h3>
+                <h3 className="text-gray-500 text-xs md:text-sm font-medium truncate">Net Worth</h3>
               </div>
-              <div className="flex items-end justify-between">
-                <p className="text-2xl font-bold">
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-1 md:gap-0">
+                <p className="text-lg md:text-2xl font-bold truncate">
                   {formatCurrency(data?.totalBalance ?? 0)}
                 </p>
-                <span className="text-gray-500 bg-gray-50 px-2 py-1 rounded text-sm">
-                  {data?.totalAccounts ?? 0} accounts
+                <span className="text-gray-500 bg-gray-50 px-2 py-0.5 md:py-1 rounded text-[10px] md:text-sm w-fit font-medium truncate">
+                  {data?.totalAccounts ?? 0} acc
                 </span>
               </div>
             </div>
@@ -242,10 +242,10 @@ export default function DashboardPage() {
       </div>
 
       {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
         {/* Balance Trend Chart */}
-        <div className="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <div className="flex justify-between items-center mb-6">
+        <div className="lg:col-span-2 bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-100">
+          <div className="flex justify-between items-center mb-4 md:mb-6">
             <h2 className="text-lg font-semibold text-gray-800">
               Balance Trend
             </h2>
@@ -263,20 +263,20 @@ export default function DashboardPage() {
           </div>
 
           {/* Chart Placeholder */}
-          <div className="bg-gray-50 rounded-lg h-64 flex items-center justify-center">
-            <div className="text-center">
+          <div className="bg-gray-50 rounded-lg h-56 md:h-64 flex items-center justify-center">
+            <div className="text-center p-4">
               <BarChart className="mx-auto text-gray-400" size={40} />
-              <p className="text-gray-500 mt-2">
+              <p className="text-gray-500 mt-2 text-sm md:text-base">
                 Monthly balance trend visualization
               </p>
-              <p className="text-gray-400 text-sm">(Chart will appear here)</p>
+              <p className="text-gray-400 text-xs md:text-sm mt-1">(Chart will appear here)</p>
             </div>
           </div>
         </div>
 
         {/* Spending Distribution */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <h2 className="text-lg font-semibold text-gray-800 mb-6">
+        <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-100">
+          <h2 className="text-lg font-semibold text-gray-800 mb-4 md:mb-6">
             Spending Distribution
           </h2>
 
@@ -323,10 +323,10 @@ export default function DashboardPage() {
       </div>
 
       {/* Goals & Transactions Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
         {/* Financial Goals */}
-        <div className="lg:col-span-1 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <div className="flex justify-between items-center mb-6">
+        <div className="lg:col-span-1 bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-100">
+          <div className="flex justify-between items-center mb-4 md:mb-6">
             <h2 className="text-lg font-semibold text-gray-800">
               Financial Goals
             </h2>
@@ -395,8 +395,8 @@ export default function DashboardPage() {
         </div>
 
         {/* Recent Transactions */}
-        <div className="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <div className="flex justify-between items-center mb-6">
+        <div className="lg:col-span-2 bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-100">
+          <div className="flex justify-between items-center mb-4 md:mb-6">
             <h2 className="text-lg font-semibold text-gray-800">
               Recent Transactions
             </h2>
@@ -412,120 +412,195 @@ export default function DashboardPage() {
           {isLoading ? (
             <TableSkeleton />
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="text-gray-500 text-left border-b">
-                    <th className="pb-3 text-sm font-medium">Type</th>
-                    <th className="pb-3 text-sm font-medium">Date</th>
-                    <th className="pb-3 text-sm font-medium">Category</th>
-                    <th className="pb-3 text-right text-sm font-medium">
-                      Amount
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data?.recentTransactions &&
-                  data.recentTransactions.length > 0 ? (
-                    data.recentTransactions.map((transaction) => (
-                      <tr
-                        key={transaction._id}
-                        className="border-b hover:bg-gray-50 transition-colors"
-                      >
-                        <td className="py-4">
-                          <div className="flex items-center">
-                            <div
-                              className={`p-2 rounded-lg mr-3 ${
-                                transaction.type === "income"
-                                  ? "bg-green-100"
-                                  : transaction.type === "expense"
-                                    ? "bg-red-100"
-                                    : "bg-blue-100"
-                              }`}
-                            >
-                              {transaction.type === "income" ? (
-                                <ArrowUpRight
-                                  className="text-green-600"
-                                  size={16}
-                                />
-                              ) : transaction.type === "expense" ? (
-                                <ArrowDownRight
-                                  className="text-red-600"
-                                  size={16}
-                                />
-                              ) : (
-                                <DollarSign
-                                  className="text-blue-600"
-                                  size={16}
-                                />
-                              )}
+            <>
+              {/* Desktop Table View */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="text-gray-500 text-left border-b">
+                      <th className="pb-3 text-sm font-medium">Type</th>
+                      <th className="pb-3 text-sm font-medium">Date</th>
+                      <th className="pb-3 text-sm font-medium">Category</th>
+                      <th className="pb-3 text-right text-sm font-medium">
+                        Amount
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data?.recentTransactions &&
+                    data.recentTransactions.length > 0 ? (
+                      data.recentTransactions.map((transaction) => (
+                        <tr
+                          key={transaction._id}
+                          className="border-b hover:bg-gray-50 transition-colors"
+                        >
+                          <td className="py-4">
+                            <div className="flex items-center">
+                              <div
+                                className={`p-2 rounded-lg mr-3 ${
+                                  transaction.type === "income"
+                                    ? "bg-green-100"
+                                    : transaction.type === "expense"
+                                      ? "bg-red-100"
+                                      : "bg-blue-100"
+                                }`}
+                              >
+                                {transaction.type === "income" ? (
+                                  <ArrowUpRight
+                                    className="text-green-600"
+                                    size={16}
+                                  />
+                                ) : transaction.type === "expense" ? (
+                                  <ArrowDownRight
+                                    className="text-red-600"
+                                    size={16}
+                                  />
+                                ) : (
+                                  <DollarSign
+                                    className="text-blue-600"
+                                    size={16}
+                                  />
+                                )}
+                              </div>
+                              <span className="text-sm">
+                                {transaction.description}
+                              </span>
                             </div>
-                            <span className="text-sm">
-                              {transaction.description}
+                          </td>
+                          <td className="py-4 text-gray-600 text-sm">
+                            {new Date(transaction.date).toLocaleDateString(
+                              "en-GB",
+                              {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric",
+                              },
+                            )}
+                          </td>
+
+                          <td className="py-4">
+                            <span className="bg-gray-100 text-gray-800 text-xs px-2.5 py-1 rounded-full">
+                              {transaction.category}
                             </span>
+                          </td>
+                          <td
+                            className={`py-4 text-right font-medium ${
+                              transaction.type === "income"
+                                ? "text-green-600"
+                                : transaction.type === "expense"
+                                  ? "text-red-600"
+                                  : "text-blue-600"
+                            }`}
+                          >
+                            {transaction.type === "income"
+                              ? "+"
+                              : transaction.type === "expense"
+                                ? "-"
+                                : ""}
+                            {formatCurrency(transaction.amount)}
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={4} className="py-12 text-center">
+                          <div className="flex flex-col items-center justify-center">
+                            <Search
+                              className="text-gray-400 mx-auto mb-4"
+                              size={40}
+                            />
+                            <h3 className="text-lg font-medium text-gray-900 mb-1">
+                              No transactions found
+                            </h3>
+                            <p className="text-gray-500 max-w-md">
+                              Start adding transactions to see them here
+                            </p>
                           </div>
                         </td>
-                        <td className="py-4 text-gray-600 text-sm">
-                          {new Date(transaction.date).toLocaleDateString(
-                            "en-GB",
-                            {
-                              day: "2-digit",
-                              month: "short",
-                              year: "numeric",
-                            },
-                          )}
-                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
 
-                        <td className="py-4">
-                          <span className="bg-gray-100 text-gray-800 text-xs px-2.5 py-1 rounded-full">
-                            {transaction.category}
-                          </span>
-                        </td>
-                        <td
-                          className={`py-4 text-right font-medium ${
-                            transaction.type === "income"
+              {/* Mobile List View */}
+              <div className="md:hidden space-y-4">
+                {data?.recentTransactions &&
+                data.recentTransactions.length > 0 ? (
+                  data.recentTransactions.map((transaction) => {
+                    const isIncome = transaction.type === "income";
+                    const isExpense = transaction.type === "expense";
+                    return (
+                      <div
+                        key={transaction._id}
+                        className="bg-gray-50 rounded-xl p-4 flex items-center justify-between"
+                      >
+                        <div className="flex items-center">
+                          <div
+                            className={`p-3 rounded-xl mr-3 ${
+                              isIncome
+                                ? "bg-green-100"
+                                : isExpense
+                                  ? "bg-red-100"
+                                  : "bg-blue-100"
+                            }`}
+                          >
+                            {isIncome ? (
+                              <ArrowUpRight className="text-green-600" size={18} />
+                            ) : isExpense ? (
+                              <ArrowDownRight className="text-red-600" size={18} />
+                            ) : (
+                              <DollarSign className="text-blue-600" size={18} />
+                            )}
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-900 text-sm mb-0.5 line-clamp-1">
+                              {transaction.description}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {new Date(transaction.date).toLocaleDateString(
+                                "en-GB",
+                                {
+                                  day: "2-digit",
+                                  month: "short",
+                                }
+                              )}
+                              {" • "}
+                              {transaction.category}
+                            </p>
+                          </div>
+                        </div>
+                        <div
+                          className={`font-bold text-sm text-right shrink-0 pl-3 ${
+                            isIncome
                               ? "text-green-600"
-                              : transaction.type === "expense"
+                              : isExpense
                                 ? "text-red-600"
                                 : "text-blue-600"
                           }`}
                         >
-                          {transaction.type === "income"
-                            ? "+"
-                            : transaction.type === "expense"
-                              ? "-"
-                              : ""}
+                          {isIncome ? "+" : isExpense ? "-" : ""}
                           {formatCurrency(transaction.amount)}
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={4} className="py-12 text-center">
-                        <div className="flex flex-col items-center justify-center">
-                          <Search
-                            className="text-gray-400 mx-auto mb-4"
-                            size={40}
-                          />
-                          <h3 className="text-lg font-medium text-gray-900 mb-1">
-                            No transactions found
-                          </h3>
-                          <p className="text-gray-500 max-w-md">
-                            Start adding transactions to see them here
-                          </p>
                         </div>
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="py-8 text-center bg-gray-50 rounded-xl">
+                    <Search className="text-gray-400 mx-auto mb-3" size={32} />
+                    <h3 className="text-base font-medium text-gray-900 mb-1">
+                      No transactions
+                    </h3>
+                  </div>
+                )}
+              </div>
+            </>
           )}
         </div>
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
         {isLoading ? (
           <>
             {[...Array(3)].map((_, i) => (

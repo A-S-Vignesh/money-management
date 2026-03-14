@@ -246,25 +246,25 @@ import {
 export default function AboutPage() {
   const teamMembers = [
     {
-      name: "Sarah Johnson",
+      name: "Vignesh Krishnan",
       role: "Founder & CEO",
-      bio: "Former financial advisor with 10+ years of experience in personal finance management.",
+      bio: "I am a software engineer with a passion for personal finance management.",
       image: "/team/sarah.jpg",
     },
     {
-      name: "Michael Chen",
+      name: "Siva Prakash",
       role: "CTO",
       bio: "Software engineer specializing in fintech solutions and security systems.",
       image: "/team/michael.jpg",
     },
     {
-      name: "Jessica Williams",
+      name: "Shri Vaishnavi",
       role: "Product Director",
       bio: "Product management expert with background in behavioral economics.",
       image: "/team/jessica.jpg",
     },
     {
-      name: "David Rodriguez",
+      name: "Pon Dinesh Kumar",
       role: "Head of Design",
       bio: "UX/UI specialist focused on creating intuitive financial interfaces.",
       image: "/team/david.jpg",

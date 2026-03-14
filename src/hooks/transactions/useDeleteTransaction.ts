@@ -21,6 +21,7 @@ export function useDeleteTransaction() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["transactions"] });
       queryClient.invalidateQueries({ queryKey: ["accounts"] });
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
       showToast(
         data.message || data.Message || "Transaction deleted successfully",
         data.type || "success",

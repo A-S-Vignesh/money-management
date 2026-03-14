@@ -24,5 +24,6 @@ export function useNotifications(params: UseNotificationsParams = {}) {
       return res.json();
     },
     staleTime: 30 * 1000, // 30 seconds
+    refetchInterval: 30 * 1000, // Poll every 30s for real-time badge and synced list
   });
 }

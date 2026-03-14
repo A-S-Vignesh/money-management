@@ -13,7 +13,6 @@ import { useGoalStore } from "@/store/useGoalStore";
 import Toast from "@/components/Toast";
 import { useAddTransaction } from "@/hooks/transactions/useAddTransaction";
 import { useNotifications } from "@/hooks/notifications/useNotifications";
-import { useUnreadCount } from "@/hooks/notifications/useUnreadCount";
 import { useMarkAsRead } from "@/hooks/notifications/useMarkAsRead";
 import { useMarkAllAsRead } from "@/hooks/notifications/useMarkAllAsRead";
 import { useAccounts } from "@/hooks/accounts/useAccounts";
@@ -103,7 +102,7 @@ export default function DashboardLayout({
 }>) {
   const { data: session } = useSession();
 
-  const { toasts } = useToastStore();
+  const { toasts, removeToast } = useToastStore();
   // const { fetchAccounts } = useAccountStore();
   // const { fetchProfile } = useProfileStore();
   // const { fetchBudgets } = useBudgetStore();
@@ -119,7 +118,8 @@ export default function DashboardLayout({
 
   // Notification hooks for bell dropdown
   const { data: notifData } = useNotifications({ page: 1, limit: 5 });
-  const { data: unreadCount = 0 } = useUnreadCount();
+  const unreadCount = notifData?.unreadCount ?? 0;
+  
   const markAsRead = useMarkAsRead();
   const markAllAsRead = useMarkAllAsRead();
   const recentNotifications = notifData?.data ?? [];
@@ -225,7 +225,7 @@ export default function DashboardLayout({
   const toggleUserMenu = () => setIsUserMenuOpen(!isUserMenuOpen);
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex bg-gray-50 h-[100dvh] w-full overflow-hidden">
       {/* Mobile Backdrop */}
       {sidebarOpen && (
         <div
@@ -234,11 +234,11 @@ export default function DashboardLayout({
         ></div>
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar (Hidden on mobile) */}
       <aside
-        className={`fixed md:static z-50 top-0 h-full md:h-auto left-0 overflow-y-auto bg-gradient-to-b from-gray-900 to-gray-800 text-white flex flex-col transition-all duration-300 ease-in-out ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } md:translate-x-0 ${collapsed ? "md:w-20" : "md:w-64"}`}
+        className={`hidden md:flex z-50 top-0 h-full left-0 overflow-y-auto bg-gradient-to-b from-gray-900 to-gray-800 text-white flex-col transition-all duration-300 ease-in-out ${
+          collapsed ? "w-20" : "w-64"
+        }`}
       >
         {/* Sidebar Header */}
         <div className="p-4 border-b border-gray-700 flex items-center justify-between">
@@ -389,14 +389,9 @@ export default function DashboardLayout({
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden">
         {/* Top Bar */}
-        <header className="bg-white border-b border-gray-200 py-4 px-6 flex items-center justify-between">
+        <header className="bg-white border-b border-gray-200 py-4 px-6 flex items-center justify-between safe-area-top">
           <div className="flex items-center">
-            <button
-              className="md:hidden mr-4 text-gray-500"
-              onClick={toggleSidebar}
-            >
-              <Menu size={24} />
-            </button>
+            {/* Safe area padding for mobile notches is handled globally or via safe-area-top class if defined */}
             <div>
               <h1 className="text-xl font-semibold text-gray-900">
                 {menuItems.find((item) => item.href === pathname)?.label ||
@@ -632,31 +627,143 @@ export default function DashboardLayout({
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-gray-50">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-gray-50 pb-24 md:pb-6">
           {children}
           {/* Toast Notifications */}
-          {toasts.map((toast) => (
-            <Toast
-              key={toast.id}
-              message={toast.message}
-              type={toast.type}
-              onClose={() =>
-                useToastStore.setState((state) => ({
-                  toasts: state.toasts.filter((t) => t.id !== toast.id),
-                }))
-              }
-            />
-          ))}
+          <div className="fixed z-[100] pointer-events-none flex flex-col gap-3 bottom-24 md:bottom-5 md:top-7 left-1/2 -translate-x-1/2 items-center md:right-7 md:left-auto md:translate-x-0 md:items-end">
+            {toasts.map((toast) => (
+              <Toast key={toast.id} {...toast} onClose={removeToast} />
+            ))}
+          </div>
         </div>
-        <footer className="bg-white border-t border-gray-200 py-4 px-6 text-center text-sm text-gray-600">
+        <footer className="hidden md:block bg-white border-t border-gray-200 py-4 px-6 text-center text-sm text-gray-600">
           &copy; {new Date().getFullYear()} Money Manager. All rights reserved.
         </footer>
       </main>
 
+      {/* ─── Mobile Bottom Navigation ──────────────────────── */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center h-16 pb-safe z-50 px-2">
+        <Link
+          href="/dashboard"
+          className={`flex flex-col items-center justify-center w-16 h-full ${
+            pathname === "/dashboard" ? "text-indigo-600" : "text-gray-500 hover:text-gray-900"
+          }`}
+        >
+          <Home size={20} className={pathname === "/dashboard" ? "fill-indigo-100" : ""} />
+          <span className="text-[10px] mt-1 font-medium">Home</span>
+        </Link>
+        <Link
+          href="/dashboard/transactions"
+          className={`flex flex-col items-center justify-center w-16 h-full ${
+            pathname === "/dashboard/transactions" ? "text-indigo-600" : "text-gray-500 hover:text-gray-900"
+          }`}
+        >
+          <List size={20} className={pathname === "/dashboard/transactions" ? "fill-indigo-100" : ""} />
+          <span className="text-[10px] mt-1 font-medium">History</span>
+        </Link>
+
+        {/* Floating Action Button for Add Transaction */}
+        <div className="flex flex-col items-center justify-center w-16 h-full -mt-6">
+          <button
+            onClick={() => {
+              setShowQuickAdd(true);
+              setQuickErrors({});
+              setQuickType("expense");
+            }}
+            className="w-12 h-12 bg-indigo-600 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-indigo-700 transition-transform active:scale-95"
+          >
+            <Plus size={24} />
+          </button>
+        </div>
+
+        <Link
+          href="/dashboard/budgets"
+          className={`flex flex-col items-center justify-center w-16 h-full ${
+            pathname === "/dashboard/budgets" ? "text-indigo-600" : "text-gray-500 hover:text-gray-900"
+          }`}
+        >
+          <PieChart size={20} className={pathname === "/dashboard/budgets" ? "fill-indigo-100" : ""} />
+          <span className="text-[10px] mt-1 font-medium">Budgets</span>
+        </Link>
+        <button
+          onClick={toggleSidebar}
+          className={`flex flex-col items-center justify-center w-16 h-full ${
+            sidebarOpen ? "text-indigo-600" : "text-gray-500 hover:text-gray-900"
+          }`}
+        >
+          <Menu size={20} className={sidebarOpen ? "fill-indigo-100" : ""} />
+          <span className="text-[10px] mt-1 font-medium">Menu</span>
+        </button>
+      </div>
+
+      {/* Mobile Menu Bottom Sheet */}
+      {sidebarOpen && isMobile && (
+        <div className="md:hidden fixed inset-0 z-[60] flex flex-col justify-end">
+          <div className="absolute inset-0 bg-black/50" onClick={closeSidebar}></div>
+          <div className="bg-white w-full rounded-t-[2rem] p-6 pb-safe z-10 animate-slide-up max-h-[80vh] flex flex-col">
+            <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mb-6"></div>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-gray-900">Menu</h2>
+              <button onClick={closeSidebar} className="p-2 bg-gray-100 rounded-full text-gray-500">
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="overflow-y-auto overscroll-contain no-scrollbar flex-1 pb-4">
+              <div className="grid grid-cols-4 gap-4 mb-6">
+                {menuItems.filter(item => !['/dashboard', '/dashboard/transactions', '/dashboard/budgets'].includes(item.href)).map(item => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={closeSidebar}
+                    className="flex flex-col items-center p-3 bg-gray-50 rounded-2xl hover:bg-gray-100 transition-colors"
+                  >
+                    <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-indigo-600 shadow-sm mb-2">
+                       {item.icon}
+                    </div>
+                    <span className="text-xs font-medium text-gray-700 text-center">{item.label}</span>
+                  </Link>
+                ))}
+              </div>
+
+              <div className="space-y-2 mt-4">
+                <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 px-2">Account</h3>
+                {secondaryItems.map(item => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={closeSidebar}
+                    className="flex items-center p-3 text-gray-700 hover:bg-gray-50 rounded-xl"
+                  >
+                    <span className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center mr-3 text-gray-500">
+                      {item.icon}
+                    </span>
+                    <span className="font-medium text-sm">{item.label}</span>
+                  </Link>
+                ))}
+                <button
+                  onClick={() => {
+                    closeSidebar();
+                    signOut();
+                  }}
+                  className="w-full flex items-center p-3 text-red-600 hover:bg-red-50 rounded-xl mt-2"
+                >
+                  <span className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center mr-3">
+                    <LogOut size={16} />
+                  </span>
+                  <span className="font-medium text-sm">Sign Out</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ─── Quick Add Transaction Modal ──────────────────────── */}
       {showQuickAdd && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[100]">
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center z-[100] md:p-4">
+          <div className="bg-white w-full md:max-w-md rounded-t-[2rem] md:rounded-2xl shadow-2xl animate-slide-up md:animate-none flex flex-col max-h-[90vh]">
+            <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mt-4 mb-2 md:hidden"></div>
             {/* Modal Header */}
             <div className="flex justify-between items-center px-6 pt-5 pb-4 border-b border-gray-100">
               <h2 className="text-lg font-bold text-gray-900">
@@ -673,7 +780,8 @@ export default function DashboardLayout({
               </button>
             </div>
 
-            <form onSubmit={handleQuickAdd} className="p-6 space-y-4">
+            <div className="overflow-y-auto overscroll-contain no-scrollbar pb-safe">
+              <form onSubmit={handleQuickAdd} className="p-6 space-y-4">
               {/* Type Tabs */}
               <div className="grid grid-cols-3 gap-1 bg-gray-100 p-1 rounded-xl">
                 {(
@@ -729,7 +837,7 @@ export default function DashboardLayout({
                   type="text"
                   name="description"
                   placeholder="e.g. Grocery shopping"
-                  className={`w-full px-3 py-2.5 border rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+                  className={`w-full px-3 py-2.5 border rounded-xl text-base md:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
                     quickErrors.description
                       ? "border-red-300 bg-red-50"
                       : "border-gray-300"
@@ -754,7 +862,7 @@ export default function DashboardLayout({
                     placeholder="0"
                     min="0"
                     step="0.01"
-                    className={`w-full px-3 py-2.5 border rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+                    className={`w-full px-3 py-2.5 border rounded-xl text-base md:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
                       quickErrors.amount
                         ? "border-red-300 bg-red-50"
                         : "border-gray-300"
@@ -774,7 +882,7 @@ export default function DashboardLayout({
                     type="date"
                     name="date"
                     defaultValue={new Date().toISOString().split("T")[0]}
-                    className={`w-full px-3 py-2.5 border rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+                    className={`w-full px-3 py-2.5 border rounded-xl text-base md:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
                       quickErrors.date
                         ? "border-red-300 bg-red-50"
                         : "border-gray-300"
@@ -796,7 +904,7 @@ export default function DashboardLayout({
                   </label>
                   <select
                     name="category"
-                    className={`w-full px-3 py-2.5 border rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+                    className={`w-full px-3 py-2.5 border rounded-xl text-base md:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
                       quickErrors.category
                         ? "border-red-300 bg-red-50"
                         : "border-gray-300"
@@ -825,7 +933,7 @@ export default function DashboardLayout({
                   </label>
                   <select
                     name="fromAccountId"
-                    className={`w-full px-3 py-2.5 border rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+                    className={`w-full px-3 py-2.5 border rounded-xl text-base md:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
                       quickErrors.fromAccountId
                         ? "border-red-300 bg-red-50"
                         : "border-gray-300"
@@ -854,7 +962,7 @@ export default function DashboardLayout({
                   </label>
                   <select
                     name="toAccountId"
-                    className={`w-full px-3 py-2.5 border rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+                    className={`w-full px-3 py-2.5 border rounded-xl text-base md:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
                       quickErrors.toAccountId
                         ? "border-red-300 bg-red-50"
                         : "border-gray-300"
@@ -905,6 +1013,7 @@ export default function DashboardLayout({
                 </button>
               </div>
             </form>
+            </div>
           </div>
         </div>
       )}

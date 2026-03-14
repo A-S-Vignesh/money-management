@@ -220,10 +220,10 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
         {/* ── Profile Details Card ───────── */}
-        <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <div className="flex flex-col md:flex-row gap-6">
+        <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-4 md:p-6">
+          <div className="flex flex-col md:flex-row gap-4 md:gap-6 items-center md:items-start text-center md:text-left">
             {/* Profile Picture */}
             <div className="flex-shrink-0">
               <div className="relative">
@@ -233,7 +233,7 @@ export default function ProfilePage() {
                     alt="Profile"
                     width={128}
                     height={128}
-                    className="w-32 h-32 rounded-full object-cover border-4 border-white shadow"
+                    className="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover border-4 border-white shadow"
                   />
                 ) : (
                   <div className="bg-gray-200 border-2 border-dashed rounded-full w-32 h-32 flex items-center justify-center">
@@ -486,20 +486,20 @@ export default function ProfilePage() {
           </div>
 
           {/* Action Buttons */}
-          <div className="p-4">
+          <div className="p-4 md:p-0 md:mt-4">
             {!editMode ? (
               <button
                 onClick={() => setEditMode(true)}
-                className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-colors text-sm font-medium"
+                className="w-full md:w-auto flex flex-1 items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-colors text-sm font-medium"
               >
                 <Edit size={16} />
                 <span>Edit Profile</span>
               </button>
             ) : (
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <button
                   onClick={handleCancel}
-                  className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-50 font-medium"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-50 font-medium"
                 >
                   <X size={16} />
                   <span>Cancel</span>
@@ -507,7 +507,7 @@ export default function ProfilePage() {
                 <button
                   onClick={handleSave}
                   disabled={updateMutation.isPending}
-                  className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-colors disabled:opacity-60 text-sm font-medium"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-colors disabled:opacity-60 text-sm font-medium"
                 >
                   {updateMutation.isPending ? (
                     <Loader2 size={16} className="animate-spin" />
@@ -522,7 +522,7 @@ export default function ProfilePage() {
         </div>
 
         {/* ── Account Settings Card ─────── */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 md:p-6">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">
             Account Settings
           </h3>
@@ -596,7 +596,7 @@ export default function ProfilePage() {
                         }
                       }}
                       disabled={pushNotif.isLoading}
-                      className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-colors ${
+                      className={`w-auto px-4 py-1.5 text-sm font-medium rounded-lg transition-colors shrink-0 ${
                         pushNotif.subscription
                           ? "text-red-600 bg-red-50 hover:bg-red-100"
                           : "text-white bg-indigo-600 hover:bg-indigo-700"
@@ -653,7 +653,7 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          <div className="mt-6 pt-4 border-t border-gray-200">
+          {/* <div className="mt-6 pt-4 border-t border-gray-200">
             <button
               onClick={() => setShowPasswordModal(true)}
               className="w-full flex items-center justify-center gap-2 py-2.5 text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-colors text-sm font-medium"
@@ -661,12 +661,12 @@ export default function ProfilePage() {
               <Lock size={16} />
               <span>Change Password</span>
             </button>
-          </div>
+          </div> */}
         </div>
       </div>
 
       {/* Security Card */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 md:p-6">
         <h3 className="text-lg font-semibold text-gray-800 mb-4">Security</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="border border-gray-200 rounded-lg p-4">
@@ -721,15 +721,17 @@ export default function ProfilePage() {
 
       {/* ── Change Password Modal ──────── */}
       {showPasswordModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl">
-            <div className="flex justify-between items-center px-6 pt-5 pb-4 border-b border-gray-100">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center z-[100] md:p-4">
+          <div className="bg-white rounded-t-[2rem] md:rounded-2xl w-full max-w-md shadow-2xl animate-slide-up md:animate-none flex flex-col max-h-[90vh]">
+            <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mt-4 mb-2 md:hidden"></div>
+            
+            <div className="flex justify-between items-center px-6 pt-2 md:pt-6 pb-4 border-b border-gray-100">
               <h2 className="text-lg font-bold text-gray-900">
                 Change Password
               </h2>
               <button
                 onClick={() => setShowPasswordModal(false)}
-                className="text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-100"
+                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
               >
                 <X size={20} />
               </button>
@@ -741,7 +743,7 @@ export default function ProfilePage() {
                 // Password change not implemented for Google OAuth users
                 setShowPasswordModal(false);
               }}
-              className="p-6 space-y-4"
+              className="p-6 space-y-5 overflow-y-auto mb-6"
             >
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -794,17 +796,17 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              <div className="flex gap-3 pt-2">
+              <div className="flex gap-3 pt-4 mt-6 border-t border-gray-100">
                 <button
                   type="button"
                   onClick={() => setShowPasswordModal(false)}
-                  className="flex-1 px-4 py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-50 font-medium"
+                  className="flex-1 px-4 py-3 md:py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-50 font-medium cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2.5 text-sm text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl font-medium"
+                  className="flex-1 flex justify-center items-center px-4 py-3 md:py-2.5 bg-indigo-600 text-white text-sm rounded-xl font-medium hover:bg-indigo-700 cursor-pointer transition-colors"
                 >
                   Update Password
                 </button>
