@@ -664,7 +664,7 @@ export default function DashboardLayout({
               bottom: 0,
               left: 0,
               width: "100%",
-              height: "100px",
+              height: "110px",
             }}
             viewBox="0 0 375 80"
             preserveAspectRatio="none"
