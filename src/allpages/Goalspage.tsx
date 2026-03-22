@@ -2,6 +2,7 @@
 "use client";
 
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { formatCurrency } from "@/utils/formatCurrency";
 import Link from "next/link";
 import {
@@ -768,8 +769,8 @@ export default function GoalsPage() {
       </div>
 
       {/* ─── Create/Edit Goal Modal ──────────────────────── */}
-      {showForm && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center z-[100] md:p-4">
+      {showForm && typeof document !== "undefined" && createPortal(
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center z-[200] md:p-4">
           <div className="bg-white rounded-t-[2rem] md:rounded-2xl w-full max-w-md shadow-2xl animate-slide-up md:animate-none flex flex-col max-h-[90vh]">
             <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mt-4 mb-2 md:hidden"></div>
             
@@ -789,8 +790,8 @@ export default function GoalsPage() {
               </button>
             </div>
 
-            <div className="overflow-y-auto p-6 pb-24 md:pb-6 custom-scrollbar">
-              <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="overflow-y-auto pb-safe custom-scrollbar">
+              <form onSubmit={handleSubmit} className="space-y-5 p-6">
                 {/* Goal Name */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1.5">
@@ -981,7 +982,8 @@ export default function GoalsPage() {
               </form>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

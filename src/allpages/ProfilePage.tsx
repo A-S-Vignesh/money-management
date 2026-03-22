@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import {
   User,
@@ -222,10 +223,10 @@ export default function ProfilePage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
         {/* ── Profile Details Card ───────── */}
-        <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-4 md:p-6">
-          <div className="flex flex-col md:flex-row gap-4 md:gap-6 items-center md:items-start text-center md:text-left">
+        <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-5 md:p-6 mb-4 md:mb-0">
+          <div className="flex flex-col md:flex-row gap-5 md:gap-8 items-center md:items-start">
             {/* Profile Picture */}
-            <div className="flex-shrink-0">
+            <div className="flex-shrink-0 flex flex-col items-center">
               <div className="relative">
                 {profile?.image ? (
                   <Image
@@ -233,18 +234,18 @@ export default function ProfilePage() {
                     alt="Profile"
                     width={128}
                     height={128}
-                    className="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover border-4 border-white shadow"
+                    className="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover border-4 border-white shadow-sm"
                   />
                 ) : (
-                  <div className="bg-gray-200 border-2 border-dashed rounded-full w-32 h-32 flex items-center justify-center">
-                    <User className="text-gray-400" size={48} />
+                  <div className="bg-gray-100 border-2 border-dashed border-gray-300 rounded-full w-24 h-24 md:w-32 md:h-32 flex items-center justify-center">
+                    <User className="text-gray-400" size={40}  />
                   </div>
                 )}
               </div>
             </div>
 
             {/* Personal Information */}
-            <div className="flex-1">
+            <div className="flex-1 w-full text-left mt-2 md:mt-0">
               {editMode ? (
                 <div className="space-y-4">
                   {/* Name */}
@@ -409,33 +410,37 @@ export default function ProfilePage() {
               ) : (
                 // ── View Mode ─────────────────
                 <div className="space-y-4">
-                  <div>
+                  <div className="text-center md:text-left mb-6 md:mb-4">
                     <h2 className="text-2xl font-bold text-gray-900">
                       {profile?.name || "User Name"}
                     </h2>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="flex items-start">
-                      <Mail
-                        className="text-gray-500 mr-3 flex-shrink-0 mt-0.5"
-                        size={18}
-                      />
+                  <div className="bg-gray-50/50 rounded-2xl md:rounded-xl p-4 md:p-0 md:bg-transparent space-y-4 md:space-y-0 md:grid md:grid-cols-2 md:gap-4 border border-gray-100 md:border-none">
+                    <div className="flex items-center md:items-start p-1 md:p-0">
+                      <div className="bg-white md:bg-transparent p-2 md:p-0 rounded-lg shadow-sm md:shadow-none border border-gray-100 md:border-none mr-3 flex-shrink-0">
+                        <Mail
+                          className="text-gray-500"
+                          size={18}
+                        />
+                      </div>
                       <div>
-                        <p className="text-sm text-gray-600">Email Address</p>
-                        <p className="font-medium">{profile?.email}</p>
+                        <p className="text-[11px] md:text-sm text-gray-500 uppercase tracking-wider font-semibold md:font-normal md:normal-case md:text-gray-600">Email Address</p>
+                        <p className="font-medium text-gray-900 md:text-gray-800 text-sm md:text-base truncate max-w-[200px] md:max-w-none">{profile?.email}</p>
                       </div>
                     </div>
 
                     {profile?.phoneNo && (
-                      <div className="flex items-start">
-                        <Phone
-                          className="text-gray-500 mr-3 flex-shrink-0 mt-0.5"
-                          size={18}
-                        />
+                      <div className="flex items-center pt-3 md:pt-0 border-t border-gray-100 md:border-none p-1 md:p-0">
+                        <div className="bg-white md:bg-transparent p-2 md:p-0 rounded-lg shadow-sm md:shadow-none border border-gray-100 md:border-none mr-3 flex-shrink-0">
+                          <Phone
+                            className="text-gray-500"
+                            size={18}
+                          />
+                        </div>
                         <div>
-                          <p className="text-sm text-gray-600">Phone Number</p>
-                          <p className="font-medium">{profile.phoneNo}</p>
+                          <p className="text-[11px] md:text-sm text-gray-500 uppercase tracking-wider font-semibold md:font-normal md:normal-case md:text-gray-600">Phone Number</p>
+                          <p className="font-medium text-gray-900 md:text-gray-800 text-sm md:text-base">{profile.phoneNo}</p>
                         </div>
                       </div>
                     )}
@@ -720,8 +725,8 @@ export default function ProfilePage() {
       </div>
 
       {/* ── Change Password Modal ──────── */}
-      {showPasswordModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center z-[100] md:p-4">
+      {showPasswordModal && typeof document !== "undefined" && createPortal(
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center z-[200] md:p-4">
           <div className="bg-white rounded-t-[2rem] md:rounded-2xl w-full max-w-md shadow-2xl animate-slide-up md:animate-none flex flex-col max-h-[90vh]">
             <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mt-4 mb-2 md:hidden"></div>
             
@@ -813,7 +818,8 @@ export default function ProfilePage() {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

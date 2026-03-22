@@ -264,26 +264,16 @@ export default function DashboardLayout({
             )}
           </div>
           <div className="flex gap-2 items-center">
-            {!isMobile && (
-              <button
-                className="text-gray-300 hover:text-white"
-                onClick={toggleCollapse}
-              >
-                {collapsed ? (
-                  <ChevronsRight size={20} />
-                ) : (
-                  <ChevronsLeft size={20} />
-                )}
-              </button>
-            )}
-            {isMobile && (
-              <button
-                className="text-gray-300 hover:text-white"
-                onClick={closeSidebar}
-              >
-                <X size={24} />
-              </button>
-            )}
+            <button
+              className="text-gray-300 hover:text-white"
+              onClick={toggleCollapse}
+            >
+              {collapsed ? (
+                <ChevronsRight size={20} />
+              ) : (
+                <ChevronsLeft size={20} />
+              )}
+            </button>
           </div>
         </div>
 
@@ -388,26 +378,47 @@ export default function DashboardLayout({
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden">
-        {/* Top Bar */}
-        <header className="bg-white border-b border-gray-200 py-4 px-6 flex items-center justify-between safe-area-top">
-          <div className="flex items-center">
-            {/* Safe area padding for mobile notches is handled globally or via safe-area-top class if defined */}
-            <div>
+        {/* Top Bar — Desktop: full bar | Mobile: compact app-style header */}
+        <header className="relative bg-white border-b border-gray-200 flex items-center justify-between safe-area-top
+          pt-[max(env(safe-area-inset-top),12px)] pb-3 px-4
+          md:pt-[max(env(safe-area-inset-top),16px)] md:pb-4 md:px-6">
+
+          {/* Mobile: Logo left */}
+          <div className="flex items-center gap-3">
+            <div className="md:hidden">
+              <Image
+                src="/images/logo/mainlogo2.png"
+                alt="Money Nest"
+                width={40}
+                height={40}
+                className="w-8 h-8"
+              />
+            </div>
+            {/* Desktop: page title + subtitle */}
+            <div className="hidden md:block">
               <h1 className="text-xl font-semibold text-gray-900">
                 {menuItems.find((item) => item.href === pathname)?.label ||
-                  secondaryItems.find((item) => item.href === pathname)
-                    ?.label ||
+                  secondaryItems.find((item) => item.href === pathname)?.label ||
                   "Dashboard"}
               </h1>
               <p className="text-sm text-gray-600">Your financial overview</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            {/* Notification Dropdown */}
+          {/* Mobile: Centered page title */}
+          <div className="absolute left-1/2 -translate-x-1/2 md:hidden">
+            <h1 className="text-base font-semibold text-gray-900 tracking-tight">
+              {menuItems.find((item) => item.href === pathname)?.label ||
+                secondaryItems.find((item) => item.href === pathname)?.label ||
+                "Dashboard"}
+            </h1>
+          </div>
+
+          <div className="flex items-center gap-2 md:gap-4">
+            {/* Notification Dropdown — 44px touch target */}
             <div className="relative" ref={notifRef}>
               <button
-                className="relative p-2 text-gray-500 hover:bg-gray-100 rounded-full cursor-pointer"
+                className="relative flex items-center justify-center w-11 h-11 text-gray-500 hover:bg-gray-100 active:bg-gray-200 active:scale-95 rounded-full transition-all"
                 onClick={toggleNotif}
               >
                 <Bell size={20} />
@@ -627,7 +638,9 @@ export default function DashboardLayout({
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-gray-50 pb-24 md:pb-6">
+        <div className="flex-1 overflow-y-auto no-scrollbar p-4 sm:p-6 bg-gray-50
+          pb-[calc(6rem+env(safe-area-inset-bottom,0px))]
+          md:pb-6">
           {children}
           {/* Toast Notifications */}
           <div className="fixed z-[100] pointer-events-none flex flex-col gap-3 bottom-24 md:bottom-5 md:top-7 left-1/2 -translate-x-1/2 items-center md:right-7 md:left-auto md:translate-x-0 md:items-end">
@@ -642,93 +655,163 @@ export default function DashboardLayout({
       </main>
 
       {/* ─── Mobile Bottom Navigation ──────────────────────── */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center h-16 pb-safe z-50 px-2">
-        <Link
-          href="/dashboard"
-          className={`flex flex-col items-center justify-center w-16 h-full ${
-            pathname === "/dashboard" ? "text-indigo-600" : "text-gray-500 hover:text-gray-900"
-          }`}
-        >
-          <Home size={20} className={pathname === "/dashboard" ? "fill-indigo-100" : ""} />
-          <span className="text-[10px] mt-1 font-medium">Home</span>
-        </Link>
-        <Link
-          href="/dashboard/transactions"
-          className={`flex flex-col items-center justify-center w-16 h-full ${
-            pathname === "/dashboard/transactions" ? "text-indigo-600" : "text-gray-500 hover:text-gray-900"
-          }`}
-        >
-          <List size={20} className={pathname === "/dashboard/transactions" ? "fill-indigo-100" : ""} />
-          <span className="text-[10px] mt-1 font-medium">History</span>
-        </Link>
-
-        {/* Floating Action Button for Add Transaction */}
-        <div className="flex flex-col items-center justify-center w-16 h-full -mt-6">
-          <button
-            onClick={() => {
-              setShowQuickAdd(true);
-              setQuickErrors({});
-              setQuickType("expense");
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 safe-bottom-nav">
+        {/* SVG curved notch background — height accounts for safe area */}
+        <div className="relative" style={{ height: "64px" }}>
+          <svg
+            style={{
+              position: "absolute",
+              bottom: 0,
+              left: 0,
+              width: "100%",
+              height: "100px",
             }}
-            className="w-12 h-12 bg-indigo-600 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-indigo-700 transition-transform active:scale-95"
+            viewBox="0 0 375 80"
+            preserveAspectRatio="none"
+            xmlns="http://www.w3.org/2000/svg"
           >
-            <Plus size={24} />
-          </button>
-        </div>
+            <path
+              d="M0,38
+           L148,38
+           Q158,38 163,30
+           Q172,20 187.5,20
+           Q203,20 212,30
+           Q217,38 227,38
+           L375,38
+           L375,80 L0,80 Z"
+              fill="white"
+            />
+            <path
+              d="M0,38
+           L148,38
+           Q158,38 163,30
+           Q172,20 187.5,20
+           Q203,20 212,30
+           Q217,38 227,38
+           L375,38"
+              fill="none"
+              stroke="#e5e7eb"
+              strokeWidth="1"
+            />
+          </svg>
 
-        <Link
-          href="/dashboard/budgets"
-          className={`flex flex-col items-center justify-center w-16 h-full ${
-            pathname === "/dashboard/budgets" ? "text-indigo-600" : "text-gray-500 hover:text-gray-900"
-          }`}
-        >
-          <PieChart size={20} className={pathname === "/dashboard/budgets" ? "fill-indigo-100" : ""} />
-          <span className="text-[10px] mt-1 font-medium">Budgets</span>
-        </Link>
-        <button
-          onClick={toggleSidebar}
-          className={`flex flex-col items-center justify-center w-16 h-full ${
-            sidebarOpen ? "text-indigo-600" : "text-gray-500 hover:text-gray-900"
-          }`}
-        >
-          <Menu size={20} className={sidebarOpen ? "fill-indigo-100" : ""} />
-          <span className="text-[10px] mt-1 font-medium">Menu</span>
-        </button>
+          {/* Nav items — 44px min touch targets, press feedback */}
+          <div
+            className="relative z-10 flex justify-around items-end w-full px-2"
+            style={{ height: "64px", paddingBottom: "8px" }}
+          >
+            <Link
+              href="/dashboard"
+              className={`flex flex-col items-center justify-center min-w-[44px] min-h-[44px] w-16 active:scale-90 transition-transform ${
+                pathname === "/dashboard" ? "text-indigo-600" : "text-gray-400"
+              }`}
+            >
+              <Home size={20} />
+              <span className="text-[10px] mt-1 font-medium">Home</span>
+            </Link>
+
+            <Link
+              href="/dashboard/transactions"
+              className={`flex flex-col items-center justify-center min-w-[44px] min-h-[44px] w-16 active:scale-90 transition-transform ${
+                pathname === "/dashboard/transactions" ? "text-indigo-600" : "text-gray-400"
+              }`}
+            >
+              <List size={20} />
+              <span className="text-[10px] mt-1 font-medium">History</span>
+            </Link>
+
+            {/* FAB — centered floating action button */}
+            <div
+              className="flex flex-col items-center w-16"
+              style={{ marginBottom: "14px" }}
+            >
+              <button
+                onClick={() => {
+                  setShowQuickAdd(true);
+                  setQuickErrors({});
+                  setQuickType("expense");
+                }}
+                className="w-12 h-12 bg-indigo-600 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-indigo-700 active:scale-90 transition-all"
+              >
+                <Plus size={24} />
+              </button>
+            </div>
+
+            <Link
+              href="/dashboard/budgets"
+              className={`flex flex-col items-center justify-center min-w-[44px] min-h-[44px] w-16 active:scale-90 transition-transform ${
+                pathname === "/dashboard/budgets" ? "text-indigo-600" : "text-gray-400"
+              }`}
+            >
+              <PieChart size={20} />
+              <span className="text-[10px] mt-1 font-medium">Budgets</span>
+            </Link>
+
+            <button
+              onClick={toggleSidebar}
+              className={`flex flex-col items-center justify-center min-w-[44px] min-h-[44px] w-16 active:scale-90 transition-transform ${
+                sidebarOpen ? "text-indigo-600" : "text-gray-400"
+              }`}
+            >
+              <Menu size={20} />
+              <span className="text-[10px] mt-1 font-medium">Menu</span>
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Mobile Menu Bottom Sheet */}
       {sidebarOpen && isMobile && (
         <div className="md:hidden fixed inset-0 z-[60] flex flex-col justify-end">
-          <div className="absolute inset-0 bg-black/50" onClick={closeSidebar}></div>
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={closeSidebar}
+          ></div>
           <div className="bg-white w-full rounded-t-[2rem] p-6 pb-safe z-10 animate-slide-up max-h-[80vh] flex flex-col">
             <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mb-6"></div>
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-gray-900">Menu</h2>
-              <button onClick={closeSidebar} className="p-2 bg-gray-100 rounded-full text-gray-500">
+              <button
+                onClick={closeSidebar}
+                className="p-2 bg-gray-100 rounded-full text-gray-500"
+              >
                 <X size={20} />
               </button>
             </div>
-            
+
             <div className="overflow-y-auto overscroll-contain no-scrollbar flex-1 pb-4">
               <div className="grid grid-cols-4 gap-4 mb-6">
-                {menuItems.filter(item => !['/dashboard', '/dashboard/transactions', '/dashboard/budgets'].includes(item.href)).map(item => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={closeSidebar}
-                    className="flex flex-col items-center p-3 bg-gray-50 rounded-2xl hover:bg-gray-100 transition-colors"
-                  >
-                    <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-indigo-600 shadow-sm mb-2">
-                       {item.icon}
-                    </div>
-                    <span className="text-xs font-medium text-gray-700 text-center">{item.label}</span>
-                  </Link>
-                ))}
+                {menuItems
+                  .filter(
+                    (item) =>
+                      ![
+                        "/dashboard",
+                        "/dashboard/transactions",
+                        "/dashboard/budgets",
+                      ].includes(item.href),
+                  )
+                  .map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={closeSidebar}
+                      className="flex flex-col items-center p-3 bg-gray-50 rounded-2xl hover:bg-gray-100 transition-colors"
+                    >
+                      <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-indigo-600 shadow-sm mb-2">
+                        {item.icon}
+                      </div>
+                      <span className="text-xs font-medium text-gray-700 text-center">
+                        {item.label}
+                      </span>
+                    </Link>
+                  ))}
               </div>
 
               <div className="space-y-2 mt-4">
-                <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 px-2">Account</h3>
-                {secondaryItems.map(item => (
+                <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 px-2">
+                  Account
+                </h3>
+                {secondaryItems.map((item) => (
                   <Link
                     key={item.href}
                     href={item.href}
@@ -782,237 +865,239 @@ export default function DashboardLayout({
 
             <div className="overflow-y-auto overscroll-contain no-scrollbar pb-safe">
               <form onSubmit={handleQuickAdd} className="p-6 space-y-4">
-              {/* Type Tabs */}
-              <div className="grid grid-cols-3 gap-1 bg-gray-100 p-1 rounded-xl">
-                {(
-                  [
-                    {
-                      value: "expense",
-                      label: "Expense",
-                      Icon: ArrowUpCircle,
-                      color: "text-red-600",
-                    },
-                    {
-                      value: "income",
-                      label: "Income",
-                      Icon: ArrowDownCircle,
-                      color: "text-green-600",
-                    },
-                    {
-                      value: "transfer",
-                      label: "Transfer",
-                      Icon: ArrowLeftRight,
-                      color: "text-blue-600",
-                    },
-                  ] as const
-                ).map(({ value, label, Icon, color }) => (
+                {/* Type Tabs */}
+                <div className="grid grid-cols-3 gap-1 bg-gray-100 p-1 rounded-xl">
+                  {(
+                    [
+                      {
+                        value: "expense",
+                        label: "Expense",
+                        Icon: ArrowUpCircle,
+                        color: "text-red-600",
+                      },
+                      {
+                        value: "income",
+                        label: "Income",
+                        Icon: ArrowDownCircle,
+                        color: "text-green-600",
+                      },
+                      {
+                        value: "transfer",
+                        label: "Transfer",
+                        Icon: ArrowLeftRight,
+                        color: "text-blue-600",
+                      },
+                    ] as const
+                  ).map(({ value, label, Icon, color }) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => {
+                        setQuickType(value);
+                        setQuickErrors({});
+                      }}
+                      className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg text-sm font-medium transition-all ${
+                        quickType === value
+                          ? "bg-white shadow text-gray-900"
+                          : "text-gray-500 hover:text-gray-700"
+                      }`}
+                    >
+                      <Icon
+                        size={14}
+                        className={quickType === value ? color : ""}
+                      />
+                      {label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Description */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Description
+                  </label>
+                  <input
+                    type="text"
+                    name="description"
+                    placeholder="e.g. Grocery shopping"
+                    className={`w-full px-3 py-2.5 border rounded-xl text-base md:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+                      quickErrors.description
+                        ? "border-red-300 bg-red-50"
+                        : "border-gray-300"
+                    }`}
+                  />
+                  {quickErrors.description && (
+                    <p className="mt-1 text-xs text-red-600">
+                      {quickErrors.description[0]}
+                    </p>
+                  )}
+                </div>
+
+                {/* Amount + Date row */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Amount (₹)
+                    </label>
+                    <input
+                      type="number"
+                      name="amount"
+                      placeholder="0"
+                      min="0"
+                      step="0.01"
+                      className={`w-full px-3 py-2.5 border rounded-xl text-base md:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+                        quickErrors.amount
+                          ? "border-red-300 bg-red-50"
+                          : "border-gray-300"
+                      }`}
+                    />
+                    {quickErrors.amount && (
+                      <p className="mt-1 text-xs text-red-600">
+                        {quickErrors.amount[0]}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Date
+                    </label>
+                    <input
+                      type="date"
+                      name="date"
+                      defaultValue={new Date().toISOString().split("T")[0]}
+                      className={`w-full px-3 py-2.5 border rounded-xl text-base md:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+                        quickErrors.date
+                          ? "border-red-300 bg-red-50"
+                          : "border-gray-300"
+                      }`}
+                    />
+                    {quickErrors.date && (
+                      <p className="mt-1 text-xs text-red-600">
+                        {quickErrors.date[0]}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Category (not for transfer) */}
+                {quickType !== "transfer" && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Category
+                    </label>
+                    <select
+                      name="category"
+                      className={`w-full px-3 py-2.5 border rounded-xl text-base md:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+                        quickErrors.category
+                          ? "border-red-300 bg-red-50"
+                          : "border-gray-300"
+                      }`}
+                    >
+                      <option value="">Select category</option>
+                      {categoryNames.map((c) => (
+                        <option key={c} value={c}>
+                          {c}
+                        </option>
+                      ))}
+                    </select>
+                    {quickErrors.category && (
+                      <p className="mt-1 text-xs text-red-600">
+                        {quickErrors.category[0]}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* From Account (expense / transfer) */}
+                {(quickType === "expense" || quickType === "transfer") && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      {quickType === "transfer"
+                        ? "From Account"
+                        : "From Account"}
+                    </label>
+                    <select
+                      name="fromAccountId"
+                      className={`w-full px-3 py-2.5 border rounded-xl text-base md:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+                        quickErrors.fromAccountId
+                          ? "border-red-300 bg-red-50"
+                          : "border-gray-300"
+                      }`}
+                    >
+                      <option value="">Select account</option>
+                      {accounts.map((acc) => (
+                        <option key={acc._id} value={acc._id}>
+                          {acc.name} — ₹{acc.balance?.toLocaleString()}
+                        </option>
+                      ))}
+                    </select>
+                    {quickErrors.fromAccountId && (
+                      <p className="mt-1 text-xs text-red-600">
+                        {quickErrors.fromAccountId[0]}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* To Account (income / transfer) */}
+                {(quickType === "income" || quickType === "transfer") && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      To Account
+                    </label>
+                    <select
+                      name="toAccountId"
+                      className={`w-full px-3 py-2.5 border rounded-xl text-base md:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+                        quickErrors.toAccountId
+                          ? "border-red-300 bg-red-50"
+                          : "border-gray-300"
+                      }`}
+                    >
+                      <option value="">Select account</option>
+                      {accounts.map((acc) => (
+                        <option key={acc._id} value={acc._id}>
+                          {acc.name} — ₹{acc.balance?.toLocaleString()}
+                        </option>
+                      ))}
+                    </select>
+                    {quickErrors.toAccountId && (
+                      <p className="mt-1 text-xs text-red-600">
+                        {quickErrors.toAccountId[0]}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Actions */}
+                <div className="flex gap-3 pt-2">
                   <button
-                    key={value}
                     type="button"
                     onClick={() => {
-                      setQuickType(value);
+                      setShowQuickAdd(false);
                       setQuickErrors({});
                     }}
-                    className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg text-sm font-medium transition-all ${
-                      quickType === value
-                        ? "bg-white shadow text-gray-900"
-                        : "text-gray-500 hover:text-gray-700"
-                    }`}
+                    className="flex-1 px-4 py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-50 font-medium"
                   >
-                    <Icon
-                      size={14}
-                      className={quickType === value ? color : ""}
-                    />
-                    {label}
+                    Cancel
                   </button>
-                ))}
-              </div>
-
-              {/* Description */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Description
-                </label>
-                <input
-                  type="text"
-                  name="description"
-                  placeholder="e.g. Grocery shopping"
-                  className={`w-full px-3 py-2.5 border rounded-xl text-base md:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
-                    quickErrors.description
-                      ? "border-red-300 bg-red-50"
-                      : "border-gray-300"
-                  }`}
-                />
-                {quickErrors.description && (
-                  <p className="mt-1 text-xs text-red-600">
-                    {quickErrors.description[0]}
-                  </p>
-                )}
-              </div>
-
-              {/* Amount + Date row */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Amount (₹)
-                  </label>
-                  <input
-                    type="number"
-                    name="amount"
-                    placeholder="0"
-                    min="0"
-                    step="0.01"
-                    className={`w-full px-3 py-2.5 border rounded-xl text-base md:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
-                      quickErrors.amount
-                        ? "border-red-300 bg-red-50"
-                        : "border-gray-300"
-                    }`}
-                  />
-                  {quickErrors.amount && (
-                    <p className="mt-1 text-xs text-red-600">
-                      {quickErrors.amount[0]}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Date
-                  </label>
-                  <input
-                    type="date"
-                    name="date"
-                    defaultValue={new Date().toISOString().split("T")[0]}
-                    className={`w-full px-3 py-2.5 border rounded-xl text-base md:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
-                      quickErrors.date
-                        ? "border-red-300 bg-red-50"
-                        : "border-gray-300"
-                    }`}
-                  />
-                  {quickErrors.date && (
-                    <p className="mt-1 text-xs text-red-600">
-                      {quickErrors.date[0]}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Category (not for transfer) */}
-              {quickType !== "transfer" && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Category
-                  </label>
-                  <select
-                    name="category"
-                    className={`w-full px-3 py-2.5 border rounded-xl text-base md:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
-                      quickErrors.category
-                        ? "border-red-300 bg-red-50"
-                        : "border-gray-300"
+                  <button
+                    type="submit"
+                    disabled={addTransaction.isPending}
+                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm text-white rounded-xl font-medium transition-colors disabled:opacity-60 ${
+                      quickType === "expense"
+                        ? "bg-red-500 hover:bg-red-600"
+                        : quickType === "income"
+                          ? "bg-green-500 hover:bg-green-600"
+                          : "bg-blue-500 hover:bg-blue-600"
                     }`}
                   >
-                    <option value="">Select category</option>
-                    {categoryNames.map((c) => (
-                      <option key={c} value={c}>
-                        {c}
-                      </option>
-                    ))}
-                  </select>
-                  {quickErrors.category && (
-                    <p className="mt-1 text-xs text-red-600">
-                      {quickErrors.category[0]}
-                    </p>
-                  )}
+                    {addTransaction.isPending && (
+                      <Loader2 size={15} className="animate-spin" />
+                    )}
+                    Add {quickType.charAt(0).toUpperCase() + quickType.slice(1)}
+                  </button>
                 </div>
-              )}
-
-              {/* From Account (expense / transfer) */}
-              {(quickType === "expense" || quickType === "transfer") && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    {quickType === "transfer" ? "From Account" : "From Account"}
-                  </label>
-                  <select
-                    name="fromAccountId"
-                    className={`w-full px-3 py-2.5 border rounded-xl text-base md:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
-                      quickErrors.fromAccountId
-                        ? "border-red-300 bg-red-50"
-                        : "border-gray-300"
-                    }`}
-                  >
-                    <option value="">Select account</option>
-                    {accounts.map((acc) => (
-                      <option key={acc._id} value={acc._id}>
-                        {acc.name} — ₹{acc.balance?.toLocaleString()}
-                      </option>
-                    ))}
-                  </select>
-                  {quickErrors.fromAccountId && (
-                    <p className="mt-1 text-xs text-red-600">
-                      {quickErrors.fromAccountId[0]}
-                    </p>
-                  )}
-                </div>
-              )}
-
-              {/* To Account (income / transfer) */}
-              {(quickType === "income" || quickType === "transfer") && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    To Account
-                  </label>
-                  <select
-                    name="toAccountId"
-                    className={`w-full px-3 py-2.5 border rounded-xl text-base md:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
-                      quickErrors.toAccountId
-                        ? "border-red-300 bg-red-50"
-                        : "border-gray-300"
-                    }`}
-                  >
-                    <option value="">Select account</option>
-                    {accounts.map((acc) => (
-                      <option key={acc._id} value={acc._id}>
-                        {acc.name} — ₹{acc.balance?.toLocaleString()}
-                      </option>
-                    ))}
-                  </select>
-                  {quickErrors.toAccountId && (
-                    <p className="mt-1 text-xs text-red-600">
-                      {quickErrors.toAccountId[0]}
-                    </p>
-                  )}
-                </div>
-              )}
-
-              {/* Actions */}
-              <div className="flex gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowQuickAdd(false);
-                    setQuickErrors({});
-                  }}
-                  className="flex-1 px-4 py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-50 font-medium"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={addTransaction.isPending}
-                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm text-white rounded-xl font-medium transition-colors disabled:opacity-60 ${
-                    quickType === "expense"
-                      ? "bg-red-500 hover:bg-red-600"
-                      : quickType === "income"
-                        ? "bg-green-500 hover:bg-green-600"
-                        : "bg-blue-500 hover:bg-blue-600"
-                  }`}
-                >
-                  {addTransaction.isPending && (
-                    <Loader2 size={15} className="animate-spin" />
-                  )}
-                  Add {quickType.charAt(0).toUpperCase() + quickType.slice(1)}
-                </button>
-              </div>
-            </form>
+              </form>
             </div>
           </div>
         </div>

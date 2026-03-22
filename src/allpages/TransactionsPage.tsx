@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useTransactionsPaginated } from "@/hooks/transactions/useTransactionsPaginated";
 import { useAddTransaction } from "@/hooks/transactions/useAddTransaction";
 import { useUpdateTransaction } from "@/hooks/transactions/useUpdateTransaction";
@@ -846,8 +847,8 @@ export default function TransactionsPage() {
       </div>
 
       {/* ─── Add/Edit Transaction Modal ─────────────────────── */}
-      {showForm && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center z-[100] md:p-4">
+      {showForm && typeof document !== "undefined" && createPortal(
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center z-[200] md:p-4">
           <div className="bg-white rounded-t-[2rem] md:rounded-2xl w-full max-w-md shadow-2xl animate-slide-up md:animate-none flex flex-col max-h-[90vh]">
             <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mt-4 mb-2 md:hidden"></div>
             {/* Modal Header */}
@@ -1149,7 +1150,8 @@ export default function TransactionsPage() {
               </form>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
       </div>
     

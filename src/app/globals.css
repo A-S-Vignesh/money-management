@@ -7,34 +7,74 @@ body, html {
 }
 
 /* Prevent text selection on UI elements, but allow on inputs */
-*:not(input):not(textarea) {
+*:not(input):not(textarea):not(select):not(option) {
   -webkit-touch-callout: none; /* iOS Safari */
   -webkit-user-select: none; /* Safari */
-  user-select: none; /* Non-prefixed version, currently supported by Chrome, Edge, Opera and Firefox */
+  user-select: none;
 }
 
-input, textarea {
+input, textarea, select {
   -webkit-user-select: auto;
   user-select: auto;
 }
 
+/* Remove 300ms tap delay on all interactive elements */
+a, button, [role="button"] {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
 button {
   cursor: pointer;
-  /* Ensure no tap highlight on buttons */
-  -webkit-tap-highlight-color: transparent;
 }
 
 button:disabled {
   cursor: not-allowed;
 }
 
-/* Hide scrollbar for Chrome, Safari and Opera */
+/* ── Safe Area Utilities ───────────────────────────────── */
+/* Bottom padding that respects iPhone home indicator */
+.pb-safe {
+  padding-bottom: max(env(safe-area-inset-bottom), 16px);
+}
+
+/* Bottom nav safe area wrapper */
+.safe-bottom-nav {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* ── Scrollbar Hidden ──────────────────────────────────── */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
-
-/* Hide scrollbar for IE, Edge and Firefox */
 .no-scrollbar {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
+
+/* ── Page Transition Animation ────────────────────────── */
+@keyframes page-enter {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.page-transition {
+  animation: page-enter 0.18s ease-out both;
+}
+
+/* ── Bottom Sheet Slide Up ────────────────────────────── */
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.28s cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+

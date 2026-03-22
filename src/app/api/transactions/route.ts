@@ -186,7 +186,8 @@ export async function POST(req: Request) {
         if (!activeIds.includes(accId!)) {
           return Response.json(
             {
-              message: "One or more selected accounts are no longer available (deleted). Please select a different account.",
+              message:
+                "One or more selected accounts are no longer available (deleted). Please select a different account.",
               type: "error",
             },
             { status: 400 },
@@ -250,12 +251,17 @@ export async function POST(req: Request) {
           : type === "expense"
             ? "Expense"
             : "Transfer";
+
+      const txDescription = parsed.data.description
+        ? ` ("${parsed.data.description}")`
+        : "";
+
       notifPromises.push(
         createNotification({
           userId,
           type: "transaction",
           title: `${typeLabel}: ₹${amount.toLocaleString("en-IN")}`,
-          message: `${typeLabel} of ₹${amount.toLocaleString("en-IN")}${category ? ` in ${category}` : ""}`,
+          message: `${typeLabel} of ₹${amount.toLocaleString("en-IN")}${category ? ` in ${category}` : ""}${txDescription}`,
         }),
       );
 
