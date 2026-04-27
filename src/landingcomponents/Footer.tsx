@@ -147,7 +147,7 @@ export default function Footer() {
             <Link
               href="https://codolve.com"
               target="_blank"
-              rel="noopener noreferrer"
+              rel="noopener noreferrer nofollow"
               className="bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-400 font-semibold hover:opacity-80 transition"
             >
               Codolve

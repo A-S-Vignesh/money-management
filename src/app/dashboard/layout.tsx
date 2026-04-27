@@ -44,6 +44,7 @@ import {
   ArrowUpCircle,
   ArrowLeftRight,
 } from "lucide-react";
+import MobileBottomNav from "@/components/Mobilebottomnav";
 
 const menuItems = [
   { href: "/dashboard", label: "Dashboard", icon: <Home size={18} /> },
@@ -379,10 +380,11 @@ export default function DashboardLayout({
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden">
         {/* Top Bar — Desktop: full bar | Mobile: compact app-style header */}
-        <header className="relative bg-white border-b border-gray-200 flex items-center justify-between safe-area-top
+        <header
+          className="relative bg-white border-b border-gray-200 flex items-center justify-between safe-area-top
           pt-[max(env(safe-area-inset-top),12px)] pb-3 px-4
-          md:pt-[max(env(safe-area-inset-top),16px)] md:pb-4 md:px-6">
-
+          md:pt-[max(env(safe-area-inset-top),16px)] md:pb-4 md:px-6"
+        >
           {/* Mobile: Logo left */}
           <div className="flex items-center gap-3">
             <div className="md:hidden">
@@ -398,7 +400,8 @@ export default function DashboardLayout({
             <div className="hidden md:block">
               <h1 className="text-xl font-semibold text-gray-900">
                 {menuItems.find((item) => item.href === pathname)?.label ||
-                  secondaryItems.find((item) => item.href === pathname)?.label ||
+                  secondaryItems.find((item) => item.href === pathname)
+                    ?.label ||
                   "Dashboard"}
               </h1>
               <p className="text-sm text-gray-600">Your financial overview</p>
@@ -638,9 +641,11 @@ export default function DashboardLayout({
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto no-scrollbar p-4 sm:p-6 bg-gray-50
+        <div
+          className="flex-1 overflow-y-auto no-scrollbar p-4 sm:p-6 bg-gray-50 page-transition
           pb-[calc(6rem+env(safe-area-inset-bottom,0px))]
-          md:pb-6">
+          md:pb-6"
+        >
           {children}
           {/* Toast Notifications */}
           <div className="fixed z-[100] pointer-events-none flex flex-col gap-3 bottom-24 md:bottom-5 md:top-7 left-1/2 -translate-x-1/2 items-center md:right-7 md:left-auto md:translate-x-0 md:items-end">
@@ -655,8 +660,7 @@ export default function DashboardLayout({
       </main>
 
       {/* ─── Mobile Bottom Navigation ──────────────────────── */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 safe-bottom-nav">
-        {/* SVG curved notch background — height accounts for safe area */}
+      {/* <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 safe-bottom-nav">
         <div className="relative" style={{ height: "64px" }}>
           <svg
             style={{
@@ -674,8 +678,8 @@ export default function DashboardLayout({
               d="M0,38
            L148,38
            Q158,38 163,30
-           Q172,20 187.5,20
-           Q203,20 212,30
+           Q172,24 187.5,24
+           Q203,24 212,30
            Q217,38 227,38
            L375,38
            L375,80 L0,80 Z"
@@ -685,8 +689,8 @@ export default function DashboardLayout({
               d="M0,38
            L148,38
            Q158,38 163,30
-           Q172,20 187.5,20
-           Q203,20 212,30
+           Q172,24 187.5,24
+           Q203,24 212,30
            Q217,38 227,38
            L375,38"
               fill="none"
@@ -694,8 +698,6 @@ export default function DashboardLayout({
               strokeWidth="1"
             />
           </svg>
-
-          {/* Nav items — 44px min touch targets, press feedback */}
           <div
             className="relative z-10 flex justify-around items-end w-full px-2"
             style={{ height: "64px", paddingBottom: "8px" }}
@@ -720,7 +722,7 @@ export default function DashboardLayout({
               <span className="text-[10px] mt-1 font-medium">History</span>
             </Link>
 
-            {/* FAB — centered floating action button */}
+            
             <div
               className="flex flex-col items-center w-16"
               style={{ marginBottom: "14px" }}
@@ -758,7 +760,16 @@ export default function DashboardLayout({
             </button>
           </div>
         </div>
-      </div>
+      </div> */}
+
+      {/* ─── Mobile Bottom Navigation ──────────────────────── */}
+      <MobileBottomNav
+        toggleSidebar={toggleSidebar}
+        sidebarOpen={sidebarOpen}
+        setShowQuickAdd={setShowQuickAdd}
+        setQuickErrors={setQuickErrors}
+        setQuickType={setQuickType}
+      />
 
       {/* Mobile Menu Bottom Sheet */}
       {sidebarOpen && isMobile && (
