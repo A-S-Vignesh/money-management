@@ -17,6 +17,9 @@ export interface IUser extends Document {
   twoFactorAuth: boolean;
   premium: "free" | "pro" | "family";
   role: "user" | "admin";
+  // True once the user dismisses the welcome checklist on the dashboard,
+  // or completes every step. Drives the onboarding card's visibility.
+  onboardingDismissed: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -45,6 +48,7 @@ const UserSchema: Schema<IUser> = new mongoose.Schema(
       enum: ["user", "admin"],
       default: "user",
     },
+    onboardingDismissed: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

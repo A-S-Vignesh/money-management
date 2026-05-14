@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { AlertTriangle, Loader2 } from 'lucide-react';
 
 interface DeleteConfirmationModalProps {
@@ -18,10 +19,12 @@ export default function DeleteConfirmationModal({
   description = "Are you sure you want to delete this item?",
   isLoading = false,
 }: DeleteConfirmationModalProps) {
-  if (!isOpen) return null;
+  if (!isOpen || typeof document === 'undefined') return null;
 
-  return (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50 backdrop-blur-sm transition-all duration-300">
+  // Render through a portal so the `fixed` positioning is anchored to the
+  // viewport, not to any transformed ancestor (e.g. .page-transition).
+  return createPortal(
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-[200] backdrop-blur-sm transition-all duration-300">
       <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl transform transition-all animate-in fade-in zoom-in-95 duration-200">
         {/* Header with red theme */}
         <div className="bg-red-50 p-6 flex flex-col items-center text-center border-b border-red-100">
@@ -61,6 +64,7 @@ export default function DeleteConfirmationModal({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

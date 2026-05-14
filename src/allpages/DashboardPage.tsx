@@ -1,11 +1,10 @@
 // allpages/DashboardPage.tsx
 "use client";
+import { useMemo } from "react";
 import Link from "next/link";
 import {
   ArrowDownRight,
   ArrowUpRight,
-  BarChart,
-  CreditCard,
   DollarSign,
   PieChart,
   Search,
@@ -13,10 +12,23 @@ import {
   TrendingUp,
   Wallet,
   AlertCircle,
-  Loader2,
 } from "lucide-react";
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  PieChart as RPieChart,
+  Pie,
+  Cell,
+  Legend,
+} from "recharts";
 import { useDashboard } from "@/hooks/dashboard/useDashboard";
-import { categories, type CategoryName } from "@/utils/categories";
+import OnboardingChecklist from "@/components/OnboardingChecklist";
+import { categories } from "@/utils/categories";
 import { formatCurrency } from "@/utils/formatCurrency";
 import { useSession } from "next-auth/react";
 
@@ -82,6 +94,21 @@ const getCategoryBarColor = (categoryName: string): string => {
   return bgPart.replace("100", "500");
 };
 
+// Hex palette aligned with the category list for pie slices
+const CATEGORY_HEX: Record<string, string> = {
+  Food: "#ef4444",
+  Housing: "#3b82f6",
+  Transport: "#22c55e",
+  Lifestyle: "#a855f7",
+  Shopping: "#eab308",
+  Learning: "#6366f1",
+  Personal: "#ec4899",
+  Salary: "#10b981",
+  Transfer: "#94a3b8",
+  Other: "#6b7280",
+};
+const FALLBACK_HEX = ["#3b82f6", "#22c55e", "#f59e0b", "#a855f7", "#ef4444", "#06b6d4"];
+
 // ─── Main Component ──────────────────────────────────────────────────
 export default function DashboardPage() {
   const { data: session } = useSession();
@@ -110,6 +137,39 @@ export default function DashboardPage() {
     );
   }
 
+  const monthLabel =
+    data?.monthLabel ||
+    new Date().toLocaleString("en-US", { month: "long", year: "numeric" });
+
+  // Trend data — only render points up to today so the cumulative net line stops at "now"
+  const trendData = useMemo(
+    () =>
+      (data?.monthlyTrend ?? []).map((p) => ({
+        label: p.label,
+        income: p.income,
+        expense: p.expense,
+        net: p.net,
+      })),
+    [data?.monthlyTrend],
+  );
+  const trendHasActivity = useMemo(
+    () => trendData.some((p) => p.income > 0 || p.expense > 0),
+    [trendData],
+  );
+
+  // Pie slices for the spending distribution chart
+  const pieData = useMemo(
+    () =>
+      (data?.categoryBreakdown ?? []).map((item, idx) => ({
+        name: item.category,
+        value: item.amount,
+        color:
+          CATEGORY_HEX[item.category] ||
+          FALLBACK_HEX[idx % FALLBACK_HEX.length],
+      })),
+    [data?.categoryBreakdown],
+  );
+
   return (
     <div className="space-y-6">
       {/* Welcome Header */}
@@ -118,11 +178,15 @@ export default function DashboardPage() {
           Welcome back, {userName}
         </h1>
         <p className="text-gray-600">
-          Here&apos;s your financial overview for today
+          Your snapshot for{" "}
+          <span className="font-medium text-gray-800">{monthLabel}</span>
         </p>
       </div>
 
-      {/* Summary Cards */}
+      {/* First-run welcome checklist (auto-hides when complete or dismissed) */}
+      {data?.onboarding && <OnboardingChecklist state={data.onboarding} />}
+
+      {/* Summary Cards — Current Month */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         {isLoading ? (
           <>
@@ -133,46 +197,19 @@ export default function DashboardPage() {
           </>
         ) : (
           <>
-            {/* Total Balance Card */}
-            <div className="bg-white p-4 md:p-5 rounded-xl shadow-sm border border-gray-100">
-              <div className="flex flex-col md:flex-row md:items-center mb-3 md:mb-4">
-                <div className="bg-blue-100 p-2 md:p-3 rounded-lg md:mr-4 w-fit mb-2 md:mb-0">
-                  <Wallet className="text-blue-600 w-5 h-5 md:w-5 md:h-5" />
-                </div>
-                <h3 className="text-gray-500 text-xs md:text-sm font-medium">
-                  Total Balance
-                </h3>
-              </div>
-              <div className="flex flex-col md:flex-row md:items-end justify-between gap-1 md:gap-0">
-                <p className="text-lg md:text-2xl font-bold truncate">
-                  {formatCurrency(data?.totalBalance ?? 0)}
-                </p>
-                <span
-                  className={`${
-                    (data?.netChange ?? 0) >= 0
-                      ? "text-green-500 bg-green-50"
-                      : "text-red-500 bg-red-50"
-                  } px-2 py-0.5 md:py-1 rounded text-[10px] md:text-sm w-fit font-medium`}
-                >
-                  {(data?.netChange ?? 0) >= 0 ? "+" : ""}
-                  {formatCurrency(Math.abs(data?.netChange ?? 0))}
-                </span>
-              </div>
-            </div>
-
-            {/* Income Card */}
+            {/* Month Income Card */}
             <div className="bg-white p-4 md:p-5 rounded-xl shadow-sm border border-gray-100">
               <div className="flex flex-col md:flex-row md:items-center mb-3 md:mb-4">
                 <div className="bg-green-100 p-2 md:p-3 rounded-lg md:mr-4 w-fit mb-2 md:mb-0">
                   <ArrowUpRight className="text-green-600 w-5 h-5 md:w-5 md:h-5" />
                 </div>
                 <h3 className="text-gray-500 text-xs md:text-sm font-medium">
-                  Total Income
+                  Income This Month
                 </h3>
               </div>
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-1 md:gap-0">
                 <p className="text-lg md:text-2xl font-bold text-green-600 truncate">
-                  {formatCurrency(data?.totalIncome ?? 0)}
+                  {formatCurrency(data?.monthIncome ?? 0)}
                 </p>
                 {data?.incomeChange !== null &&
                   data?.incomeChange !== undefined && (
@@ -190,19 +227,19 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Expenses Card */}
+            {/* Month Expenses Card */}
             <div className="bg-white p-4 md:p-5 rounded-xl shadow-sm border border-gray-100">
               <div className="flex flex-col md:flex-row md:items-center mb-3 md:mb-4">
                 <div className="bg-red-100 p-2 md:p-3 rounded-lg md:mr-4 w-fit mb-2 md:mb-0">
                   <ArrowDownRight className="text-red-600 w-5 h-5 md:w-5 md:h-5" />
                 </div>
                 <h3 className="text-gray-500 text-xs md:text-sm font-medium">
-                  Total Expenses
+                  Spent This Month
                 </h3>
               </div>
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-1 md:gap-0">
                 <p className="text-lg md:text-2xl font-bold text-red-600 truncate">
-                  {formatCurrency(data?.totalExpense ?? 0)}
+                  {formatCurrency(data?.monthExpense ?? 0)}
                 </p>
                 {data?.expenseChange !== null &&
                   data?.expenseChange !== undefined && (
@@ -220,13 +257,42 @@ export default function DashboardPage() {
               </div>
             </div>
 
+            {/* Month Net Card */}
+            <div className="bg-white p-4 md:p-5 rounded-xl shadow-sm border border-gray-100">
+              <div className="flex flex-col md:flex-row md:items-center mb-3 md:mb-4">
+                <div className="bg-blue-100 p-2 md:p-3 rounded-lg md:mr-4 w-fit mb-2 md:mb-0">
+                  <TrendingUp className="text-blue-600 w-5 h-5 md:w-5 md:h-5" />
+                </div>
+                <h3 className="text-gray-500 text-xs md:text-sm font-medium">
+                  Net Saved
+                </h3>
+              </div>
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-1 md:gap-0">
+                <p
+                  className={`text-lg md:text-2xl font-bold truncate ${
+                    (data?.monthNet ?? 0) >= 0
+                      ? "text-blue-600"
+                      : "text-red-600"
+                  }`}
+                >
+                  {(data?.monthNet ?? 0) >= 0 ? "+" : "-"}
+                  {formatCurrency(Math.abs(data?.monthNet ?? 0))}
+                </p>
+                <span className="text-gray-500 bg-gray-50 px-2 py-0.5 md:py-1 rounded text-[10px] md:text-sm w-fit font-medium">
+                  {data?.savingsRate ?? "0"}% rate
+                </span>
+              </div>
+            </div>
+
             {/* Net Worth Card */}
             <div className="bg-white p-4 md:p-5 rounded-xl shadow-sm border border-gray-100">
               <div className="flex flex-col md:flex-row md:items-center mb-3 md:mb-4">
                 <div className="bg-purple-100 p-2 md:p-3 rounded-lg md:mr-4 w-fit mb-2 md:mb-0">
-                  <TrendingUp className="text-purple-600 w-5 h-5 md:w-5 md:h-5" />
+                  <Wallet className="text-purple-600 w-5 h-5 md:w-5 md:h-5" />
                 </div>
-                <h3 className="text-gray-500 text-xs md:text-sm font-medium truncate">Net Worth</h3>
+                <h3 className="text-gray-500 text-xs md:text-sm font-medium truncate">
+                  Net Worth
+                </h3>
               </div>
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-1 md:gap-0">
                 <p className="text-lg md:text-2xl font-bold truncate">
@@ -243,46 +309,132 @@ export default function DashboardPage() {
 
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-        {/* Balance Trend Chart */}
+        {/* Daily Cash Flow — Current Month */}
         <div className="lg:col-span-2 bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-100">
-          <div className="flex justify-between items-center mb-4 md:mb-6">
-            <h2 className="text-lg font-semibold text-gray-800">
-              Balance Trend
-            </h2>
-            <div className="flex space-x-2">
-              <button className="text-xs bg-gray-100 px-3 py-1 rounded">
-                Week
-              </button>
-              <button className="text-xs bg-blue-100 text-blue-600 px-3 py-1 rounded">
-                Month
-              </button>
-              <button className="text-xs bg-gray-100 px-3 py-1 rounded">
-                Year
-              </button>
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 md:mb-6 gap-2">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-800">
+                Daily Cash Flow
+              </h2>
+              <p className="text-xs text-gray-500 mt-0.5">
+                Cumulative net for {monthLabel}
+              </p>
+            </div>
+            <div className="flex items-center gap-3 text-xs text-gray-600">
+              <span className="flex items-center gap-1">
+                <span className="inline-block w-2.5 h-2.5 rounded-full bg-green-500" />
+                Income
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="inline-block w-2.5 h-2.5 rounded-full bg-red-500" />
+                Expense
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="inline-block w-2.5 h-2.5 rounded-full bg-blue-500" />
+                Net
+              </span>
             </div>
           </div>
 
-          {/* Chart Placeholder */}
-          <div className="bg-gray-50 rounded-lg h-56 md:h-64 flex items-center justify-center">
-            <div className="text-center p-4">
-              <BarChart className="mx-auto text-gray-400" size={40} />
-              <p className="text-gray-500 mt-2 text-sm md:text-base">
-                Monthly balance trend visualization
-              </p>
-              <p className="text-gray-400 text-xs md:text-sm mt-1">(Chart will appear here)</p>
+          {isLoading ? (
+            <div className="bg-gray-50 rounded-lg h-56 md:h-64 animate-pulse" />
+          ) : trendData.length > 0 && trendHasActivity ? (
+            <div className="h-56 md:h-72">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart
+                  data={trendData}
+                  margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
+                >
+                  <defs>
+                    <linearGradient id="netGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.35} />
+                      <stop offset="100%" stopColor="#3b82f6" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#22c55e" stopOpacity={0.25} />
+                      <stop offset="100%" stopColor="#22c55e" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="expenseGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#ef4444" stopOpacity={0.25} />
+                      <stop offset="100%" stopColor="#ef4444" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
+                  <XAxis
+                    dataKey="label"
+                    tick={{ fontSize: 11, fill: "#6b7280" }}
+                    interval="preserveStartEnd"
+                    minTickGap={16}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 11, fill: "#6b7280" }}
+                    tickFormatter={(v: number) =>
+                      Math.abs(v) >= 1000 ? `${(v / 1000).toFixed(1)}k` : `${v}`
+                    }
+                    width={50}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      borderRadius: 8,
+                      border: "1px solid #e5e7eb",
+                      fontSize: 12,
+                    }}
+                    labelFormatter={(label) => `Day ${label}`}
+                    formatter={(value: number, name: string) => [
+                      formatCurrency(value),
+                      name.charAt(0).toUpperCase() + name.slice(1),
+                    ]}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="income"
+                    stroke="#22c55e"
+                    strokeWidth={2}
+                    fill="url(#incomeGradient)"
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="expense"
+                    stroke="#ef4444"
+                    strokeWidth={2}
+                    fill="url(#expenseGradient)"
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="net"
+                    stroke="#3b82f6"
+                    strokeWidth={2.5}
+                    fill="url(#netGradient)"
+                    connectNulls={false}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
             </div>
-          </div>
+          ) : (
+            <div className="bg-gray-50 rounded-lg h-56 md:h-64 flex items-center justify-center">
+              <div className="text-center p-4">
+                <TrendingUp className="mx-auto text-gray-400" size={40} />
+                <p className="text-gray-500 mt-2 text-sm md:text-base">
+                  No activity yet this month
+                </p>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Spending Distribution */}
+        {/* Spending Distribution — Pie + List */}
         <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-100">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4 md:mb-6">
-            Spending Distribution
-          </h2>
+          <div className="mb-4 md:mb-6">
+            <h2 className="text-lg font-semibold text-gray-800">
+              Spending Distribution
+            </h2>
+            <p className="text-xs text-gray-500 mt-0.5">{monthLabel}</p>
+          </div>
 
           {isLoading ? (
             <div className="animate-pulse space-y-4">
-              {[...Array(5)].map((_, i) => (
+              <div className="h-40 bg-gray-100 rounded-lg" />
+              {[...Array(3)].map((_, i) => (
                 <div key={i}>
                   <div className="flex justify-between mb-1">
                     <div className="h-3 bg-gray-200 rounded w-16" />
@@ -292,31 +444,69 @@ export default function DashboardPage() {
                 </div>
               ))}
             </div>
-          ) : data?.categoryBreakdown && data.categoryBreakdown.length > 0 ? (
-            <div className="space-y-4">
-              {data.categoryBreakdown.map((item, index) => (
-                <div key={index}>
-                  <div className="flex justify-between mb-1">
-                    <span className="text-gray-600 text-sm">
-                      {item.category}
-                    </span>
-                    <span className="font-medium text-sm">
-                      {formatCurrency(item.amount)}
-                    </span>
+          ) : pieData.length > 0 ? (
+            <>
+              <div className="h-44 md:h-48 -mx-2">
+                <ResponsiveContainer width="100%" height="100%">
+                  <RPieChart>
+                    <Pie
+                      data={pieData}
+                      dataKey="value"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={42}
+                      outerRadius={70}
+                      paddingAngle={2}
+                    >
+                      {pieData.map((entry, index) => (
+                        <Cell key={`slice-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{
+                        borderRadius: 8,
+                        border: "1px solid #e5e7eb",
+                        fontSize: 12,
+                      }}
+                      formatter={(value: number) => formatCurrency(value)}
+                    />
+                    <Legend
+                      verticalAlign="bottom"
+                      height={24}
+                      iconType="circle"
+                      wrapperStyle={{ fontSize: 11 }}
+                    />
+                  </RPieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="space-y-3 mt-4">
+                {data!.categoryBreakdown.slice(0, 4).map((item, index) => (
+                  <div key={index}>
+                    <div className="flex justify-between mb-1">
+                      <span className="text-gray-600 text-sm">
+                        {item.category}
+                      </span>
+                      <span className="font-medium text-sm">
+                        {formatCurrency(item.amount)}
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-1.5">
+                      <div
+                        className={`${getCategoryBarColor(item.category)} h-1.5 rounded-full transition-all`}
+                        style={{ width: `${item.percentage}%` }}
+                      ></div>
+                    </div>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className={`${getCategoryBarColor(item.category)} h-2 rounded-full transition-all`}
-                      style={{ width: `${item.percentage}%` }}
-                    ></div>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            </>
           ) : (
-            <div className="flex flex-col items-center justify-center py-8">
+            <div className="flex flex-col items-center justify-center py-12">
               <PieChart className="text-gray-300 mb-2" size={32} />
-              <p className="text-gray-400 text-sm">No expense data yet</p>
+              <p className="text-gray-400 text-sm">
+                No expenses this month yet
+              </p>
             </div>
           )}
         </div>

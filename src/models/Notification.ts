@@ -40,6 +40,17 @@ const NotificationSchema: Schema<INotification> = new mongoose.Schema(
 // Indexes for fast queries
 NotificationSchema.index({ userId: 1, isRead: 1, createdAt: -1 });
 NotificationSchema.index({ userId: 1, createdAt: -1 });
+// TTL with partial filter: auto-delete READ notifications after 30 days.
+// Unread alerts stay forever (no matter how old) so you never miss anything.
+// Mongo runs the purge in the background — keeps the collection bounded
+// without a cron job.
+NotificationSchema.index(
+  { createdAt: 1 },
+  {
+    expireAfterSeconds: 60 * 60 * 24 * 30,
+    partialFilterExpression: { isRead: true },
+  },
+);
 
 const Notification: Model<INotification> =
   mongoose.models.Notification ||

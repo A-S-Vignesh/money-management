@@ -18,6 +18,7 @@ import { useNotifications } from "@/hooks/notifications/useNotifications";
 import { useMarkAsRead } from "@/hooks/notifications/useMarkAsRead";
 import { useMarkAllAsRead } from "@/hooks/notifications/useMarkAllAsRead";
 import { useDeleteNotification } from "@/hooks/notifications/useDeleteNotification";
+import { useClearReadNotifications } from "@/hooks/notifications/useClearReadNotifications";
 
 const typeFilters = [
   { value: "all", label: "All", icon: Bell },
@@ -82,6 +83,7 @@ export default function NotificationsPage() {
   const markAsRead = useMarkAsRead();
   const markAllAsRead = useMarkAllAsRead();
   const deleteNotification = useDeleteNotification();
+  const clearRead = useClearReadNotifications();
 
   const notifications: Notification[] = data?.data ?? [];
   const pagination = data?.pagination;
@@ -99,20 +101,35 @@ export default function NotificationsPage() {
               : "All caught up! No unread notifications."}
           </p>
         </div>
-        {unreadCount > 0 && (
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          {unreadCount > 0 && (
+            <button
+              onClick={() => markAllAsRead.mutate()}
+              disabled={markAllAsRead.isPending}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors disabled:opacity-60"
+            >
+              {markAllAsRead.isPending ? (
+                <Loader2 size={16} className="animate-spin" />
+              ) : (
+                <CheckCheck size={16} />
+              )}
+              Mark all as read
+            </button>
+          )}
           <button
-            onClick={() => markAllAsRead.mutate()}
-            disabled={markAllAsRead.isPending}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors disabled:opacity-60"
+            onClick={() => clearRead.mutate()}
+            disabled={clearRead.isPending}
+            title="Delete every notification you've already read"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-lg transition-colors disabled:opacity-60"
           >
-            {markAllAsRead.isPending ? (
+            {clearRead.isPending ? (
               <Loader2 size={16} className="animate-spin" />
             ) : (
-              <CheckCheck size={16} />
+              <Trash2 size={16} />
             )}
-            Mark all as read
+            Clear read
           </button>
-        )}
+        </div>
       </div>
 
       {/* Filters */}

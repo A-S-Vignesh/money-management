@@ -56,10 +56,26 @@ export default function PrivacyPage() {
       </p>
 
       <h2 className="text-2xl font-semibold mt-8 mb-3">6. Your Rights</h2>
+      <p className="mb-2">
+        You can exercise the following rights yourself, directly from the app
+        under <strong>Settings → Data &amp; Privacy</strong>:
+      </p>
+      <ul className="list-disc pl-6 mb-4 space-y-1">
+        <li>
+          <strong>Export your data</strong> — download a JSON file of every
+          record we hold about you (profile, accounts, transactions, budgets,
+          goals, holdings, notifications).
+        </li>
+        <li>
+          <strong>Delete your account</strong> — permanently erase your
+          profile and all associated data. This is immediate and cannot be
+          undone.
+        </li>
+      </ul>
       <p className="mb-4">
-        Depending on your location, you may have rights to access, correct, or
-        delete your personal information. You may also request that we limit the
-        processing of your data or withdraw your consent at any time.
+        Depending on your location, you may also have rights to correct your
+        data, restrict its processing, or withdraw consent. Email us at the
+        address below to exercise those.
       </p>
 
       <h2 className="text-2xl font-semibold mt-8 mb-3">

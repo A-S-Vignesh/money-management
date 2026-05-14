@@ -9,6 +9,9 @@ export interface ITransaction extends Document {
   category: string;
   amount: number;
   date: Date;
+  // Optional link to an investment Holding. Set on buy/sell/dividend transactions
+  // so reports can roll up activity per holding without recomputing from scratch.
+  holdingId?: mongoose.Types.ObjectId | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -51,6 +54,11 @@ const TransactionSchema: Schema<ITransaction> = new mongoose.Schema(
       type: Date,
       required: true,
     },
+    holdingId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Holding",
+      default: null,
+    },
   },
   { timestamps: true },
 );
@@ -59,6 +67,12 @@ const TransactionSchema: Schema<ITransaction> = new mongoose.Schema(
 TransactionSchema.index({ userId: 1, date: -1 });
 TransactionSchema.index({ userId: 1, type: 1, date: -1 });
 TransactionSchema.index({ userId: 1, category: 1, date: -1 });
+// Account-scoped queries: filter-by-account on the Transactions page,
+// the recompute aggregation in lib/recomputeBalance.ts, and net-worth derivation.
+TransactionSchema.index({ fromAccountId: 1, date: -1 });
+TransactionSchema.index({ toAccountId: 1, date: -1 });
+// Holding-scoped queries: per-holding activity feeds, P&L rollups.
+TransactionSchema.index({ holdingId: 1, date: -1 }, { sparse: true });
 
 const Transaction: Model<ITransaction> =
   mongoose.models.Transaction ||

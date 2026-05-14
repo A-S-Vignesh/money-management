@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { useToastStore } from "@/store/useToastStore";
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
@@ -13,6 +14,19 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
   return outputArray;
 }
 
+// Race a promise against a timeout so a hung browser API can't lock the UI.
+function withTimeout<T>(p: Promise<T>, ms: number, label: string): Promise<T> {
+  return Promise.race([
+    p,
+    new Promise<T>((_, reject) =>
+      setTimeout(
+        () => reject(new Error(`${label} timed out after ${ms / 1000}s`)),
+        ms,
+      ),
+    ),
+  ]);
+}
+
 export function usePushNotifications() {
   const [isSupported, setIsSupported] = useState(false);
   const [subscription, setSubscription] = useState<PushSubscription | null>(
@@ -21,66 +35,122 @@ export function usePushNotifications() {
   const [isLoading, setIsLoading] = useState(false);
   const [permissionState, setPermissionState] =
     useState<NotificationPermission>("default");
+  const mountedRef = useRef(true);
+  const showToast = useToastStore((s) => s.showToast);
+
+  // Track mount state so we never call setState after unmount
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   // Check support and existing subscription on mount
   useEffect(() => {
-    if ("serviceWorker" in navigator && "PushManager" in window) {
-      setIsSupported(true);
-      setPermissionState(Notification.permission);
+    if (!("serviceWorker" in navigator) || !("PushManager" in window)) return;
 
-      // Check existing subscription
-      navigator.serviceWorker.ready.then(async (registration) => {
+    setIsSupported(true);
+    setPermissionState(Notification.permission);
+
+    // Wait for SW with a timeout — if it never activates, we don't want to hang silently.
+    withTimeout(navigator.serviceWorker.ready, 8000, "Service worker ready")
+      .then(async (registration) => {
         const existingSub = await registration.pushManager.getSubscription();
-        setSubscription(existingSub);
+        if (mountedRef.current) setSubscription(existingSub);
+      })
+      .catch((err) => {
+        console.error("Push: service worker not ready", err);
       });
-    }
   }, []);
 
   // Subscribe to push notifications
   const subscribe = useCallback(async () => {
-    if (!isSupported) return false;
+    if (!isSupported) {
+      showToast("Push notifications are not supported in this browser", "error");
+      return false;
+    }
+
+    const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+    if (!vapidKey) {
+      showToast(
+        "Push notifications are not configured (missing VAPID key)",
+        "error",
+      );
+      return false;
+    }
 
     setIsLoading(true);
     try {
-      const permission = await Notification.requestPermission();
-      setPermissionState(permission);
+      // 1. Permission prompt — 60s budget for the user to click Allow/Block.
+      // If it hangs longer than that, the prompt was likely missed/dismissed.
+      const permission = await withTimeout(
+        Notification.requestPermission(),
+        60_000,
+        "Permission prompt",
+      );
+      if (mountedRef.current) setPermissionState(permission);
 
       if (permission !== "granted") {
-        setIsLoading(false);
+        if (permission === "denied") {
+          showToast(
+            "Notifications blocked. Enable them in your browser site settings.",
+            "warning",
+          );
+        }
         return false;
       }
 
-      const registration = await navigator.serviceWorker.ready;
-      const vapidKey = urlBase64ToUint8Array(
-        process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
+      // 2. Service worker must be active before we can subscribe.
+      const registration = await withTimeout(
+        navigator.serviceWorker.ready,
+        8_000,
+        "Service worker ready",
       );
-      const keyBuffer = new ArrayBuffer(vapidKey.length);
-      new Uint8Array(keyBuffer).set(vapidKey);
-      const sub = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: keyBuffer,
-      });
 
-      setSubscription(sub);
+      // 3. If a subscription somehow already exists, reuse it instead of failing.
+      const existing = await registration.pushManager.getSubscription();
+      // Wrap key bytes in an ArrayBuffer — TS lib types reject Uint8Array<ArrayBufferLike>
+      const keyBytes = urlBase64ToUint8Array(vapidKey);
+      const applicationServerKey = new ArrayBuffer(keyBytes.length);
+      new Uint8Array(applicationServerKey).set(keyBytes);
+      const sub =
+        existing ||
+        (await withTimeout(
+          registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey,
+          }),
+          15_000,
+          "Push subscription",
+        ));
 
-      // Send subscription to server
+      if (mountedRef.current) setSubscription(sub);
+
+      // 4. Send subscription to server
       const serializedSub = JSON.parse(JSON.stringify(sub));
-      const res = await fetch("/api/notifications/subscribe", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ subscription: serializedSub }),
-      });
+      const res = await withTimeout(
+        fetch("/api/notifications/subscribe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ subscription: serializedSub }),
+        }),
+        10_000,
+        "Save subscription",
+      );
 
-      if (!res.ok) throw new Error("Failed to save subscription");
+      if (!res.ok) throw new Error("Failed to save subscription on server");
 
-      setIsLoading(false);
       return true;
     } catch (error) {
+      const msg = error instanceof Error ? error.message : "Unknown error";
       console.error("Push subscription error:", error);
-      setIsLoading(false);
+      showToast(`Couldn't enable notifications: ${msg}`, "error");
       return false;
+    } finally {
+      if (mountedRef.current) setIsLoading(false);
     }
-  }, [isSupported]);
+  }, [isSupported, showToast]);
 
   // Unsubscribe from push notifications
   const unsubscribe = useCallback(async () => {
@@ -90,22 +160,28 @@ export function usePushNotifications() {
     try {
       const endpoint = subscription.endpoint;
       await subscription.unsubscribe();
-      setSubscription(null);
+      if (mountedRef.current) setSubscription(null);
 
-      await fetch("/api/notifications/subscribe", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ endpoint }),
-      });
+      await withTimeout(
+        fetch("/api/notifications/subscribe", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ endpoint }),
+        }),
+        10_000,
+        "Remove subscription",
+      );
 
-      setIsLoading(false);
       return true;
     } catch (error) {
+      const msg = error instanceof Error ? error.message : "Unknown error";
       console.error("Push unsubscription error:", error);
-      setIsLoading(false);
+      showToast(`Couldn't disable notifications: ${msg}`, "error");
       return false;
+    } finally {
+      if (mountedRef.current) setIsLoading(false);
     }
-  }, [subscription]);
+  }, [subscription, showToast]);
 
   // Send a test notification
   const sendTestNotification = useCallback(

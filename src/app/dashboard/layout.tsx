@@ -34,6 +34,7 @@ import {
   Plus,
   LogOut,
   Menu,
+  Settings,
   X,
   ChevronsLeft,
   ChevronsRight,
@@ -78,11 +79,11 @@ const menuItems = [
 
 const secondaryItems = [
   { href: "/dashboard/profile", label: "Profile", icon: <User size={18} /> },
-  // {
-  //   href: "/dashboard/settings",
-  //   label: "Settings",
-  //   icon: <Settings size={18} />,
-  // },
+  {
+    href: "/dashboard/settings",
+    label: "Settings",
+    icon: <Settings size={18} />,
+  },
 ];
 
 // ─── Form Errors type ────────────────────────────────────────────────────
@@ -647,12 +648,6 @@ export default function DashboardLayout({
           md:pb-6"
         >
           {children}
-          {/* Toast Notifications */}
-          <div className="fixed z-[100] pointer-events-none flex flex-col gap-3 bottom-24 md:bottom-5 md:top-7 left-1/2 -translate-x-1/2 items-center md:right-7 md:left-auto md:translate-x-0 md:items-end">
-            {toasts.map((toast) => (
-              <Toast key={toast.id} {...toast} onClose={removeToast} />
-            ))}
-          </div>
         </div>
         <footer className="hidden md:block bg-white border-t border-gray-200 py-4 px-6 text-center text-sm text-gray-600">
           &copy; {new Date().getFullYear()} Money Manager. All rights reserved.
@@ -1113,6 +1108,13 @@ export default function DashboardLayout({
           </div>
         </div>
       )}
+
+      {/* ─── Toasts (rendered at layout root so transformed ancestors can't trap them) ── */}
+      <div className="fixed z-[200] pointer-events-none flex flex-col gap-3 bottom-24 md:bottom-auto md:top-7 left-1/2 -translate-x-1/2 items-center md:right-7 md:left-auto md:translate-x-0 md:items-end">
+        {toasts.map((toast) => (
+          <Toast key={toast.id} {...toast} onClose={removeToast} />
+        ))}
+      </div>
     </div>
   );
 }

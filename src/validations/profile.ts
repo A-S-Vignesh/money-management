@@ -25,6 +25,7 @@ export const updateProfileSchema = z.object({
     .optional(),
   notifications: z.boolean().optional(),
   twoFactorAuth: z.boolean().optional(),
+  onboardingDismissed: z.boolean().optional(),
 });
 
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;

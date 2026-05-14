@@ -2,33 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, List, Plus, PieChart, Menu, LucideIcon } from "lucide-react";
-
-// ─── Tune these two values only — everything else adapts ─────────────────────
-const FAB_SIZE = 52; // px → diameter of the FAB circle
-const NAV_HEIGHT = 64; // px → height of the bottom bar
-// ─────────────────────────────────────────────────────────────────────────────
-
-const PAD = 10;
-const VB_W = 390;
-const VB_H = 80;
-const FLAT_Y = 28;
-
-const cx = VB_W / 2;
-const nr = FAB_SIZE / 2 + PAD;
-const dep = nr * 0.38;
-const spr = nr * 1.05;
-
-const SVG_PATH = [
-  `M0 ${FLAT_Y}`,
-  `L${cx - nr - spr * 0.55} ${FLAT_Y}`,
-  `C${cx - nr - spr * 0.08} ${FLAT_Y} ${cx - nr} ${FLAT_Y + dep} ${cx - nr} ${FLAT_Y + nr * 0.52}`,
-  `A${nr} ${nr} 0 0 0 ${cx + nr} ${FLAT_Y + nr * 0.52}`,
-  `C${cx + nr} ${FLAT_Y + dep} ${cx + nr + spr * 0.08} ${FLAT_Y} ${cx + nr + spr * 0.55} ${FLAT_Y}`,
-  `L${VB_W} ${FLAT_Y} L${VB_W} ${VB_H} L0 ${VB_H} Z`,
-].join(" ");
-
-const FAB_LIFT = FAB_SIZE / 2 + PAD / 2 - 4;
+import {
+  Home,
+  List,
+  Plus,
+  PieChart,
+  Menu,
+  CreditCard,
+  LucideIcon,
+} from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -48,7 +30,7 @@ interface NavButtonItem {
   onClick: () => void;
 }
 
-type NavItem = NavLinkItem | NavButtonItem | null;
+type NavItem = NavLinkItem | NavButtonItem;
 
 interface MobileBottomNavProps {
   toggleSidebar: () => void;
@@ -70,11 +52,12 @@ export default function MobileBottomNav({
   const pathname = usePathname();
 
   const navItems: NavItem[] = [
+    { type: "link", href: "/dashboard", icon: Home, label: "Home" },
     {
       type: "link",
-      href: "/dashboard",
-      icon: Home,
-      label: "Home",
+      href: "/dashboard/balance",
+      icon: CreditCard,
+      label: "Balance",
     },
     {
       type: "link",
@@ -82,7 +65,6 @@ export default function MobileBottomNav({
       icon: List,
       label: "History",
     },
-    null, // FAB spacer
     {
       type: "link",
       href: "/dashboard/budgets",
@@ -100,57 +82,81 @@ export default function MobileBottomNav({
   ];
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 z-40">
-      <div className="relative" style={{ height: NAV_HEIGHT }}>
-        {/* ── SVG curved background ── */}
-        <svg
-          viewBox={`0 0 ${VB_W} ${VB_H}`}
-          preserveAspectRatio="none"
-          aria-hidden="true"
-          style={{
-            position: "absolute",
-            inset: 0,
-            width: "100%",
-            height: "110%",
-            bottom: 0,
-            top: "auto",
-            filter: "drop-shadow(0 -1px 0 #e5e7eb)",
-          }}
-        >
-          <path d={SVG_PATH} fill="white" />
-        </svg>
+    <>
+      {/* ── Floating Action Button (bottom-right) ── */}
+      <button
+        onClick={() => {
+          setShowQuickAdd(true);
+          setQuickErrors({});
+          setQuickType("expense");
+        }}
+        aria-label="Add transaction"
+        className="md:hidden fixed right-4 z-50
+                   w-14 h-14 rounded-full
+                   bg-gradient-to-br from-indigo-500 via-indigo-600 to-violet-600
+                   text-white flex items-center justify-center
+                   ring-4 ring-white
+                   shadow-[0_10px_24px_-6px_rgba(79,70,229,0.6)]
+                   hover:shadow-[0_14px_28px_-6px_rgba(79,70,229,0.75)]
+                   active:scale-90 transition-all duration-200
+                   focus-visible:outline-none focus-visible:ring-4
+                   focus-visible:ring-indigo-300"
+        style={{
+          bottom: "calc(env(safe-area-inset-bottom, 0px) + 88px)",
+        }}
+      >
+        <Plus size={26} strokeWidth={2.4} />
+      </button>
 
-        {/* ── Nav items row ── */}
-        <div
-          className="relative z-10 flex justify-around items-center w-full h-full px-1"
-          style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+      {/* ── Bottom navigation pill ── */}
+      <div
+        className="md:hidden fixed bottom-0 inset-x-0 z-40 px-3 pointer-events-none"
+        style={{
+          paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 10px)",
+        }}
+      >
+        <nav
+          className="pointer-events-auto flex items-stretch justify-between
+                     bg-white/95 backdrop-blur-md
+                     border border-gray-100 rounded-3xl
+                     shadow-[0_8px_24px_-6px_rgba(15,23,42,0.12)]
+                     px-1.5 py-2"
+          aria-label="Primary"
         >
-          {navItems.map((item, index) => {
-            if (item === null) {
-              return (
-                <div
-                  key="fab-gap"
-                  style={{ width: FAB_SIZE + PAD * 2, flexShrink: 0 }}
+          {navItems.map((item) => {
+            const active =
+              item.type === "link" ? pathname === item.href : item.active;
+
+            const className = `relative flex-1 flex flex-col items-center justify-center gap-1
+                               min-h-[48px] py-1.5 px-1 rounded-2xl
+                               active:scale-95 transition-all duration-200
+                               ${
+                                 active
+                                   ? "bg-indigo-50 text-indigo-600"
+                                   : "text-gray-400 hover:text-gray-600"
+                               }`;
+
+            const content = (
+              <>
+                <item.icon
+                  size={20}
+                  strokeWidth={active ? 2.4 : 2}
+                  className="transition-transform duration-200"
                 />
-              );
-            }
-
-            const baseClass =
-              "flex flex-col items-center justify-center gap-1 min-w-[44px] min-h-[44px] w-16 relative active:scale-90 transition-transform duration-150";
+                <span className="text-[10px] font-semibold leading-none tracking-tight">
+                  {item.label}
+                </span>
+              </>
+            );
 
             if (item.type === "link") {
-              const active = pathname === item.href;
               return (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`${baseClass} ${active ? "text-indigo-600" : "text-gray-400"}`}
+                  className={className}
                 >
-                  <item.icon size={20} />
-                  <span className="text-[10px] font-medium leading-none">
-                    {item.label}
-                  </span>
-                  {active && <ActiveDot />}
+                  {content}
                 </Link>
               );
             }
@@ -158,61 +164,16 @@ export default function MobileBottomNav({
             return (
               <button
                 key={item.id}
+                type="button"
                 onClick={item.onClick}
-                className={`${baseClass} bg-transparent border-none cursor-pointer ${
-                  item.active ? "text-indigo-600" : "text-gray-400"
-                }`}
+                className={`${className} bg-transparent border-none cursor-pointer`}
               >
-                <item.icon size={20} />
-                <span className="text-[10px] font-medium leading-none">
-                  {item.label}
-                </span>
-                {item.active && <ActiveDot />}
+                {content}
               </button>
             );
           })}
-        </div>
-
-        {/* ── FAB ── */}
-        <button
-          onClick={() => {
-            setShowQuickAdd(true);
-            setQuickErrors({});
-            setQuickType("expense");
-          }}
-          aria-label="Add transaction"
-          className="absolute left-1/2 -translate-x-1/2 bg-indigo-600 text-white
-                     flex items-center justify-center
-                     active:scale-90 transition-all duration-150
-                     hover:bg-indigo-500
-                     focus-visible:outline-none focus-visible:ring-2
-                     focus-visible:ring-indigo-400 focus-visible:ring-offset-2"
-          style={{
-            width: FAB_SIZE,
-            height: FAB_SIZE,
-            borderRadius: FAB_SIZE / 2,
-            bottom: FAB_LIFT,
-            zIndex: 20,
-            boxShadow: "0 4px 14px -2px rgba(79, 70, 229, 0.55)",
-          }}
-        >
-          <Plus size={Math.round(FAB_SIZE * 0.46)} strokeWidth={2.2} />
-        </button>
+        </nav>
       </div>
-
-      {/* iOS home indicator safe area */}
-      <div
-        className="bg-white"
-        style={{ height: "env(safe-area-inset-bottom, 0px)" }}
-      />
-    </div>
-  );
-}
-
-// ─── Sub-components ───────────────────────────────────────────────────────────
-
-function ActiveDot() {
-  return (
-    <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-indigo-600" />
+    </>
   );
 }

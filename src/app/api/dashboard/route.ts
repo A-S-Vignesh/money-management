@@ -5,6 +5,7 @@ import Transaction from "@/models/Transaction";
 import Account from "@/models/Account";
 import Goal from "@/models/Goal";
 import Budget from "@/models/Budget";
+import User from "@/models/User";
 import mongoose from "mongoose";
 
 // GET /api/dashboard — aggregated dashboard metrics
@@ -23,18 +24,26 @@ export async function GET() {
 
     const userId = new mongoose.Types.ObjectId(session.user._id);
 
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+
     // ── Run all queries in parallel ────────────────────────────
     const [
       incomeExpenseAgg,
-      categoryAgg,
+      monthCategoryAgg,
       accounts,
       recentTransactions,
       goals,
       budgetCount,
       thisMonthAgg,
       lastMonthAgg,
+      monthDailyAgg,
+      transactionsCount,
+      userDoc,
     ] = await Promise.all([
-      // 1. Total income & expense (all time)
+      // 1. Total income & expense (all time, used for net worth context)
       Transaction.aggregate([
         { $match: { userId, type: { $in: ["income", "expense"] } } },
         {
@@ -45,9 +54,15 @@ export async function GET() {
         },
       ]),
 
-      // 2. Category breakdown for expenses
+      // 2. Category breakdown for expenses (current month only)
       Transaction.aggregate([
-        { $match: { userId, type: "expense" } },
+        {
+          $match: {
+            userId,
+            type: "expense",
+            date: { $gte: monthStart, $lt: nextMonthStart },
+          },
+        },
         {
           $group: {
             _id: "$category",
@@ -78,18 +93,7 @@ export async function GET() {
           $match: {
             userId,
             type: { $in: ["income", "expense"] },
-            date: {
-              $gte: new Date(
-                new Date().getFullYear(),
-                new Date().getMonth(),
-                1,
-              ),
-              $lt: new Date(
-                new Date().getFullYear(),
-                new Date().getMonth() + 1,
-                1,
-              ),
-            },
+            date: { $gte: monthStart, $lt: nextMonthStart },
           },
         },
         {
@@ -106,14 +110,7 @@ export async function GET() {
           $match: {
             userId,
             type: { $in: ["income", "expense"] },
-            date: {
-              $gte: new Date(
-                new Date().getFullYear(),
-                new Date().getMonth() - 1,
-                1,
-              ),
-              $lt: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
-            },
+            date: { $gte: lastMonthStart, $lt: monthStart },
           },
         },
         {
@@ -123,6 +120,33 @@ export async function GET() {
           },
         },
       ]),
+
+      // 9. Daily income/expense for current month (chart trend)
+      Transaction.aggregate([
+        {
+          $match: {
+            userId,
+            type: { $in: ["income", "expense"] },
+            date: { $gte: monthStart, $lt: nextMonthStart },
+          },
+        },
+        {
+          $group: {
+            _id: {
+              day: { $dayOfMonth: "$date" },
+              type: "$type",
+            },
+            total: { $sum: "$amount" },
+          },
+        },
+        { $sort: { "_id.day": 1 } },
+      ]),
+
+      // 10. Total transaction count (drives the onboarding checklist)
+      Transaction.countDocuments({ userId }),
+
+      // 11. The user's onboardingDismissed flag
+      User.findById(userId).select("onboardingDismissed").lean(),
     ]);
 
     // ── Process aggregation results ───────────────────────────
@@ -137,21 +161,6 @@ export async function GET() {
     const totalBalance = accounts
       .filter((a) => a.name !== "Deleted Account" && !a.isSystem)
       .reduce((sum, a) => sum + (a.balance || 0), 0);
-
-    // Category breakdown with percentages
-    const expenseGrandTotal = categoryAgg.reduce(
-      (sum: number, c: { total: number }) => sum + c.total,
-      0,
-    );
-    const categoryBreakdown = categoryAgg.map(
-      (c: { _id: string; total: number }) => ({
-        category: c._id,
-        amount: c.total,
-        percentage: expenseGrandTotal
-          ? ((c.total / expenseGrandTotal) * 100).toFixed(1)
-          : "0",
-      }),
-    );
 
     // Month-over-month percentage changes
     const thisMonthIncome =
@@ -177,9 +186,57 @@ export async function GET() {
         ).toFixed(1)
       : null;
 
-    // Savings rate = (income - expense) / income * 100
-    const savingsRate = incomeTotal
-      ? (((incomeTotal - expenseTotal) / incomeTotal) * 100).toFixed(1)
+    // Category breakdown for current month with percentages
+    const monthExpenseTotal = monthCategoryAgg.reduce(
+      (sum: number, c: { total: number }) => sum + c.total,
+      0,
+    );
+    const categoryBreakdown = monthCategoryAgg.map(
+      (c: { _id: string; total: number }) => ({
+        category: c._id,
+        amount: c.total,
+        percentage: monthExpenseTotal
+          ? ((c.total / monthExpenseTotal) * 100).toFixed(1)
+          : "0",
+      }),
+    );
+
+    // Daily trend for current month (cumulative net flow per day)
+    const daysInMonth = new Date(
+      now.getFullYear(),
+      now.getMonth() + 1,
+      0,
+    ).getDate();
+    const dailyMap = new Map<number, { income: number; expense: number }>();
+    for (const row of monthDailyAgg as {
+      _id: { day: number; type: "income" | "expense" };
+      total: number;
+    }[]) {
+      const day = row._id.day;
+      const existing = dailyMap.get(day) || { income: 0, expense: 0 };
+      existing[row._id.type] = row.total;
+      dailyMap.set(day, existing);
+    }
+    const today = now.getDate();
+    let runningNet = 0;
+    const monthlyTrend = Array.from({ length: daysInMonth }, (_, i) => {
+      const day = i + 1;
+      const entry = dailyMap.get(day) || { income: 0, expense: 0 };
+      runningNet += entry.income - entry.expense;
+      return {
+        day,
+        label: String(day).padStart(2, "0"),
+        income: entry.income,
+        expense: entry.expense,
+        net: day <= today ? runningNet : null,
+      };
+    });
+
+    // Savings rate (current month) = (income - expense) / income * 100
+    const savingsRate = thisMonthIncome
+      ? (((thisMonthIncome - thisMonthExpense) / thisMonthIncome) * 100).toFixed(
+          1,
+        )
       : "0";
 
     // Goals with progress (use the linked account balance)
@@ -202,11 +259,20 @@ export async function GET() {
       type: "success",
       success: true,
       data: {
-        // Summary metrics
+        // Net worth (all-time)
         totalBalance,
         totalIncome: incomeTotal,
         totalExpense: expenseTotal,
         netChange: incomeTotal - expenseTotal,
+
+        // Current month metrics
+        monthLabel: now.toLocaleString("en-US", {
+          month: "long",
+          year: "numeric",
+        }),
+        monthIncome: thisMonthIncome,
+        monthExpense: thisMonthExpense,
+        monthNet: thisMonthIncome - thisMonthExpense,
 
         // Month-over-month changes
         incomeChange,
@@ -215,6 +281,7 @@ export async function GET() {
 
         // Breakdowns
         categoryBreakdown,
+        monthlyTrend,
         recentTransactions,
         goals: goalsWithProgress,
         activeBudgets: budgetCount,
@@ -222,6 +289,19 @@ export async function GET() {
         totalAccounts: accounts.filter(
           (a) => a.name !== "Deleted Account" && !a.isSystem,
         ).length,
+
+        // Onboarding state — drives the welcome checklist on the dashboard
+        onboarding: {
+          dismissed:
+            (userDoc as { onboardingDismissed?: boolean } | null)
+              ?.onboardingDismissed ?? false,
+          totalTransactions: transactionsCount as number,
+          totalAccounts: accounts.filter(
+            (a) => a.name !== "Deleted Account" && !a.isSystem,
+          ).length,
+          totalBudgets: budgetCount as number,
+          totalGoals: goals.length,
+        },
       },
     });
   } catch (error) {

@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/authOptions";
 import { connectToDatabase } from "@/lib/mongodb";
 import Account from "@/models/Account";
 import { updateTransactionSchema } from "@/validations/transaction";
+import { syncGoalCompletion } from "@/lib/recomputeBalance";
 import mongoose from "mongoose";
 
 const isProd = process.env.NODE_ENV === "production";
@@ -220,6 +221,19 @@ export async function PUT(
         dbSession.endSession();
       }
 
+      // Re-sync goal completion for every account this edit touched
+      // (old + new). Bidirectional, so reducing the amount can un-complete.
+      const goalSyncTargets = Array.from(
+        new Set(
+          [oldFrom, oldTo, newFrom, newTo]
+            .filter((id): id is NonNullable<typeof id> => !!id)
+            .map((id) => id.toString()),
+        ),
+      );
+      Promise.allSettled(
+        goalSyncTargets.map((id) => syncGoalCompletion(id)),
+      ).catch(() => {});
+
       return Response.json(
         {
           message: "Transaction Updated Successfully",
@@ -336,6 +350,15 @@ export async function DELETE(
         await dbSession.commitTransaction();
         dbSession.endSession();
       }
+
+      // Re-sync goal completion for any goal accounts this deletion touched.
+      // Removing money from a goal account may bring it back below target.
+      const goalSyncTargets = [fromAccountId, toAccountId]
+        .filter((id): id is NonNullable<typeof id> => !!id)
+        .map((id) => id.toString());
+      Promise.allSettled(
+        goalSyncTargets.map((id) => syncGoalCompletion(id)),
+      ).catch(() => {});
 
       return Response.json(
         {

@@ -4,9 +4,9 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import Account from "@/models/Account";
 import Budget from "@/models/Budget";
-import Goal from "@/models/Goal";
 import { createTransactionSchema } from "@/validations/transaction";
 import { createNotification } from "@/lib/notifications";
+import { syncGoalCompletion } from "@/lib/recomputeBalance";
 import mongoose from "mongoose";
 
 export async function GET(req: Request) {
@@ -312,33 +312,22 @@ export async function POST(req: Request) {
         );
       }
 
-      // 3. Goal completion check (if money went into a goal account)
-      const targetAccountId =
-        type === "income"
-          ? toAccountId
-          : type === "transfer"
-            ? toAccountId
-            : null;
-      if (targetAccountId) {
+      // 3. Goal completion sync — runs for every account this transaction
+      // touched, so a transfer OUT of a goal can also un-complete it.
+      const goalSyncTargets = [fromAccountId, toAccountId].filter(
+        (id): id is string => !!id,
+      );
+      for (const accId of goalSyncTargets) {
         notifPromises.push(
           (async () => {
-            const goal = await Goal.findOne({
-              userId,
-              accountId: targetAccountId,
-              isCompleted: false,
-            });
-            if (goal) {
-              const account = await Account.findById(targetAccountId);
-              if (account && account.balance >= goal.target) {
-                goal.isCompleted = true;
-                await goal.save();
-                await createNotification({
-                  userId,
-                  type: "goal",
-                  title: `🎉 Goal Completed: ${goal.name}`,
-                  message: `You've reached your target of ₹${goal.target.toLocaleString("en-IN")}!`,
-                });
-              }
+            const result = await syncGoalCompletion(accId);
+            if (result.changed && result.isNowComplete) {
+              await createNotification({
+                userId,
+                type: "goal",
+                title: `🎉 Goal Completed: ${result.goalName}`,
+                message: `You've reached your target!`,
+              });
             }
           })(),
         );

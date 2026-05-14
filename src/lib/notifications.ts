@@ -102,6 +102,12 @@ async function sendPushToUser(userId: string, title: string, body: string) {
             },
             payload,
           );
+          // Bump lastUsedAt so the TTL clock resets on this live device.
+          // Fire-and-forget — a write failure here shouldn't mask success.
+          PushSubscription.updateOne(
+            { _id: sub._id },
+            { $set: { lastUsedAt: new Date() } },
+          ).catch(() => {});
         } catch (error: unknown) {
           if (
             error instanceof webpush.WebPushError &&

@@ -1,16 +1,17 @@
 // allpages/BalancePage.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useToastStore } from "@/store/useToastStore";
 import { useAccounts } from "@/hooks/accounts/useAccounts";
 import { useAddAccount } from "@/hooks/accounts/useAddAccount";
 import { useUpdateAccount } from "@/hooks/accounts/useUpdateAccount";
 import { useDeleteAccount } from "@/hooks/accounts/useDeleteAccount";
 import { useTransactions } from "@/hooks/transactions/useTransactions";
-import { generateNetWorthHistory } from "@/utils/netWorthHistory";
 import { IAccount } from "@/types/account";
 import Link from "next/link";
 import { formatCurrency } from "@/utils/formatCurrency";
@@ -28,6 +29,7 @@ import {
   Tooltip,
   ResponsiveContainer,
   CartesianGrid,
+  Cell,
 } from "recharts";
 
 import {
@@ -44,16 +46,9 @@ import {
   AlertCircle,
   ChevronLeft,
   ChevronRight,
+  RefreshCw,
 } from "lucide-react";
 import ExportCSVButton from "@/components/ExportCSVButton";
-
-interface NetWorthPoint {
-  date: string;
-  value: number;
-}
-
-type TimeRange = "week" | "month" | "year";
-const ranges: TimeRange[] = ["week", "month", "year"];
 
 type AccountType =
   | "bank"
@@ -207,14 +202,23 @@ export default function BalancePage() {
   const { totalAssets, totalLiabilities, netWorth, cashFlow } =
     calculateBalance(accounts, transactions);
 
-  const [timeRange, setTimeRange] = useState<TimeRange>("month");
-
-  const netWorthData: NetWorthPoint[] = (() => {
-    if (!transactions.length && !accounts.length) return [];
-    return generateNetWorthHistory(transactions, accounts, timeRange);
-  })();
-
   const isPositiveCashFlow = cashFlow >= 0;
+
+  // Per-account balance data for the chart — top accounts by absolute balance,
+  // excluding system accounts. Color is asset (positive) vs liability (negative).
+  const accountBalanceData = useMemo(() => {
+    return accounts
+      .filter((a) => a.type !== "system" && a.name !== "Deleted Account")
+      .map((a) => ({
+        name: a.name.length > 14 ? `${a.name.slice(0, 14)}…` : a.name,
+        fullName: a.name,
+        balance: a.balance,
+        type: a.type,
+        isAsset: a.balance >= 0,
+      }))
+      .sort((x, y) => Math.abs(y.balance) - Math.abs(x.balance))
+      .slice(0, 8);
+  }, [accounts]);
 
   // Group accounts by type and compute totals
   const allocationData = (() => {
@@ -247,6 +251,36 @@ export default function BalancePage() {
       };
     });
   })();
+
+  // ── Recompute balances ─────────────────────────────
+  const queryClient = useQueryClient();
+  const showToast = useToastStore((s) => s.showToast);
+  const [isRecomputing, setIsRecomputing] = useState(false);
+
+  const handleRecompute = async () => {
+    setIsRecomputing(true);
+    try {
+      const res = await fetch("/api/accounts/recompute-all", {
+        method: "POST",
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        throw new Error(json.message || "Failed to recompute balances");
+      }
+      showToast(json.message, "success");
+      // Refresh anything that depends on balances
+      queryClient.invalidateQueries({ queryKey: ["accounts"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["goals"] });
+    } catch (err) {
+      showToast(
+        err instanceof Error ? err.message : "Failed to recompute balances",
+        "error",
+      );
+    } finally {
+      setIsRecomputing(false);
+    }
+  };
 
   // ── Handlers ───────────────────────────────────────
   const handleAddAccount = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -440,45 +474,92 @@ export default function BalancePage() {
 
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Net Worth History Chart */}
+        {/* Account Balances Chart */}
         <div className="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-lg font-semibold text-gray-800">
-              Net Worth History
-            </h2>
-            <div className="flex space-x-2">
-              {ranges.map((range) => (
-                <button
-                  key={range}
-                  onClick={() => setTimeRange(range)}
-                  className={`text-xs px-3 py-1 rounded ${
-                    timeRange === range
-                      ? "bg-blue-100 text-blue-600"
-                      : "bg-gray-100"
-                  }`}
-                >
-                  {range.charAt(0).toUpperCase() + range.slice(1)}
-                </button>
-              ))}
+          <div className="flex justify-between items-start mb-6">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-800">
+                Account Balances
+              </h2>
+              <p className="text-xs text-gray-500 mt-0.5">
+                Top {accountBalanceData.length} accounts by balance size
+              </p>
+            </div>
+            <div className="flex items-center gap-3 text-xs text-gray-600">
+              <span className="flex items-center gap-1">
+                <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                Asset
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="inline-block w-2.5 h-2.5 rounded-full bg-rose-500" />
+                Liability
+              </span>
             </div>
           </div>
 
-          {/* Chart */}
-          <div className="bg-gray-50 rounded-lg h-64 flex items-center justify-center">
-            {netWorthData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={netWorthData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="value" fill="#3b82f6" radius={[5, 5, 0, 0]} />
+          {accountsLoading ? (
+            <div className="bg-gray-50 rounded-lg h-72 animate-pulse" />
+          ) : accountBalanceData.length > 0 ? (
+            <div className="h-72">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={accountBalanceData}
+                  layout="vertical"
+                  margin={{ top: 4, right: 16, left: 8, bottom: 4 }}
+                  barCategoryGap={10}
+                >
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="#f3f4f6"
+                    horizontal={false}
+                  />
+                  <XAxis
+                    type="number"
+                    tick={{ fontSize: 11, fill: "#6b7280" }}
+                    tickFormatter={(v: number) =>
+                      Math.abs(v) >= 1000
+                        ? `${(v / 1000).toFixed(1)}k`
+                        : `${v}`
+                    }
+                  />
+                  <YAxis
+                    type="category"
+                    dataKey="name"
+                    tick={{ fontSize: 11, fill: "#374151" }}
+                    width={90}
+                  />
+                  <Tooltip
+                    cursor={{ fill: "#f9fafb" }}
+                    contentStyle={{
+                      borderRadius: 8,
+                      border: "1px solid #e5e7eb",
+                      fontSize: 12,
+                    }}
+                    formatter={(value: number) => [
+                      formatCurrency(value),
+                      "Balance",
+                    ]}
+                    labelFormatter={(_, payload) =>
+                      payload?.[0]?.payload?.fullName || ""
+                    }
+                  />
+                  <Bar dataKey="balance" radius={[0, 6, 6, 0]}>
+                    {accountBalanceData.map((entry, index) => (
+                      <Cell
+                        key={`bar-${index}`}
+                        fill={entry.isAsset ? "#10b981" : "#f43f5e"}
+                      />
+                    ))}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
-            ) : (
-              <div className="text-gray-500 text-sm">No data available</div>
-            )}
-          </div>
+            </div>
+          ) : (
+            <div className="bg-gray-50 rounded-lg h-72 flex flex-col items-center justify-center">
+              <Wallet className="text-gray-400 mb-2" size={36} />
+              <p className="text-gray-500 text-sm">No accounts to chart yet</p>
+            </div>
+          )}
         </div>
 
         {/* Asset Allocation */}
@@ -522,7 +603,22 @@ export default function BalancePage() {
         <div className="border-b border-gray-200 px-6 py-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-gray-800">Accounts</h2>
 
-          <div className="flex gap-3">
+          <div className="flex gap-2 md:gap-3">
+            <button
+              onClick={handleRecompute}
+              disabled={isRecomputing}
+              title="Recalculate every account's balance from its transactions"
+              className="flex items-center gap-2 px-3 md:px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-60 transition-colors"
+            >
+              <RefreshCw
+                size={16}
+                className={isRecomputing ? "animate-spin" : ""}
+              />
+              <span className="hidden sm:inline">
+                {isRecomputing ? "Recomputing…" : "Recompute"}
+              </span>
+            </button>
+
             <button
               onClick={() => {
                 setShowAddForm(true);
@@ -1035,6 +1131,7 @@ export default function BalancePage() {
                       <option value="cash">Cash</option>
                       <option value="bank">Bank</option>
                       <option value="credit">Credit Card</option>
+                      <option value="investment">Investment</option>
                       <option value="other">Other</option>
                     </select>
                     {formErrors.type && (
@@ -1157,6 +1254,7 @@ export default function BalancePage() {
                       <option value="cash">Cash</option>
                       <option value="bank">Bank</option>
                       <option value="credit">Credit Card</option>
+                      <option value="investment">Investment</option>
                       <option value="other">Other</option>
                     </select>
                     {formErrors.type && (
