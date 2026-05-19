@@ -1,5 +1,23 @@
 @import "tailwindcss";
 
+/* Tailwind v4: opt into class-based dark mode driven by `.dark` on <html>.
+   The variant matches both the element itself and its descendants so
+   `dark:bg-gray-900` works on every node under the toggled root. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Baseline page colors so anything we haven't dark-classed still looks
+   sensible in dark mode. Individual components can override. */
+html {
+  background-color: #ffffff;
+  color: #111827; /* gray-900 */
+  color-scheme: light;
+}
+html.dark {
+  background-color: #0a0a0a; /* near-black page bg */
+  color: #f3f4f6; /* gray-100 */
+  color-scheme: dark; /* native form controls / scrollbars follow */
+}
+
 body, html {
   /* Native app feel optimizations */
   -webkit-tap-highlight-color: transparent;
@@ -83,4 +101,3 @@ button:disabled {
 .animate-slide-up {
   animation: slide-up 0.28s cubic-bezier(0.32, 0.72, 0, 1) both;
 }
-

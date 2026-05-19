@@ -17,11 +17,16 @@ import {
   Trash2,
   Database,
   X,
+  Monitor,
+  Sun,
+  Moon,
+  Palette,
 } from "lucide-react";
 import { useProfile } from "@/hooks/profile/useProfile";
 import { useUpdateProfile } from "@/hooks/profile/useUpdateProfile";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { useToastStore } from "@/store/useToastStore";
+import { useTheme } from "next-themes";
 import {
   currencies,
   languages,
@@ -33,12 +38,12 @@ function SettingsSkeleton() {
   return (
     <div className="space-y-6 animate-pulse">
       <div>
-        <div className="h-7 bg-gray-200 rounded w-40 mb-2" />
-        <div className="h-4 bg-gray-100 rounded w-72" />
+        <div className="h-7 bg-gray-200 dark:bg-gray-700 rounded w-40 mb-2" />
+        <div className="h-4 bg-gray-100 dark:bg-gray-800 rounded w-72" />
       </div>
-      <div className="bg-white rounded-xl border border-gray-100 p-6 space-y-4">
+      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-6 space-y-4">
         {[...Array(4)].map((_, i) => (
-          <div key={i} className="h-20 bg-gray-100 rounded-lg" />
+          <div key={i} className="h-20 bg-gray-100 dark:bg-gray-800 rounded-lg" />
         ))}
       </div>
     </div>
@@ -51,6 +56,11 @@ export default function SettingsPage() {
   const updateMutation = useUpdateProfile();
   const pushNotif = usePushNotifications();
   const showToast = useToastStore((s) => s.showToast);
+  const { theme, setTheme } = useTheme();
+  // next-themes returns undefined for `theme` on the server; track mount so
+  // the radio group doesn't render a wrong selection during hydration.
+  const [themeMounted, setThemeMounted] = useState(false);
+  useEffect(() => setThemeMounted(true), []);
 
   // Local draft for currency + language so user can change both then Save once.
   const [currency, setCurrency] = useState<UpdateProfileInput["currency"]>();
@@ -126,10 +136,10 @@ export default function SettingsPage() {
     return (
       <div className="flex flex-col items-center justify-center py-20">
         <AlertCircle size={48} className="text-red-400 mb-4" />
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
           Failed to load settings
         </h2>
-        <p className="text-gray-500 mb-4">
+        <p className="text-gray-500 dark:text-gray-400 mb-4">
           {(error as Error)?.message || "Something went wrong"}
         </p>
         <button
@@ -146,24 +156,74 @@ export default function SettingsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-        <p className="text-gray-600">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Settings</h1>
+        <p className="text-gray-600 dark:text-gray-400">
           Customize how Money Nest works for you
         </p>
       </div>
 
+      {/* ── Appearance Card ───────────────────────────────────────── */}
+      <section className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-5 md:p-6">
+        <div className="flex items-center gap-3 mb-5">
+          <div className="bg-purple-100 dark:bg-purple-900/40 p-2 rounded-lg">
+            <Palette className="text-purple-600 dark:text-purple-300" size={18} />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+              Appearance
+            </h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Light, dark, or follow your device
+            </p>
+          </div>
+        </div>
+
+        <div
+          role="radiogroup"
+          aria-label="Theme"
+          className="grid grid-cols-3 gap-2"
+        >
+          {(
+            [
+              { value: "system", label: "System", Icon: Monitor },
+              { value: "light", label: "Light", Icon: Sun },
+              { value: "dark", label: "Dark", Icon: Moon },
+            ] as const
+          ).map(({ value, label, Icon }) => {
+            const active = themeMounted && theme === value;
+            return (
+              <button
+                key={value}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                onClick={() => setTheme(value)}
+                className={`flex flex-col items-center gap-2 py-3 px-2 rounded-xl border text-sm font-medium transition-all ${
+                  active
+                    ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 ring-2 ring-indigo-500/30"
+                    : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                }`}
+              >
+                <Icon size={18} />
+                {label}
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
       {/* ── Preferences Card ──────────────────────────────────────── */}
-      <section className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 md:p-6">
+      <section className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-5 md:p-6">
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-3">
-            <div className="bg-indigo-100 p-2 rounded-lg">
-              <Globe className="text-indigo-600" size={18} />
+            <div className="bg-indigo-100 dark:bg-indigo-900/40 p-2 rounded-lg">
+              <Globe className="text-indigo-600 dark:text-indigo-300" size={18} />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                 Preferences
               </h2>
-              <p className="text-sm text-gray-500">Display & regional</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Display & regional</p>
             </div>
           </div>
         </div>
@@ -171,8 +231,8 @@ export default function SettingsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Currency */}
           <div>
-            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1.5">
-              <Coins size={14} className="text-gray-500" />
+            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+              <Coins size={14} className="text-gray-500 dark:text-gray-400" />
               Currency
             </label>
             <select
@@ -180,7 +240,7 @@ export default function SettingsPage() {
               onChange={(e) =>
                 setCurrency(e.target.value as UpdateProfileInput["currency"])
               }
-              className="w-full px-3 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
             >
               {currencies.map((c) => (
                 <option key={c.value} value={c.value}>
@@ -188,15 +248,15 @@ export default function SettingsPage() {
                 </option>
               ))}
             </select>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
               Used to display all transaction amounts
             </p>
           </div>
 
           {/* Language */}
           <div>
-            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1.5">
-              <Languages size={14} className="text-gray-500" />
+            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+              <Languages size={14} className="text-gray-500 dark:text-gray-400" />
               Language
             </label>
             <select
@@ -204,7 +264,7 @@ export default function SettingsPage() {
               onChange={(e) =>
                 setLang(e.target.value as UpdateProfileInput["lang"])
               }
-              className="w-full px-3 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
             >
               {languages.map((l) => (
                 <option key={l.value} value={l.value}>
@@ -212,7 +272,7 @@ export default function SettingsPage() {
                 </option>
               ))}
             </select>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
               Interface language across the app
             </p>
           </div>
@@ -225,7 +285,7 @@ export default function SettingsPage() {
                 setCurrency(profile?.currency as UpdateProfileInput["currency"]);
                 setLang(profile?.lang as UpdateProfileInput["lang"]);
               }}
-              className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-50"
+              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800"
             >
               Reset
             </button>
@@ -246,27 +306,27 @@ export default function SettingsPage() {
       </section>
 
       {/* ── Notifications Card ────────────────────────────────────── */}
-      <section className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 md:p-6">
+      <section className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-5 md:p-6">
         <div className="flex items-center gap-3 mb-5">
-          <div className="bg-amber-100 p-2 rounded-lg">
-            <Bell className="text-amber-600" size={18} />
+          <div className="bg-amber-100 dark:bg-amber-900/40 p-2 rounded-lg">
+            <Bell className="text-amber-600 dark:text-amber-300" size={18} />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
               Notifications
             </h2>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               Stay on top of budgets & goals
             </p>
           </div>
         </div>
 
-        <div className="flex items-center justify-between gap-4 p-4 bg-gray-50 rounded-xl">
+        <div className="flex items-center justify-between gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
           <div className="flex items-start gap-3 min-w-0">
-            <Bell className="text-gray-500 mt-0.5 shrink-0" size={18} />
+            <Bell className="text-gray-500 dark:text-gray-400 mt-0.5 shrink-0" size={18} />
             <div className="min-w-0">
-              <p className="font-medium text-gray-900">Push Notifications</p>
-              <p className="text-sm text-gray-600">
+              <p className="font-medium text-gray-900 dark:text-gray-100">Push Notifications</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 {!pushNotif.isSupported
                   ? "Not supported in this browser"
                   : pushNotif.permissionState === "denied"
@@ -296,7 +356,7 @@ export default function SettingsPage() {
                 disabled={pushNotif.isLoading}
                 className={`shrink-0 flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium rounded-lg transition-colors disabled:opacity-60 ${
                   pushNotif.subscription
-                    ? "text-red-600 bg-red-50 hover:bg-red-100"
+                    ? "text-red-600 dark:text-red-300 bg-red-50 dark:bg-red-950/40 hover:bg-red-100 dark:hover:bg-red-950/60"
                     : "text-white bg-indigo-600 hover:bg-indigo-700"
                 }`}
               >
@@ -308,6 +368,7 @@ export default function SettingsPage() {
             )}
         </div>
 
+        {/* Hidden in production — debug helper only.
         {pushNotif.subscription && (
           <button
             onClick={() =>
@@ -316,38 +377,39 @@ export default function SettingsPage() {
                 "Push notifications are working on Money Nest.",
               )
             }
-            className="w-full mt-3 py-2 text-sm text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg font-medium"
+            className="w-full mt-3 py-2 text-sm text-indigo-600 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 rounded-lg font-medium"
           >
             Send test notification
           </button>
         )}
+        */}
       </section>
 
       {/* ── Security Card ─────────────────────────────────────────── */}
-      <section className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 md:p-6">
+      <section className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-5 md:p-6">
         <div className="flex items-center gap-3 mb-5">
-          <div className="bg-green-100 p-2 rounded-lg">
-            <ShieldCheck className="text-green-600" size={18} />
+          <div className="bg-green-100 dark:bg-green-900/40 p-2 rounded-lg">
+            <ShieldCheck className="text-green-600 dark:text-green-300" size={18} />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-gray-900">Security</h2>
-            <p className="text-sm text-gray-500">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Security</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               Add extra layers to protect your account
             </p>
           </div>
         </div>
 
-        <div className="flex items-center justify-between gap-4 p-4 bg-gray-50 rounded-xl">
+        <div className="flex items-center justify-between gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
           <div className="flex items-start gap-3 min-w-0">
             <ShieldCheck
-              className="text-gray-500 mt-0.5 shrink-0"
+              className="text-gray-500 dark:text-gray-400 mt-0.5 shrink-0"
               size={18}
             />
             <div className="min-w-0">
-              <p className="font-medium text-gray-900">
+              <p className="font-medium text-gray-900 dark:text-gray-100">
                 Two-Factor Authentication
               </p>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 {profile?.twoFactorAuth
                   ? "Currently enabled — required at sign-in"
                   : "Require a code on sign-in for extra safety"}
@@ -363,24 +425,24 @@ export default function SettingsPage() {
             />
             <div
               className={`w-11 h-6 ${
-                profile?.twoFactorAuth ? "bg-green-600" : "bg-gray-300"
-              } peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all`}
+                profile?.twoFactorAuth ? "bg-green-600" : "bg-gray-300 dark:bg-gray-600"
+              } peer-focus:ring-4 peer-focus:ring-green-300 dark:peer-focus:ring-green-800 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all`}
             />
           </label>
         </div>
       </section>
 
       {/* ── Data & Privacy ──────────────────────────────────────── */}
-      <section className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 md:p-6">
+      <section className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-5 md:p-6">
         <div className="flex items-center gap-3 mb-5">
-          <div className="bg-slate-100 p-2 rounded-lg">
-            <Database className="text-slate-600" size={18} />
+          <div className="bg-slate-100 dark:bg-slate-800 p-2 rounded-lg">
+            <Database className="text-slate-600 dark:text-slate-300" size={18} />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
               Data &amp; Privacy
             </h2>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               Export everything or permanently delete your account
             </p>
           </div>
@@ -388,12 +450,12 @@ export default function SettingsPage() {
 
         <div className="space-y-3">
           {/* Export */}
-          <div className="flex items-center justify-between gap-4 p-4 bg-gray-50 rounded-xl">
+          <div className="flex items-center justify-between gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
             <div className="flex items-start gap-3 min-w-0">
-              <Download className="text-gray-500 mt-0.5 shrink-0" size={18} />
+              <Download className="text-gray-500 dark:text-gray-400 mt-0.5 shrink-0" size={18} />
               <div className="min-w-0">
-                <p className="font-medium text-gray-900">Export My Data</p>
-                <p className="text-sm text-gray-600">
+                <p className="font-medium text-gray-900 dark:text-gray-100">Export My Data</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
                   Download a JSON file with everything: profile, accounts,
                   transactions, budgets, goals, holdings.
                 </p>
@@ -402,7 +464,7 @@ export default function SettingsPage() {
             <button
               onClick={handleExport}
               disabled={isExporting}
-              className="shrink-0 inline-flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg disabled:opacity-60"
+              className="shrink-0 inline-flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-950/60 rounded-lg disabled:opacity-60"
             >
               {isExporting && <Loader2 size={14} className="animate-spin" />}
               Export
@@ -410,12 +472,12 @@ export default function SettingsPage() {
           </div>
 
           {/* Delete */}
-          <div className="flex items-center justify-between gap-4 p-4 bg-red-50 border border-red-100 rounded-xl">
+          <div className="flex items-center justify-between gap-4 p-4 bg-red-50 dark:bg-red-950/30 border border-red-100 dark:border-red-900/50 rounded-xl">
             <div className="flex items-start gap-3 min-w-0">
-              <Trash2 className="text-red-500 mt-0.5 shrink-0" size={18} />
+              <Trash2 className="text-red-500 dark:text-red-400 mt-0.5 shrink-0" size={18} />
               <div className="min-w-0">
-                <p className="font-medium text-red-900">Delete My Account</p>
-                <p className="text-sm text-red-700/90">
+                <p className="font-medium text-red-900 dark:text-red-200">Delete My Account</p>
+                <p className="text-sm text-red-700/90 dark:text-red-300/90">
                   Permanently erase your account and all data. This cannot be
                   undone.
                 </p>
@@ -486,36 +548,36 @@ function DeleteAccountModal({
 
   return createPortal(
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center z-[200] md:p-4">
-      <div className="bg-white w-full md:max-w-md rounded-t-[2rem] md:rounded-2xl shadow-2xl animate-slide-up md:animate-none flex flex-col max-h-[90vh]">
-        <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mt-4 mb-2 md:hidden" />
-        <div className="flex justify-between items-center px-6 pt-2 md:pt-6 pb-4 border-b border-gray-100">
-          <h2 className="text-lg font-bold text-red-700">Delete Account</h2>
+      <div className="bg-white dark:bg-gray-900 w-full md:max-w-md rounded-t-[2rem] md:rounded-2xl shadow-2xl animate-slide-up md:animate-none flex flex-col max-h-[90vh]">
+        <div className="w-12 h-1.5 bg-gray-300 dark:bg-gray-700 rounded-full mx-auto mt-4 mb-2 md:hidden" />
+        <div className="flex justify-between items-center px-6 pt-2 md:pt-6 pb-4 border-b border-gray-100 dark:border-gray-800">
+          <h2 className="text-lg font-bold text-red-700 dark:text-red-300">Delete Account</h2>
           <button
             onClick={onClose}
             disabled={isDeleting}
-            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full disabled:opacity-50"
+            className="p-2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full disabled:opacity-50"
           >
             <X size={20} />
           </button>
         </div>
 
         <div className="p-6 space-y-4">
-          <div className="flex gap-3 p-3 bg-red-50 border border-red-100 rounded-xl">
-            <AlertCircle className="text-red-600 shrink-0 mt-0.5" size={18} />
-            <p className="text-sm text-red-800">
+          <div className="flex gap-3 p-3 bg-red-50 dark:bg-red-950/30 border border-red-100 dark:border-red-900/50 rounded-xl">
+            <AlertCircle className="text-red-600 dark:text-red-400 shrink-0 mt-0.5" size={18} />
+            <p className="text-sm text-red-800 dark:text-red-200">
               This will <b>permanently</b> delete your profile, accounts,
               transactions, budgets, goals, holdings and notifications.{" "}
               <b>It cannot be undone.</b>
             </p>
           </div>
 
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
             Consider exporting your data first if you might want it back.
           </p>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Type <span className="font-mono text-red-700">DELETE</span> to
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Type <span className="font-mono text-red-700 dark:text-red-300">DELETE</span> to
               confirm
             </label>
             <input
@@ -524,16 +586,16 @@ function DeleteAccountModal({
                 setConfirm(e.target.value);
                 setErrorMsg(null);
               }}
-              className={`w-full px-3 py-2.5 border rounded-xl text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
+              className={`w-full px-3 py-2.5 border rounded-xl text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 ${
                 errorMsg
-                  ? "border-red-300 bg-red-50"
-                  : "border-gray-300"
+                  ? "border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-950/30"
+                  : "border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
               }`}
               placeholder="DELETE"
               autoFocus
             />
             {errorMsg && (
-              <p className="mt-1 text-xs text-red-600">{errorMsg}</p>
+              <p className="mt-1 text-xs text-red-600 dark:text-red-400">{errorMsg}</p>
             )}
           </div>
 
@@ -541,7 +603,7 @@ function DeleteAccountModal({
             <button
               onClick={onClose}
               disabled={isDeleting}
-              className="flex-1 px-4 py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-50 font-medium disabled:opacity-50"
+              className="flex-1 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 font-medium disabled:opacity-50"
             >
               Cancel
             </button>

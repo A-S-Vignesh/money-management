@@ -39,25 +39,25 @@ function ProfileSkeleton() {
   return (
     <div className="space-y-6 animate-pulse">
       <div>
-        <div className="h-7 bg-gray-200 rounded w-48 mb-2" />
-        <div className="h-4 bg-gray-100 rounded w-72" />
+        <div className="h-7 bg-gray-200 dark:bg-gray-700 rounded w-48 mb-2" />
+        <div className="h-4 bg-gray-100 dark:bg-gray-800 rounded w-72" />
       </div>
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6">
         <div className="flex gap-6">
-          <div className="w-32 h-32 bg-gray-200 rounded-full" />
+          <div className="w-32 h-32 bg-gray-200 dark:bg-gray-700 rounded-full" />
           <div className="flex-1 space-y-4">
-            <div className="h-7 bg-gray-200 rounded w-40" />
+            <div className="h-7 bg-gray-200 dark:bg-gray-700 rounded w-40" />
             <div className="grid grid-cols-2 gap-4">
-              <div className="h-5 bg-gray-200 rounded w-48" />
-              <div className="h-5 bg-gray-200 rounded w-32" />
+              <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-48" />
+              <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-32" />
             </div>
-            <div className="h-5 bg-gray-200 rounded w-36" />
+            <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-36" />
           </div>
         </div>
       </div>
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-4">
+      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 space-y-4">
         {[...Array(3)].map((_, i) => (
-          <div key={i} className="h-20 bg-gray-100 rounded-lg" />
+          <div key={i} className="h-20 bg-gray-100 dark:bg-gray-800 rounded-lg" />
         ))}
       </div>
     </div>
@@ -129,10 +129,10 @@ export default function ProfilePage() {
     return (
       <div className="flex flex-col items-center justify-center py-20">
         <AlertCircle size={48} className="text-red-400 mb-4" />
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
           Failed to load profile
         </h2>
-        <p className="text-gray-500 mb-4">
+        <p className="text-gray-500 dark:text-gray-400 mb-4">
           {(error as Error)?.message || "Something went wrong"}
         </p>
         <button
@@ -150,12 +150,12 @@ export default function ProfilePage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Profile</h1>
-          <p className="text-gray-600">Your personal information</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Profile</h1>
+          <p className="text-gray-600 dark:text-gray-400">Your personal information</p>
         </div>
         <Link
           href="/dashboard/settings"
-          className="hidden md:inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50"
+          className="hidden md:inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800"
         >
           <Settings size={16} />
           App settings
@@ -163,7 +163,7 @@ export default function ProfilePage() {
       </div>
 
       {/* ── Profile Details Card ─────────────────────────────────── */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 md:p-6">
+      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-5 md:p-6">
         <div className="flex flex-col md:flex-row gap-5 md:gap-8 items-center md:items-start">
           {/* Avatar */}
           <div className="flex-shrink-0">
@@ -176,8 +176,8 @@ export default function ProfilePage() {
                 className="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover border-4 border-white shadow-sm"
               />
             ) : (
-              <div className="bg-gray-100 border-2 border-dashed border-gray-300 rounded-full w-24 h-24 md:w-32 md:h-32 flex items-center justify-center">
-                <User className="text-gray-400" size={40} />
+              <div className="bg-gray-100 dark:bg-gray-800 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-full w-24 h-24 md:w-32 md:h-32 flex items-center justify-center">
+                <User className="text-gray-400 dark:text-gray-500" size={40} />
               </div>
             )}
           </div>
@@ -188,7 +188,7 @@ export default function ProfilePage() {
               <div className="space-y-4">
                 {/* Name */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Full Name
                   </label>
                   <input
@@ -196,15 +196,15 @@ export default function ProfilePage() {
                     name="name"
                     value={tempData.name || ""}
                     onChange={handleInputChange}
-                    className={`w-full px-3 py-2.5 border rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+                    className={`w-full px-3 py-2.5 border rounded-xl text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
                       formErrors.name
-                        ? "border-red-300 bg-red-50"
-                        : "border-gray-300"
+                        ? "border-red-300 bg-red-50 dark:bg-red-950/30"
+                        : "border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                     }`}
                     placeholder="Enter your name"
                   />
                   {formErrors.name && (
-                    <p className="mt-1 text-xs text-red-600">
+                    <p className="mt-1 text-xs text-red-600 dark:text-red-300">
                       {formErrors.name[0]}
                     </p>
                   )}
@@ -213,17 +213,17 @@ export default function ProfilePage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Email — read-only */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Email Address
                     </label>
                     <div className="relative">
-                      <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                      <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">
                         <Mail size={16} />
                       </div>
                       <input
                         type="email"
                         value={profile?.email || ""}
-                        className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 text-gray-500 cursor-not-allowed"
+                        className="w-full pl-10 pr-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl text-sm bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 cursor-not-allowed"
                         disabled
                       />
                     </div>
@@ -231,11 +231,11 @@ export default function ProfilePage() {
 
                   {/* Phone */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Phone Number
                     </label>
                     <div className="relative">
-                      <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                      <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">
                         <Phone size={16} />
                       </div>
                       <input
@@ -243,16 +243,16 @@ export default function ProfilePage() {
                         name="phoneNo"
                         value={tempData.phoneNo || ""}
                         onChange={handleInputChange}
-                        className={`w-full pl-10 pr-4 py-2.5 border rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+                        className={`w-full pl-10 pr-4 py-2.5 border rounded-xl text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
                           formErrors.phoneNo
-                            ? "border-red-300 bg-red-50"
-                            : "border-gray-300"
+                            ? "border-red-300 bg-red-50 dark:bg-red-950/30"
+                            : "border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                         }`}
                         placeholder="+91 9876543210"
                       />
                     </div>
                     {formErrors.phoneNo && (
-                      <p className="mt-1 text-xs text-red-600">
+                      <p className="mt-1 text-xs text-red-600 dark:text-red-300">
                         {formErrors.phoneNo[0]}
                       </p>
                     )}
@@ -261,11 +261,11 @@ export default function ProfilePage() {
 
                 {/* Date of Birth */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Date of Birth
                   </label>
                   <div className="relative">
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">
                       <CalendarIcon size={16} />
                     </div>
                     <input
@@ -273,15 +273,15 @@ export default function ProfilePage() {
                       name="dob"
                       value={tempData.dob || ""}
                       onChange={handleInputChange}
-                      className={`w-full pl-10 pr-4 py-2.5 border rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+                      className={`w-full pl-10 pr-4 py-2.5 border rounded-xl text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
                         formErrors.dob
-                          ? "border-red-300 bg-red-50"
-                          : "border-gray-300"
+                          ? "border-red-300 bg-red-50 dark:bg-red-950/30"
+                          : "border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                       }`}
                     />
                   </div>
                   {formErrors.dob && (
-                    <p className="mt-1 text-xs text-red-600">
+                    <p className="mt-1 text-xs text-red-600 dark:text-red-300">
                       {formErrors.dob[0]}
                     </p>
                   )}
@@ -290,7 +290,7 @@ export default function ProfilePage() {
             ) : (
               <div className="space-y-4">
                 <div className="text-center md:text-left mb-4">
-                  <h2 className="text-2xl font-bold text-gray-900">
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                     {profile?.name || "User Name"}
                   </h2>
                 </div>
@@ -354,7 +354,7 @@ export default function ProfilePage() {
             <div className="flex flex-col sm:flex-row gap-2">
               <button
                 onClick={handleCancel}
-                className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-50 font-medium"
+                className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 font-medium"
               >
                 <X size={16} />
                 Cancel
@@ -377,12 +377,12 @@ export default function ProfilePage() {
       </div>
 
       {/* ── Security Card ────────────────────────────────────────── */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 md:p-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">Security</h3>
+      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-5 md:p-6">
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">Security</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <SecurityCard
             tone="indigo"
-            icon={<ShieldCheck className="text-indigo-600" size={20} />}
+            icon={<ShieldCheck className="text-indigo-600 dark:text-indigo-300" size={20} />}
             title="Password"
             description="Keep your account secure"
             actionLabel="Change Password"
@@ -390,7 +390,7 @@ export default function ProfilePage() {
           />
           <SecurityCard
             tone="green"
-            icon={<ShieldCheck className="text-green-600" size={20} />}
+            icon={<ShieldCheck className="text-green-600 dark:text-green-300" size={20} />}
             title="Two-Factor Auth"
             description={
               profile?.twoFactorAuth
@@ -402,7 +402,7 @@ export default function ProfilePage() {
           />
           <SecurityCard
             tone="amber"
-            icon={<CreditCard className="text-amber-600" size={20} />}
+            icon={<CreditCard className="text-amber-600 dark:text-amber-300" size={20} />}
             title="Connected Devices"
             description="Active sessions"
             actionLabel="View Sessions"
@@ -413,20 +413,20 @@ export default function ProfilePage() {
       {/* Mobile-only link to settings */}
       <Link
         href="/dashboard/settings"
-        className="md:hidden flex items-center justify-between p-4 bg-white rounded-xl shadow-sm border border-gray-100"
+        className="md:hidden flex items-center justify-between p-4 bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800"
       >
         <div className="flex items-center gap-3">
-          <div className="bg-gray-100 p-2 rounded-lg">
-            <Settings className="text-gray-700" size={18} />
+          <div className="bg-gray-100 dark:bg-gray-800 p-2 rounded-lg">
+            <Settings className="text-gray-700 dark:text-gray-300" size={18} />
           </div>
           <div>
-            <p className="font-medium text-gray-900 text-sm">App Settings</p>
-            <p className="text-xs text-gray-500">
+            <p className="font-medium text-gray-900 dark:text-gray-100 text-sm">App Settings</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               Currency, language, notifications & 2FA
             </p>
           </div>
         </div>
-        <span className="text-gray-400">›</span>
+        <span className="text-gray-400 dark:text-gray-500">›</span>
       </Link>
 
       {/* ── Change Password Modal ──────── */}
@@ -434,16 +434,16 @@ export default function ProfilePage() {
         typeof document !== "undefined" &&
         createPortal(
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center z-[200] md:p-4">
-            <div className="bg-white rounded-t-[2rem] md:rounded-2xl w-full max-w-md shadow-2xl animate-slide-up md:animate-none flex flex-col max-h-[90vh]">
-              <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mt-4 mb-2 md:hidden"></div>
+            <div className="bg-white dark:bg-gray-900 rounded-t-[2rem] md:rounded-2xl w-full max-w-md shadow-2xl animate-slide-up md:animate-none flex flex-col max-h-[90vh]">
+              <div className="w-12 h-1.5 bg-gray-300 dark:bg-gray-600 rounded-full mx-auto mt-4 mb-2 md:hidden"></div>
 
-              <div className="flex justify-between items-center px-6 pt-2 md:pt-6 pb-4 border-b border-gray-100">
-                <h2 className="text-lg font-bold text-gray-900">
+              <div className="flex justify-between items-center px-6 pt-2 md:pt-6 pb-4 border-b border-gray-100 dark:border-gray-800">
+                <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">
                   Change Password
                 </h2>
                 <button
                   onClick={() => setShowPasswordModal(false)}
-                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+                  className="p-2 text-gray-400 dark:text-gray-500 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
                 >
                   <X size={20} />
                 </button>
@@ -462,16 +462,16 @@ export default function ProfilePage() {
                   { label: "Confirm New Password", placeholder: "Confirm new password" },
                 ].map((field) => (
                   <div key={field.label}>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       {field.label}
                     </label>
                     <div className="relative">
-                      <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                      <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">
                         <Lock size={16} />
                       </div>
                       <input
                         type="password"
-                        className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-xl text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                         placeholder={field.placeholder}
                         required
                       />
@@ -479,11 +479,11 @@ export default function ProfilePage() {
                   </div>
                 ))}
 
-                <div className="flex gap-3 pt-4 mt-6 border-t border-gray-100">
+                <div className="flex gap-3 pt-4 mt-6 border-t border-gray-100 dark:border-gray-800">
                   <button
                     type="button"
                     onClick={() => setShowPasswordModal(false)}
-                    className="flex-1 px-4 py-3 md:py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-50 font-medium cursor-pointer"
+                    className="flex-1 px-4 py-3 md:py-2.5 text-sm text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 font-medium cursor-pointer"
                   >
                     Cancel
                   </button>
@@ -518,11 +518,11 @@ function InfoRow({
 }) {
   return (
     <div className="flex items-start gap-3">
-      <span className="text-gray-500 mt-0.5 shrink-0">{icon}</span>
+      <span className="text-gray-500 dark:text-gray-400 mt-0.5 shrink-0">{icon}</span>
       <div className="min-w-0">
-        <p className="text-sm text-gray-600">{label}</p>
+        <p className="text-sm text-gray-600 dark:text-gray-400">{label}</p>
         <p
-          className={`font-medium text-gray-900 ${
+          className={`font-medium text-gray-900 dark:text-gray-100 ${
             truncate ? "truncate max-w-[220px] md:max-w-[260px]" : ""
           }`}
         >
@@ -552,29 +552,29 @@ function SecurityCard({
 }) {
   const toneBg =
     tone === "indigo"
-      ? "bg-indigo-100"
+      ? "bg-indigo-100 dark:bg-indigo-900/40"
       : tone === "green"
-        ? "bg-green-100"
-        : "bg-amber-100";
+        ? "bg-green-100 dark:bg-green-900/40"
+        : "bg-amber-100 dark:bg-amber-900/40";
 
   return (
-    <div className="border border-gray-200 rounded-lg p-4">
+    <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
       <div className="flex items-center mb-3">
         <div className={`${toneBg} p-2 rounded-lg mr-3`}>{icon}</div>
-        <h4 className="font-medium">{title}</h4>
+        <h4 className="font-medium text-gray-900 dark:text-gray-100">{title}</h4>
       </div>
-      <p className="text-sm text-gray-600 mb-3">{description}</p>
+      <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{description}</p>
       {href ? (
         <Link
           href={href}
-          className="text-sm text-indigo-600 font-medium hover:text-indigo-800"
+          className="text-sm text-indigo-600 dark:text-indigo-300 font-medium hover:text-indigo-800"
         >
           {actionLabel}
         </Link>
       ) : (
         <button
           onClick={onAction}
-          className="text-sm text-indigo-600 font-medium hover:text-indigo-800"
+          className="text-sm text-indigo-600 dark:text-indigo-300 font-medium hover:text-indigo-800"
         >
           {actionLabel}
         </button>

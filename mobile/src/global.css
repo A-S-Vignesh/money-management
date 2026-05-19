@@ -1,0 +1,18 @@
+/* NativeWind 4 requires Tailwind v3.4.x — DO NOT migrate to v4 `@import`
+   syntax here. Your editor's v4 linter (from the web app's Tailwind 4)
+   may flag these directives; they are correct for this workspace. */
+/* stylelint-disable */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+/* stylelint-enable */
+
+:root {
+  --font-display:
+    Spline Sans, Inter, ui-sans-serif, system-ui, sans-serif, Apple Color Emoji, Segoe UI Emoji,
+    Segoe UI Symbol, Noto Color Emoji;
+  --font-mono:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
+  --font-rounded: 'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif;
+  --font-serif: Georgia, 'Times New Roman', serif;
+}

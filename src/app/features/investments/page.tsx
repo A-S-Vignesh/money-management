@@ -44,25 +44,25 @@ export default function InvestmentTracking() {
 
   const features = [
     {
-      icon: <PieChart className="h-8 w-8 text-indigo-600" />,
+      icon: <PieChart className="h-8 w-8 text-indigo-600 dark:text-indigo-300" />,
       title: "Portfolio Overview",
       description:
         "See all your investments in one place with real-time valuation and performance metrics.",
     },
     {
-      icon: <TrendingUp className="h-8 w-8 text-indigo-600" />,
+      icon: <TrendingUp className="h-8 w-8 text-indigo-600 dark:text-indigo-300" />,
       title: "Performance Tracking",
       description:
         "Monitor returns across different time periods and compare against market benchmarks.",
     },
     {
-      icon: <BarChart className="h-8 w-8 text-indigo-600" />,
+      icon: <BarChart className="h-8 w-8 text-indigo-600 dark:text-indigo-300" />,
       title: "Diversification Analysis",
       description:
         "Understand your asset allocation and identify opportunities to rebalance your portfolio.",
     },
     {
-      icon: <Shield className="h-8 w-8 text-indigo-600" />,
+      icon: <Shield className="h-8 w-8 text-indigo-600 dark:text-indigo-300" />,
       title: "Risk Assessment",
       description:
         "Evaluate your portfolio's risk profile and get recommendations for optimization.",
@@ -71,19 +71,19 @@ export default function InvestmentTracking() {
 
   const benefits = [
     {
-      icon: <Target className="h-6 w-6 text-indigo-600" />,
+      icon: <Target className="h-6 w-6 text-indigo-600 dark:text-indigo-300" />,
       title: "Better Returns",
       description:
         "Users who track investments with Money Nest see 23% better returns on average.",
     },
     {
-      icon: <Zap className="h-6 w-6 text-indigo-600" />,
+      icon: <Zap className="h-6 w-6 text-indigo-600 dark:text-indigo-300" />,
       title: "Time Saving",
       description:
         "Automated tracking saves investors 5+ hours per month on portfolio management.",
     },
     {
-      icon: <Shield className="h-6 w-6 text-indigo-600" />,
+      icon: <Shield className="h-6 w-6 text-indigo-600 dark:text-indigo-300" />,
       title: "Reduced Risk",
       description:
         "Get alerts for portfolio imbalances and opportunities to diversify.",
@@ -105,13 +105,13 @@ export default function InvestmentTracking() {
       <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               Smart{" "}
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-indigo-600">
                 Investment Tracking
               </span>
             </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
               Monitor, analyze, and optimize your investment portfolio with
               Money Nest's powerful tracking tools.
             </p>
@@ -119,15 +119,15 @@ export default function InvestmentTracking() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-6">
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">
                 Grow Your Wealth with Confidence
               </h2>
-              <p className="text-gray-600 mb-4">
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
                 Money Nest's investment tracking helps you monitor performance
                 across all your accounts, analyze asset allocation, and make
                 informed decisions to optimize your portfolio.
               </p>
-              <p className="text-gray-600 mb-4">
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
                 Whether you're managing stocks, bonds, crypto, or real estate,
                 our tools provide the insights you need to build long-term
                 wealth.
@@ -137,20 +137,20 @@ export default function InvestmentTracking() {
                   Track Investments
                   <Plus className="ml-2 h-5 w-5" />
                 </button>
-                <button className="inline-flex items-center px-6 py-3.5 text-base font-medium rounded-xl text-indigo-600 bg-white border border-indigo-200 hover:border-indigo-300 transition-all shadow-sm hover:shadow-md">
+                <button className="inline-flex items-center px-6 py-3.5 text-base font-medium rounded-xl text-indigo-600 dark:text-indigo-300 bg-white dark:bg-gray-900 border border-indigo-200 hover:border-indigo-300 transition-all shadow-sm hover:shadow-md">
                   View Demo
                 </button>
               </div>
             </div>
             <div className="relative">
-              <div className="bg-white rounded-2xl shadow-xl p-6">
+              <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-6">
                 <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-lg font-bold text-gray-900">
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
                     Portfolio Overview
                   </h3>
                   <div
                     className={`flex items-center text-sm ${
-                      totalChange >= 0 ? "text-green-600" : "text-red-600"
+                      totalChange >= 0 ? "text-green-600 dark:text-green-300" : "text-red-600 dark:text-red-300"
                     }`}
                   >
                     {totalChange >= 0 ? (
@@ -166,10 +166,10 @@ export default function InvestmentTracking() {
                 </div>
 
                 <div className="mb-6">
-                  <div className="text-2xl font-bold text-gray-900 mb-2">
+                  <div className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
                     ${totalValue.toLocaleString()}
                   </div>
-                  <div className="text-sm text-gray-500">
+                  <div className="text-sm text-gray-500 dark:text-gray-400">
                     Total Portfolio Value
                   </div>
                 </div>
@@ -180,29 +180,29 @@ export default function InvestmentTracking() {
                     return (
                       <div key={index}>
                         <div className="flex justify-between text-sm mb-1">
-                          <span className="text-gray-700">
+                          <span className="text-gray-700 dark:text-gray-300">
                             {investment.name}
                           </span>
-                          <span className="text-gray-900">
+                          <span className="text-gray-900 dark:text-gray-100">
                             ${investment.value.toLocaleString()}
                           </span>
                         </div>
                         <div className="flex items-center">
-                          <div className="w-full bg-gray-200 rounded-full h-2 mr-2">
+                          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mr-2">
                             <div
                               className={`h-2 rounded-full ${investment.color}`}
                               style={{ width: `${percentage}%` }}
                             ></div>
                           </div>
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs text-gray-500 dark:text-gray-400">
                             {percentage.toFixed(0)}%
                           </span>
                         </div>
                         <div
                           className={`flex justify-end text-xs ${
                             investment.change >= 0
-                              ? "text-green-600"
-                              : "text-red-600"
+                              ? "text-green-600 dark:text-green-300"
+                              : "text-red-600 dark:text-red-300"
                           }`}
                         >
                           {investment.change >= 0 ? "+" : ""}
@@ -213,17 +213,17 @@ export default function InvestmentTracking() {
                   })}
                 </div>
 
-                <div className="pt-4 border-t border-gray-200">
-                  <h4 className="text-sm font-medium text-gray-900 mb-2">
+                <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
                     Performance
                   </h4>
                   <div className="grid grid-cols-5 gap-2">
                     {performance.map((item, index) => (
                       <div key={index} className="text-center">
-                        <div className="text-xs text-gray-500">{item.date}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">{item.date}</div>
                         <div
                           className={`text-sm font-medium ${
-                            item.return >= 0 ? "text-green-600" : "text-red-600"
+                            item.return >= 0 ? "text-green-600 dark:text-green-300" : "text-red-600 dark:text-red-300"
                           }`}
                         >
                           {item.return >= 0 ? "+" : ""}
@@ -241,13 +241,13 @@ export default function InvestmentTracking() {
       </div>
 
       {/* Features Section */}
-      <div className="py-16 bg-white">
+      <div className="py-16 bg-white dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               Powerful Investment Tracking Features
             </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
+            <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
               Everything you need to monitor, analyze, and optimize your
               investment portfolio.
             </p>
@@ -256,13 +256,13 @@ export default function InvestmentTracking() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, index) => (
               <div key={index} className="text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-100 rounded-xl mb-4 mx-auto">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-100 dark:bg-indigo-900/40 rounded-xl mb-4 mx-auto">
                   {feature.icon}
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
                   {feature.title}
                 </h3>
-                <p className="text-gray-600">{feature.description}</p>
+                <p className="text-gray-600 dark:text-gray-400">{feature.description}</p>
               </div>
             ))}
           </div>
@@ -270,13 +270,13 @@ export default function InvestmentTracking() {
       </div>
 
       {/* Benefits Section */}
-      <div className="py-16 bg-gray-50">
+      <div className="py-16 bg-gray-50 dark:bg-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               Why Track Investments with Money Nest?
             </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
+            <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
               Our users experience real financial benefits from using our
               investment tracking tools.
             </p>
@@ -286,15 +286,15 @@ export default function InvestmentTracking() {
             {benefits.map((benefit, index) => (
               <div
                 key={index}
-                className="bg-white p-6 rounded-xl shadow-sm border border-gray-100"
+                className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800"
               >
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-indigo-100 rounded-lg mb-4">
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-indigo-100 dark:bg-indigo-900/40 rounded-lg mb-4">
                   {benefit.icon}
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
                   {benefit.title}
                 </h3>
-                <p className="text-gray-600">{benefit.description}</p>
+                <p className="text-gray-600 dark:text-gray-400">{benefit.description}</p>
               </div>
             ))}
           </div>
@@ -302,13 +302,13 @@ export default function InvestmentTracking() {
       </div>
 
       {/* How It Works Section */}
-      <div className="py-16 bg-white">
+      <div className="py-16 bg-white dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               How Investment Tracking Works
             </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
+            <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
               Getting started with Money Nest's investment tracking is simple
               and effective.
             </p>
@@ -345,10 +345,10 @@ export default function InvestmentTracking() {
                 <div className="inline-flex items-center justify-center w-12 h-12 bg-indigo-600 text-white rounded-full text-lg font-bold mb-4 mx-auto">
                   {item.step}
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
                   {item.title}
                 </h3>
-                <p className="text-gray-600">{item.description}</p>
+                <p className="text-gray-600 dark:text-gray-400">{item.description}</p>
               </div>
             ))}
           </div>
@@ -366,7 +366,7 @@ export default function InvestmentTracking() {
             Nest's investment tracking.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <button className="inline-flex items-center px-8 py-4 border border-transparent text-base font-medium rounded-md text-indigo-600 bg-white hover:bg-gray-100 shadow-lg transition-all">
+            <button className="inline-flex items-center px-8 py-4 border border-transparent text-base font-medium rounded-md text-indigo-600 dark:text-indigo-300 bg-white dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 shadow-lg transition-all">
               Start Tracking
             </button>
             <button className="inline-flex items-center px-8 py-4 border border-white text-base font-medium rounded-md text-white hover:bg-white hover:text-indigo-600 transition-all">

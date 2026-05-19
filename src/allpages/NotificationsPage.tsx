@@ -46,14 +46,14 @@ function NotificationSkeleton() {
       {Array.from({ length: 5 }).map((_, i) => (
         <div
           key={i}
-          className="bg-white rounded-xl border border-gray-100 p-4 animate-pulse"
+          className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-4 animate-pulse"
         >
           <div className="flex gap-3">
-            <div className="w-10 h-10 bg-gray-200 rounded-full" />
+            <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full" />
             <div className="flex-1 space-y-2">
-              <div className="h-4 bg-gray-200 rounded w-48" />
-              <div className="h-3 bg-gray-100 rounded w-72" />
-              <div className="h-3 bg-gray-100 rounded w-20" />
+              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-48" />
+              <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded w-72" />
+              <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded w-20" />
             </div>
           </div>
         </div>
@@ -94,8 +94,8 @@ export default function NotificationsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold text-gray-900">Notifications</h1>
-          <p className="text-xs md:text-sm text-gray-600 mt-1">
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100">Notifications</h1>
+          <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400 mt-1">
             {unreadCount > 0
               ? `${unreadCount} unread notification${unreadCount > 1 ? "s" : ""}`
               : "All caught up! No unread notifications."}
@@ -106,7 +106,7 @@ export default function NotificationsPage() {
             <button
               onClick={() => markAllAsRead.mutate()}
               disabled={markAllAsRead.isPending}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors disabled:opacity-60"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-indigo-600 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 rounded-lg transition-colors disabled:opacity-60"
             >
               {markAllAsRead.isPending ? (
                 <Loader2 size={16} className="animate-spin" />
@@ -120,7 +120,7 @@ export default function NotificationsPage() {
             onClick={() => clearRead.mutate()}
             disabled={clearRead.isPending}
             title="Delete every notification you've already read"
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-lg transition-colors disabled:opacity-60"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors disabled:opacity-60"
           >
             {clearRead.isPending ? (
               <Loader2 size={16} className="animate-spin" />
@@ -146,7 +146,7 @@ export default function NotificationsPage() {
               className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg transition-colors whitespace-nowrap ${
                 typeFilter === filter.value
                   ? "bg-indigo-600 text-white"
-                  : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
+                  : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
               }`}
             >
               <Icon size={14} />
@@ -160,20 +160,20 @@ export default function NotificationsPage() {
       {isLoading ? (
         <NotificationSkeleton />
       ) : notifications.length === 0 ? (
-        <div className="bg-white rounded-xl border border-gray-100 p-8 md:p-12 text-center">
-          <div className="w-12 h-12 md:w-16 md:h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-3 md:mb-4">
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-8 md:p-12 text-center">
+          <div className="w-12 h-12 md:w-16 md:h-16 mx-auto bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-3 md:mb-4">
             {typeFilter !== "all" ? (
-              <Filter size={24} className="text-gray-400 md:w-7 md:h-7" />
+              <Filter size={24} className="text-gray-400 dark:text-gray-500 md:w-7 md:h-7" />
             ) : (
-              <Bell size={24} className="text-gray-400 md:w-7 md:h-7" />
+              <Bell size={24} className="text-gray-400 dark:text-gray-500 md:w-7 md:h-7" />
             )}
           </div>
-          <h3 className="text-base md:text-lg font-medium text-gray-900 mb-1">
+          <h3 className="text-base md:text-lg font-medium text-gray-900 dark:text-gray-100 mb-1">
             {typeFilter !== "all"
               ? `No ${typeFilter} notifications`
               : "No notifications yet"}
           </h3>
-          <p className="text-xs md:text-sm text-gray-500 max-w-[200px] md:max-w-none mx-auto">
+          <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 max-w-[200px] md:max-w-none mx-auto">
             {typeFilter !== "all"
               ? "Try changing the filter to see other notifications."
               : "When something important happens, you'll see it here."}
@@ -184,32 +184,32 @@ export default function NotificationsPage() {
           {notifications.map((n) => (
             <div
               key={n._id}
-              className={`bg-white rounded-xl border transition-all group relative overflow-hidden ${
+              className={`bg-white dark:bg-gray-900 rounded-xl border transition-all group relative overflow-hidden ${
                 !n.isRead
-                  ? "border-indigo-200 bg-indigo-50/30 shadow-sm"
-                  : "border-gray-100 hover:border-gray-200"
+                  ? "border-indigo-200 dark:border-indigo-800 bg-indigo-50/30 dark:bg-indigo-950/30 shadow-sm"
+                  : "border-gray-100 dark:border-gray-800 hover:border-gray-200 dark:hover:border-gray-700"
               }`}
             >
               <div className="p-3 md:p-4 flex gap-3 md:gap-4">
                 <div
                   className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 md:mt-0 ${
                     n.type === "budget"
-                      ? "bg-orange-100"
+                      ? "bg-orange-100 dark:bg-orange-900/40"
                       : n.type === "goal"
-                        ? "bg-green-100"
+                        ? "bg-green-100 dark:bg-green-900/40"
                         : n.type === "transaction"
-                          ? "bg-blue-100"
-                          : "bg-gray-100"
+                          ? "bg-blue-100 dark:bg-blue-900/40"
+                          : "bg-gray-100 dark:bg-gray-800"
                   }`}
                 >
                   {n.type === "budget" ? (
-                    <PieChart className="w-4 h-4 md:w-5 md:h-5 text-orange-600" />
+                    <PieChart className="w-4 h-4 md:w-5 md:h-5 text-orange-600 dark:text-orange-300" />
                   ) : n.type === "goal" ? (
-                    <DollarSign className="w-4 h-4 md:w-5 md:h-5 text-green-600" />
+                    <DollarSign className="w-4 h-4 md:w-5 md:h-5 text-green-600 dark:text-green-300" />
                   ) : n.type === "transaction" ? (
-                    <CreditCard className="w-4 h-4 md:w-5 md:h-5 text-blue-600" />
+                    <CreditCard className="w-4 h-4 md:w-5 md:h-5 text-blue-600 dark:text-blue-300" />
                   ) : (
-                    <Bell className="w-4 h-4 md:w-5 md:h-5 text-gray-600" />
+                    <Bell className="w-4 h-4 md:w-5 md:h-5 text-gray-600 dark:text-gray-400" />
                   )}
                 </div>
 
@@ -218,7 +218,7 @@ export default function NotificationsPage() {
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
                         <p
-                          className={`text-sm md:text-base line-clamp-1 ${!n.isRead ? "font-semibold text-gray-900" : "font-medium text-gray-700"}`}
+                          className={`text-sm md:text-base line-clamp-1 ${!n.isRead ? "font-semibold text-gray-900 dark:text-gray-100" : "font-medium text-gray-700 dark:text-gray-300"}`}
                         >
                           {n.title}
                         </p>
@@ -226,10 +226,10 @@ export default function NotificationsPage() {
                           <span className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-indigo-500 flex-shrink-0 inline-block align-middle" />
                         )}
                       </div>
-                      <p className="text-xs md:text-sm text-gray-500 mt-0.5 line-clamp-2 md:line-clamp-none">
+                      <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2 md:line-clamp-none">
                         {n.message}
                       </p>
-                      <p className="text-[10px] md:text-xs text-gray-400 mt-1 md:mt-1.5">
+                      <p className="text-[10px] md:text-xs text-gray-400 dark:text-gray-500 mt-1 md:mt-1.5">
                         {timeAgo(n.createdAt)}
                       </p>
                     </div>
@@ -239,7 +239,7 @@ export default function NotificationsPage() {
                         <button
                           title="Mark as read"
                           onClick={() => markAsRead.mutate(n._id)}
-                          className="p-1.5 sm:p-2 text-indigo-400 sm:text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                          className="p-1.5 sm:p-2 text-indigo-400 sm:text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 rounded-lg transition-colors"
                         >
                           <CheckCheck size={18} className="sm:w-4 sm:h-4 w-5 h-5" />
                         </button>
@@ -247,7 +247,7 @@ export default function NotificationsPage() {
                       <button
                         title="Delete"
                         onClick={() => deleteNotification.mutate(n._id)}
-                        className="p-1.5 sm:p-2 text-red-400 sm:text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        className="p-1.5 sm:p-2 text-red-400 sm:text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors"
                       >
                         <Trash2 size={18} className="sm:w-4 sm:h-4 w-5 h-5" />
                       </button>
@@ -262,8 +262,8 @@ export default function NotificationsPage() {
 
       {/* Pagination */}
       {pagination && pagination.totalPages > 1 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between bg-white rounded-xl border border-gray-100 px-3 md:px-4 py-3 gap-3">
-          <p className="text-xs md:text-sm text-gray-600 order-2 sm:order-1">
+        <div className="flex flex-col sm:flex-row items-center justify-between bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 px-3 md:px-4 py-3 gap-3">
+          <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400 order-2 sm:order-1">
             Page {pagination.page} of {pagination.totalPages} ·{" "}
             {pagination.total} total
           </p>
@@ -271,7 +271,7 @@ export default function NotificationsPage() {
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page <= 1}
-              className="p-2 md:p-2 bg-gray-50 sm:bg-transparent rounded-lg hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="p-2 md:p-2 bg-gray-50 dark:bg-gray-800 sm:bg-transparent rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronLeft size={18} className="hidden sm:block" />
               <span className="sm:hidden text-sm font-medium px-2 py-0.5">Previous</span>
@@ -281,7 +281,7 @@ export default function NotificationsPage() {
                 setPage((p) => Math.min(pagination.totalPages, p + 1))
               }
               disabled={page >= pagination.totalPages}
-              className="p-2 md:p-2 bg-gray-50 sm:bg-transparent rounded-lg hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="p-2 md:p-2 bg-gray-50 dark:bg-gray-800 sm:bg-transparent rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronRight size={18} className="hidden sm:block" />
               <span className="sm:hidden text-sm font-medium px-2 py-0.5">Next</span>

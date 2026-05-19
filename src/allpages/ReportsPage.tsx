@@ -99,13 +99,13 @@ function ReportSkeleton() {
     <div className="space-y-6 animate-pulse">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[...Array(4)].map((_, i) => (
-          <div key={i} className="h-28 bg-white rounded-xl border border-gray-100" />
+          <div key={i} className="h-28 bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800" />
         ))}
       </div>
-      <div className="h-72 bg-white rounded-xl border border-gray-100" />
+      <div className="h-72 bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800" />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="h-72 bg-white rounded-xl border border-gray-100" />
-        <div className="h-72 bg-white rounded-xl border border-gray-100" />
+        <div className="h-72 bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800" />
+        <div className="h-72 bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800" />
       </div>
     </div>
   );
@@ -251,10 +251,10 @@ export default function ReportsPage() {
     return (
       <div className="flex flex-col items-center justify-center py-20">
         <AlertCircle size={48} className="text-red-400 mb-4" />
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
           Failed to load report
         </h2>
-        <p className="text-gray-500 mb-4">
+        <p className="text-gray-500 dark:text-gray-400 mb-4">
           {(error as Error)?.message || "Something went wrong"}
         </p>
         <button
@@ -272,8 +272,8 @@ export default function ReportsPage() {
       {/* ── Header ────────────────────────────────────────────────── */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Reports</h1>
-          <p className="text-gray-600">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Reports</h1>
+          <p className="text-gray-600 dark:text-gray-400">
             {data?.window.startDate
               ? `${new Date(data.window.startDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })} → ${new Date(data.window.endDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}`
               : "Pick a period to see insights"}
@@ -282,7 +282,7 @@ export default function ReportsPage() {
         <button
           onClick={exportSummaryCsv}
           disabled={!data}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Download size={16} />
           Export CSV
@@ -290,7 +290,7 @@ export default function ReportsPage() {
       </div>
 
       {/* ── Period filter bar ─────────────────────────────────────── */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 md:p-5">
+      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-4 md:p-5">
         <div className="flex flex-wrap items-center gap-2 mb-4">
           {PRESETS.map((p) => (
             <button
@@ -299,7 +299,7 @@ export default function ReportsPage() {
               className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
                 preset === p.value
                   ? "bg-indigo-600 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
               }`}
             >
               {p.label}
@@ -309,7 +309,7 @@ export default function ReportsPage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="flex items-center gap-1.5 text-xs font-medium text-gray-600 mb-1">
+            <label className="flex items-center gap-1.5 text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
               <Calendar size={12} />
               Start Date
             </label>
@@ -321,11 +321,11 @@ export default function ReportsPage() {
                 setStartDate(e.target.value);
                 setPreset("custom");
               }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
             />
           </div>
           <div>
-            <label className="flex items-center gap-1.5 text-xs font-medium text-gray-600 mb-1">
+            <label className="flex items-center gap-1.5 text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
               <Calendar size={12} />
               End Date
             </label>
@@ -338,7 +338,7 @@ export default function ReportsPage() {
                 setEndDate(e.target.value);
                 setPreset("custom");
               }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
             />
           </div>
         </div>
@@ -352,7 +352,7 @@ export default function ReportsPage() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
             <SummaryCard
               tone="green"
-              icon={<ArrowUpRight size={18} className="text-green-600" />}
+              icon={<ArrowUpRight size={18} className="text-green-600 dark:text-green-300" />}
               label="Income"
               value={formatCurrency(data.summary.income)}
               meta={`${data.summary.incomeCount} txn`}
@@ -361,7 +361,7 @@ export default function ReportsPage() {
             />
             <SummaryCard
               tone="red"
-              icon={<ArrowDownRight size={18} className="text-red-600" />}
+              icon={<ArrowDownRight size={18} className="text-red-600 dark:text-red-300" />}
               label="Expense"
               value={formatCurrency(data.summary.expense)}
               meta={`${data.summary.expenseCount} txn`}
@@ -370,16 +370,16 @@ export default function ReportsPage() {
             />
             <SummaryCard
               tone="blue"
-              icon={<TrendingUp size={18} className="text-blue-600" />}
+              icon={<TrendingUp size={18} className="text-blue-600 dark:text-blue-300" />}
               label="Net"
               value={`${data.summary.net >= 0 ? "+" : "-"}${formatCurrency(Math.abs(data.summary.net))}`}
-              valueClass={data.summary.net >= 0 ? "text-blue-600" : "text-red-600"}
+              valueClass={data.summary.net >= 0 ? "text-blue-600 dark:text-blue-300" : "text-red-600 dark:text-red-300"}
               delta={data.comparison?.deltas.net ?? null}
               deltaGoodIfPositive
             />
             <SummaryCard
               tone="purple"
-              icon={<PiggyBank size={18} className="text-purple-600" />}
+              icon={<PiggyBank size={18} className="text-purple-600 dark:text-purple-300" />}
               label="Savings Rate"
               value={`${data.summary.savingsRate.toFixed(1)}%`}
               meta={
@@ -391,13 +391,13 @@ export default function ReportsPage() {
           </div>
 
           {/* ── Trend chart ───────────────────────────────────────── */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 md:p-6">
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-4 md:p-6">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-2">
               <div>
-                <h2 className="text-lg font-semibold text-gray-800">
+                <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
                   Income vs Expense Trend
                 </h2>
-                <p className="text-xs text-gray-500 mt-0.5">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                   {data.window.bucketUnit === "day"
                     ? "Daily totals"
                     : data.window.bucketUnit === "week"
@@ -449,9 +449,9 @@ export default function ReportsPage() {
                         border: "1px solid #e5e7eb",
                         fontSize: 12,
                       }}
-                      formatter={(val: number, name: string) => [
-                        formatCurrency(val),
-                        name.charAt(0).toUpperCase() + name.slice(1),
+                      formatter={(val, name) => [
+                        formatCurrency(Number(val)),
+                        String(name).charAt(0).toUpperCase() + String(name).slice(1),
                       ]}
                     />
                     <Area
@@ -480,7 +480,7 @@ export default function ReportsPage() {
               </div>
             ) : (
               <EmptyChart
-                icon={<TrendingUp className="text-gray-400" size={36} />}
+                icon={<TrendingUp className="text-gray-400 dark:text-gray-500" size={36} />}
                 message="No income or expense in this period"
               />
             )}
@@ -489,8 +489,8 @@ export default function ReportsPage() {
           {/* ── Two-col: Categories + By account ──────────────────── */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
             {/* Expense categories */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 md:p-6">
-              <h2 className="text-lg font-semibold text-gray-800 mb-4">
+            <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-4 md:p-6">
+              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">
                 Expenses by Category
               </h2>
               {expensePieData.length > 0 ? (
@@ -518,7 +518,7 @@ export default function ReportsPage() {
                             border: "1px solid #e5e7eb",
                             fontSize: 12,
                           }}
-                          formatter={(v: number) => formatCurrency(v)}
+                          formatter={(v) => formatCurrency(Number(v))}
                         />
                         <Legend
                           verticalAlign="bottom"
@@ -537,18 +537,18 @@ export default function ReportsPage() {
                               className="w-2.5 h-2.5 rounded-full shrink-0"
                               style={{ backgroundColor: colorFor(c.category, i) }}
                             />
-                            <span className="text-gray-700 truncate">
+                            <span className="text-gray-700 dark:text-gray-300 truncate">
                               {c.category}
                             </span>
-                            <span className="text-xs text-gray-400">
+                            <span className="text-xs text-gray-400 dark:text-gray-500">
                               ({c.count})
                             </span>
                           </div>
-                          <span className="font-medium text-gray-900 shrink-0 ml-3">
+                          <span className="font-medium text-gray-900 dark:text-gray-100 shrink-0 ml-3">
                             {formatCurrency(c.amount)}
                           </span>
                         </div>
-                        <div className="w-full bg-gray-100 rounded-full h-1.5">
+                        <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-1.5">
                           <div
                             className="h-1.5 rounded-full"
                             style={{
@@ -563,15 +563,15 @@ export default function ReportsPage() {
                 </>
               ) : (
                 <EmptyChart
-                  icon={<PieChart className="text-gray-400" size={32} />}
+                  icon={<PieChart className="text-gray-400 dark:text-gray-500" size={32} />}
                   message="No expenses in this period"
                 />
               )}
             </div>
 
             {/* By account */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 md:p-6">
-              <h2 className="text-lg font-semibold text-gray-800 mb-4">
+            <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-4 md:p-6">
+              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">
                 Activity by Account
               </h2>
               {accountChartData.length > 0 ? (
@@ -610,9 +610,9 @@ export default function ReportsPage() {
                           border: "1px solid #e5e7eb",
                           fontSize: 12,
                         }}
-                        formatter={(v: number, name: string) => [
-                          formatCurrency(v),
-                          name.charAt(0).toUpperCase() + name.slice(1),
+                        formatter={(v, name) => [
+                          formatCurrency(Number(v)),
+                          String(name).charAt(0).toUpperCase() + String(name).slice(1),
                         ]}
                         labelFormatter={(_, payload) =>
                           payload?.[0]?.payload?.fullName || ""
@@ -630,7 +630,7 @@ export default function ReportsPage() {
                 </div>
               ) : (
                 <EmptyChart
-                  icon={<Wallet className="text-gray-400" size={32} />}
+                  icon={<Wallet className="text-gray-400 dark:text-gray-500" size={32} />}
                   message="No account activity in this period"
                 />
               )}
@@ -681,22 +681,22 @@ function SummaryCard({
 }) {
   const toneBg =
     tone === "green"
-      ? "bg-green-100"
+      ? "bg-green-100 dark:bg-green-900/40"
       : tone === "red"
-        ? "bg-red-100"
+        ? "bg-red-100 dark:bg-red-900/40"
         : tone === "blue"
-          ? "bg-blue-100"
-          : "bg-purple-100";
+          ? "bg-blue-100 dark:bg-blue-900/40"
+          : "bg-purple-100 dark:bg-purple-900/40";
 
   const valueColor =
     valueClass ||
     (tone === "green"
-      ? "text-green-600"
+      ? "text-green-600 dark:text-green-300"
       : tone === "red"
-        ? "text-red-600"
+        ? "text-red-600 dark:text-red-300"
         : tone === "blue"
-          ? "text-blue-600"
-          : "text-purple-600");
+          ? "text-blue-600 dark:text-blue-300"
+          : "text-purple-600 dark:text-purple-300");
 
   let deltaBadge: React.ReactNode = null;
   if (delta !== undefined && delta !== null) {
@@ -709,10 +709,10 @@ function SummaryCard({
           : !isPositive;
     const colorCls =
       isGood === null
-        ? "text-gray-500 bg-gray-100"
+        ? "text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800"
         : isGood
-          ? "text-green-600 bg-green-50"
-          : "text-red-600 bg-red-50";
+          ? "text-green-600 dark:text-green-300 bg-green-50 dark:bg-green-950/30"
+          : "text-red-600 dark:text-red-300 bg-red-50 dark:bg-red-950/30";
     deltaBadge = (
       <span
         className={`text-[10px] md:text-xs font-medium px-1.5 py-0.5 rounded ${colorCls}`}
@@ -724,25 +724,25 @@ function SummaryCard({
   }
 
   return (
-    <div className="bg-white p-4 md:p-5 rounded-xl shadow-sm border border-gray-100">
+    <div className="bg-white dark:bg-gray-900 p-4 md:p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
       <div className="flex items-center justify-between mb-3">
         <div className={`${toneBg} p-2 rounded-lg`}>{icon}</div>
         {deltaBadge}
       </div>
-      <p className="text-xs md:text-sm text-gray-500 font-medium mb-1">
+      <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 font-medium mb-1">
         {label}
       </p>
       <p className={`text-lg md:text-2xl font-bold truncate ${valueColor}`}>
         {value}
       </p>
-      {meta && <p className="text-[11px] text-gray-400 mt-1">{meta}</p>}
+      {meta && <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-1">{meta}</p>}
     </div>
   );
 }
 
 function ChartLegend() {
   return (
-    <div className="flex items-center gap-3 text-xs text-gray-600">
+    <div className="flex items-center gap-3 text-xs text-gray-600 dark:text-gray-400">
       <span className="flex items-center gap-1">
         <span className="inline-block w-2.5 h-2.5 rounded-full bg-green-500" />
         Income
@@ -767,9 +767,9 @@ function EmptyChart({
   message: string;
 }) {
   return (
-    <div className="bg-gray-50 rounded-lg h-56 flex flex-col items-center justify-center">
+    <div className="bg-gray-50 dark:bg-gray-800 rounded-lg h-56 flex flex-col items-center justify-center">
       {icon}
-      <p className="text-gray-500 text-sm mt-2">{message}</p>
+      <p className="text-gray-500 dark:text-gray-400 text-sm mt-2">{message}</p>
     </div>
   );
 }
@@ -791,20 +791,20 @@ function TopList({
   }[];
   empty: string;
 }) {
-  const toneText = tone === "green" ? "text-green-600" : "text-red-600";
-  const toneBg = tone === "green" ? "bg-green-50" : "bg-red-50";
+  const toneText = tone === "green" ? "text-green-600 dark:text-green-300" : "text-red-600 dark:text-red-300";
+  const toneBg = tone === "green" ? "bg-green-50 dark:bg-green-950/30" : "bg-red-50 dark:bg-red-950/30";
   const Sign = tone === "green" ? "+" : "-";
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 md:p-6">
-      <h2 className="text-lg font-semibold text-gray-800 mb-4">{title}</h2>
+    <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-4 md:p-6">
+      <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">{title}</h2>
       {items.length === 0 ? (
         <EmptyChart
           icon={
             tone === "green" ? (
-              <ArrowUpRight className="text-gray-400" size={32} />
+              <ArrowUpRight className="text-gray-400 dark:text-gray-500" size={32} />
             ) : (
-              <ArrowDownRight className="text-gray-400" size={32} />
+              <ArrowDownRight className="text-gray-400 dark:text-gray-500" size={32} />
             )
           }
           message={empty}
@@ -827,10 +827,10 @@ function TopList({
                   )}
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">
+                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                     {t.description}
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
                     {new Date(t.date).toLocaleDateString("en-IN", {
                       day: "2-digit",
                       month: "short",

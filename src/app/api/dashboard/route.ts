@@ -1,5 +1,4 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
+import { getUserId } from "@/lib/mobileAuth";
 import { connectToDatabase } from "@/lib/mongodb";
 import Transaction from "@/models/Transaction";
 import Account from "@/models/Account";
@@ -8,11 +7,12 @@ import Budget from "@/models/Budget";
 import User from "@/models/User";
 import mongoose from "mongoose";
 
-// GET /api/dashboard — aggregated dashboard metrics
-export async function GET() {
-  const session = await getServerSession(authOptions);
-
-  if (!session || !session.user?._id) {
+// GET /api/dashboard — aggregated dashboard metrics.
+// Accepts both NextAuth session cookies (web) and Bearer JWT (mobile) via
+// the unified `getUserId` helper.
+export async function GET(req: Request) {
+  const uid = await getUserId(req);
+  if (!uid) {
     return Response.json(
       { message: "Unauthorized", type: "error", success: false },
       { status: 401 },
@@ -22,7 +22,7 @@ export async function GET() {
   try {
     await connectToDatabase();
 
-    const userId = new mongoose.Types.ObjectId(session.user._id);
+    const userId = new mongoose.Types.ObjectId(uid);
 
     const now = new Date();
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);

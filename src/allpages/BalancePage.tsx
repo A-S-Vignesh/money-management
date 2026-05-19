@@ -132,14 +132,14 @@ function TableSkeleton() {
       {[...Array(5)].map((_, i) => (
         <div
           key={i}
-          className="flex items-center gap-4 px-6 py-4 border-b border-gray-100"
+          className="flex items-center gap-4 px-6 py-4 border-b border-gray-100 dark:border-gray-800"
         >
-          <div className="w-10 h-10 bg-gray-200 rounded-lg" />
+          <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-lg" />
           <div className="flex-1 space-y-2">
-            <div className="h-4 bg-gray-200 rounded w-1/3" />
-            <div className="h-3 bg-gray-100 rounded w-1/4" />
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3" />
+            <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded w-1/4" />
           </div>
-          <div className="h-4 bg-gray-200 rounded w-20" />
+          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-20" />
         </div>
       ))}
     </div>
@@ -148,15 +148,15 @@ function TableSkeleton() {
 
 function CardSkeleton() {
   return (
-    <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 animate-pulse">
+    <div className="bg-white dark:bg-gray-900 p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 animate-pulse">
       <div className="flex items-center mb-4">
-        <div className="bg-gray-200 p-3 rounded-lg mr-4 w-11 h-11" />
+        <div className="bg-gray-200 dark:bg-gray-700 p-3 rounded-lg mr-4 w-11 h-11" />
         <div className="space-y-2 flex-1">
-          <div className="h-3 bg-gray-200 rounded w-20" />
-          <div className="h-6 bg-gray-200 rounded w-28" />
+          <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-20" />
+          <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-28" />
         </div>
       </div>
-      <div className="h-3 bg-gray-100 rounded w-32" />
+      <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded w-32" />
     </div>
   );
 }
@@ -344,7 +344,7 @@ export default function BalancePage() {
   };
 
   if (status === "loading") {
-    return <p className="text-gray-500">Loading session...</p>;
+    return <p className="text-gray-500 dark:text-gray-400">Loading session...</p>;
   }
 
   return (
@@ -352,8 +352,8 @@ export default function BalancePage() {
       {/* Page Header */}
       <div className="hidden md:flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Balance Overview</h1>
-          <p className="text-gray-600">Your complete financial position</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Balance Overview</h1>
+          <p className="text-gray-600 dark:text-gray-400">Your complete financial position</p>
         </div>
       </div>
 
@@ -369,13 +369,13 @@ export default function BalancePage() {
         ) : (
           <>
             {/* Net Worth Card */}
-            <div className="bg-white p-4 md:p-5 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-center">
+            <div className="bg-white dark:bg-gray-900 p-4 md:p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col justify-center">
               <div className="flex items-center mb-2 md:mb-4">
-                <div className="bg-blue-100 p-2 md:p-3 rounded-lg mr-2 md:mr-4">
-                  <TrendingUp className="text-blue-600 w-4 h-4 md:w-5 md:h-5" />
+                <div className="bg-blue-100 dark:bg-blue-900/40 p-2 md:p-3 rounded-lg mr-2 md:mr-4">
+                  <TrendingUp className="text-blue-600 dark:text-blue-300 w-4 h-4 md:w-5 md:h-5" />
                 </div>
                 <div className="min-w-0">
-                  <h3 className="text-gray-500 text-xs md:text-sm font-medium truncate">
+                  <h3 className="text-gray-500 dark:text-gray-400 text-xs md:text-sm font-medium truncate">
                     Net Worth
                   </h3>
                   <p className="text-base md:text-2xl font-bold truncate">
@@ -385,7 +385,7 @@ export default function BalancePage() {
               </div>
               <div
                 className={`text-[10px] md:text-sm truncate ${
-                  netWorth >= 0 ? "text-green-600" : "text-red-600"
+                  netWorth >= 0 ? "text-green-600 dark:text-green-300" : "text-red-600 dark:text-red-300"
                 }`}
               >
                 {netWorth >= 0 ? "▲" : "▼"} 5.2% from last month
@@ -393,66 +393,66 @@ export default function BalancePage() {
             </div>
 
             {/* Total Assets Card */}
-            <div className="bg-white p-4 md:p-5 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-center">
+            <div className="bg-white dark:bg-gray-900 p-4 md:p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col justify-center">
               <div className="flex items-center mb-2 md:mb-4">
-                <div className="bg-green-100 p-2 md:p-3 rounded-lg mr-2 md:mr-4">
-                  <ArrowUpRight className="text-green-600 w-4 h-4 md:w-5 md:h-5" />
+                <div className="bg-green-100 dark:bg-green-900/40 p-2 md:p-3 rounded-lg mr-2 md:mr-4">
+                  <ArrowUpRight className="text-green-600 dark:text-green-300 w-4 h-4 md:w-5 md:h-5" />
                 </div>
                 <div className="min-w-0">
-                  <h3 className="text-gray-500 text-xs md:text-sm font-medium truncate">
+                  <h3 className="text-gray-500 dark:text-gray-400 text-xs md:text-sm font-medium truncate">
                     Total Assets
                   </h3>
-                  <p className="text-base md:text-2xl font-bold text-green-600 truncate">
+                  <p className="text-base md:text-2xl font-bold text-green-600 dark:text-green-300 truncate">
                     {formatCurrency(totalAssets)}
                   </p>
                 </div>
               </div>
-              <div className="text-[10px] md:text-sm text-green-600 truncate">
+              <div className="text-[10px] md:text-sm text-green-600 dark:text-green-300 truncate">
                 ▲ 3.8% from last month
               </div>
             </div>
 
             {/* Total Liabilities Card */}
-            <div className="bg-white p-4 md:p-5 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-center">
+            <div className="bg-white dark:bg-gray-900 p-4 md:p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col justify-center">
               <div className="flex items-center mb-2 md:mb-4">
-                <div className="bg-red-100 p-2 md:p-3 rounded-lg mr-2 md:mr-4">
-                  <ArrowDownRight className="text-red-600 w-4 h-4 md:w-5 md:h-5" />
+                <div className="bg-red-100 dark:bg-red-900/40 p-2 md:p-3 rounded-lg mr-2 md:mr-4">
+                  <ArrowDownRight className="text-red-600 dark:text-red-300 w-4 h-4 md:w-5 md:h-5" />
                 </div>
                 <div className="min-w-0">
-                  <h3 className="text-gray-500 text-xs md:text-sm font-medium truncate">
+                  <h3 className="text-gray-500 dark:text-gray-400 text-xs md:text-sm font-medium truncate">
                     Total Liabilities
                   </h3>
-                  <p className="text-base md:text-2xl font-bold text-red-600 truncate">
+                  <p className="text-base md:text-2xl font-bold text-red-600 dark:text-red-300 truncate">
                     {formatCurrency(totalLiabilities)}
                   </p>
                 </div>
               </div>
-              <div className="text-[10px] md:text-sm text-green-600 truncate">
+              <div className="text-[10px] md:text-sm text-green-600 dark:text-green-300 truncate">
                 ▼ 2.1% from last month
               </div>
             </div>
 
             {/* Cash Flow Card */}
-            <div className="bg-white p-4 md:p-5 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-center">
+            <div className="bg-white dark:bg-gray-900 p-4 md:p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col justify-center">
               <div className="flex items-center mb-2 md:mb-4">
                 <div
                   className={`p-2 md:p-3 rounded-lg mr-2 md:mr-4 ${
-                    isPositiveCashFlow ? "bg-green-100" : "bg-red-100"
+                    isPositiveCashFlow ? "bg-green-100 dark:bg-green-900/40" : "bg-red-100 dark:bg-red-900/40"
                   }`}
                 >
                   <DollarSign
                     className={`w-4 h-4 md:w-5 md:h-5 ${
-                      isPositiveCashFlow ? "text-green-600" : "text-red-600"
+                      isPositiveCashFlow ? "text-green-600 dark:text-green-300" : "text-red-600 dark:text-red-300"
                     }`}
                   />
                 </div>
                 <div className="min-w-0">
-                  <h3 className="text-gray-500 text-xs md:text-sm font-medium truncate">
+                  <h3 className="text-gray-500 dark:text-gray-400 text-xs md:text-sm font-medium truncate">
                     Cash Flow
                   </h3>
                   <p
                     className={`text-base md:text-2xl font-bold truncate ${
-                      isPositiveCashFlow ? "text-green-600" : "text-red-600"
+                      isPositiveCashFlow ? "text-green-600 dark:text-green-300" : "text-red-600 dark:text-red-300"
                     }`}
                   >
                     {isPositiveCashFlow ? "+" : "-"}
@@ -462,7 +462,7 @@ export default function BalancePage() {
               </div>
               <div
                 className={`text-[10px] md:text-sm truncate ${
-                  isPositiveCashFlow ? "text-green-600" : "text-red-600"
+                  isPositiveCashFlow ? "text-green-600 dark:text-green-300" : "text-red-600 dark:text-red-300"
                 }`}
               >
                 {isPositiveCashFlow ? "Positive" : "Negative"} this month
@@ -475,17 +475,17 @@ export default function BalancePage() {
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Account Balances Chart */}
-        <div className="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+        <div className="lg:col-span-2 bg-white dark:bg-gray-900 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
           <div className="flex justify-between items-start mb-6">
             <div>
-              <h2 className="text-lg font-semibold text-gray-800">
+              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
                 Account Balances
               </h2>
-              <p className="text-xs text-gray-500 mt-0.5">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                 Top {accountBalanceData.length} accounts by balance size
               </p>
             </div>
-            <div className="flex items-center gap-3 text-xs text-gray-600">
+            <div className="flex items-center gap-3 text-xs text-gray-600 dark:text-gray-400">
               <span className="flex items-center gap-1">
                 <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500" />
                 Asset
@@ -498,7 +498,7 @@ export default function BalancePage() {
           </div>
 
           {accountsLoading ? (
-            <div className="bg-gray-50 rounded-lg h-72 animate-pulse" />
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg h-72 animate-pulse" />
           ) : accountBalanceData.length > 0 ? (
             <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
@@ -535,8 +535,8 @@ export default function BalancePage() {
                       border: "1px solid #e5e7eb",
                       fontSize: 12,
                     }}
-                    formatter={(value: number) => [
-                      formatCurrency(value),
+                    formatter={(value) => [
+                      formatCurrency(Number(value)),
                       "Balance",
                     ]}
                     labelFormatter={(_, payload) =>
@@ -555,17 +555,17 @@ export default function BalancePage() {
               </ResponsiveContainer>
             </div>
           ) : (
-            <div className="bg-gray-50 rounded-lg h-72 flex flex-col items-center justify-center">
-              <Wallet className="text-gray-400 mb-2" size={36} />
-              <p className="text-gray-500 text-sm">No accounts to chart yet</p>
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg h-72 flex flex-col items-center justify-center">
+              <Wallet className="text-gray-400 dark:text-gray-500 mb-2" size={36} />
+              <p className="text-gray-500 dark:text-gray-400 text-sm">No accounts to chart yet</p>
             </div>
           )}
         </div>
 
         {/* Asset Allocation */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+        <div className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-lg font-semibold text-gray-800">
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
               Asset Allocation
             </h2>
           </div>
@@ -574,12 +574,12 @@ export default function BalancePage() {
             {allocationData.map((item, index) => (
               <div key={index}>
                 <div className="flex justify-between mb-1">
-                  <span className="text-gray-600">{item.name}</span>
+                  <span className="text-gray-600 dark:text-gray-400">{item.name}</span>
                   <span className="font-medium">
                     {formatCurrency(item?.amount)}
                   </span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                   <div
                     className={`${item.color} h-2 rounded-full`}
                     style={{ width: `${Math.abs(item.percentage)}%` }}
@@ -589,7 +589,7 @@ export default function BalancePage() {
             ))}
           </div>
 
-          <div className="mt-6 pt-4 border-t border-gray-100">
+          <div className="mt-6 pt-4 border-t border-gray-100 dark:border-gray-800">
             <div className="flex justify-between">
               <span className="font-medium">Total Net Worth</span>
               <span className="font-bold">{formatCurrency(netWorth)}</span>
@@ -599,16 +599,16 @@ export default function BalancePage() {
       </div>
 
       {/* ─── Accounts Section ──────────────────────────────────────── */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-gray-800">Accounts</h2>
+      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+        <div className="border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Accounts</h2>
 
           <div className="flex gap-2 md:gap-3">
             <button
               onClick={handleRecompute}
               disabled={isRecomputing}
               title="Recalculate every account's balance from its transactions"
-              className="flex items-center gap-2 px-3 md:px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-60 transition-colors"
+              className="flex items-center gap-2 px-3 md:px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-60 transition-colors"
             >
               <RefreshCw
                 size={16}
@@ -641,7 +641,7 @@ export default function BalancePage() {
         {accountsError && (
           <div className="px-6 py-12 text-center">
             <AlertCircle className="mx-auto text-red-400 mb-3" size={40} />
-            <p className="text-gray-600 mb-2">
+            <p className="text-gray-600 dark:text-gray-400 mb-2">
               {accountsErrorObj?.message || "Failed to load accounts"}
             </p>
             <button
@@ -661,39 +661,39 @@ export default function BalancePage() {
           <div className="overflow-x-auto">
             {/* Desktop Table View */}
             <table className="w-full hidden md:table">
-              <thead className="bg-gray-50">
+              <thead className="bg-gray-50 dark:bg-gray-800">
                 <tr>
-                  <th className="py-3 px-6 text-left text-sm font-medium text-gray-500">
+                  <th className="py-3 px-6 text-left text-sm font-medium text-gray-500 dark:text-gray-400">
                     Account
                   </th>
-                  <th className="py-3 px-6 text-left text-sm font-medium text-gray-500">
+                  <th className="py-3 px-6 text-left text-sm font-medium text-gray-500 dark:text-gray-400">
                     Type
                   </th>
-                  <th className="py-3 px-6 text-left text-sm font-medium text-gray-500">
+                  <th className="py-3 px-6 text-left text-sm font-medium text-gray-500 dark:text-gray-400">
                     Last Updated
                   </th>
-                  <th className="py-3 px-6 text-right text-sm font-medium text-gray-500">
+                  <th className="py-3 px-6 text-right text-sm font-medium text-gray-500 dark:text-gray-400">
                     Balance
                   </th>
-                  <th className="py-3 px-6 text-right text-sm font-medium text-gray-500">
+                  <th className="py-3 px-6 text-right text-sm font-medium text-gray-500 dark:text-gray-400">
                     Actions
                   </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {accounts.map((account) => (
-                  <tr key={account._id} className="hover:bg-gray-50">
+                  <tr key={account._id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
                     <td className="py-4 px-6">
                       <div className="flex items-center">
                         <div
                           className={`p-3 rounded-lg mr-4 ${
                             account.type === "bank"
-                              ? "bg-blue-100 text-blue-800"
+                              ? "bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200"
                               : account.type === "investment"
-                                ? "bg-green-100 text-green-800"
+                                ? "bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-200"
                                 : account.type === "credit"
-                                  ? "bg-red-100 text-red-800"
-                                  : "bg-yellow-100 text-yellow-800"
+                                  ? "bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-200"
+                                  : "bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-200"
                           }`}
                         >
                           {account.type === "bank" ? (
@@ -707,27 +707,27 @@ export default function BalancePage() {
                           )}
                         </div>
                         <div>
-                          <div className="font-medium text-gray-900">
+                          <div className="font-medium text-gray-900 dark:text-gray-100">
                             {account.name}
                           </div>
-                          <div className="text-sm text-gray-500">•••• 1234</div>
+                          <div className="text-sm text-gray-500 dark:text-gray-400">•••• 1234</div>
                         </div>
                       </div>
                     </td>
                     <td className="py-4 px-6 capitalize">{account.type}</td>
-                    <td className="py-4 px-6 text-gray-600">
+                    <td className="py-4 px-6 text-gray-600 dark:text-gray-400">
                       {new Date(account.updatedAt).toLocaleDateString("en-GB")}
                     </td>
                     <td
                       className={`py-4 px-6 text-right font-medium ${
-                        account.balance >= 0 ? "text-green-600" : "text-red-600"
+                        account.balance >= 0 ? "text-green-600 dark:text-green-300" : "text-red-600 dark:text-red-300"
                       }`}
                     >
                       {formatCurrency(account.balance)}
                     </td>
                     <td className="py-4 px-4 text-right">
                       {account.type === "system" ? (
-                        <span className="text-sm text-gray-400 italic">
+                        <span className="text-sm text-gray-400 dark:text-gray-500 italic">
                           You cannot do this action
                         </span>
                       ) : account.type === "goal" ? (
@@ -752,7 +752,7 @@ export default function BalancePage() {
                         <div className="flex justify-end">
                           <div className="relative">
                             <button
-                              className="p-1 text-gray-500 hover:text-gray-700 rounded hover:bg-gray-100"
+                              className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
                               onClick={() => {
                                 setEditAccount(account);
                                 setShowEditForm(true);
@@ -762,7 +762,7 @@ export default function BalancePage() {
                               <Edit size={16} />
                             </button>
                             <button
-                              className="p-1 text-gray-500 hover:text-red-500 rounded hover:bg-gray-100 ml-2"
+                              className="p-1 text-gray-500 dark:text-gray-400 hover:text-red-500 rounded hover:bg-gray-100 dark:hover:bg-gray-800 ml-2"
                               onClick={() => setAccountToDelete(account._id)}
                             >
                               <Trash2 size={16} />
@@ -778,20 +778,20 @@ export default function BalancePage() {
 
             {/* Mobile List View */}
             {accounts.length > 0 && (
-              <div className="md:hidden divide-y divide-gray-50 border-t border-gray-100">
+              <div className="md:hidden divide-y divide-gray-50 border-t border-gray-100 dark:border-gray-800">
                 {accounts.map((account) => (
-                  <div key={account._id} className="p-4 bg-white">
+                  <div key={account._id} className="p-4 bg-white dark:bg-gray-900">
                     <div className="flex justify-between items-start mb-3">
                       <div className="flex items-center gap-3">
                         <div
                           className={`p-2.5 rounded-xl flex-shrink-0 ${
                             account.type === "bank"
-                              ? "bg-blue-100 text-blue-800"
+                              ? "bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200"
                               : account.type === "investment"
-                                ? "bg-green-100 text-green-800"
+                                ? "bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-200"
                                 : account.type === "credit"
-                                  ? "bg-red-100 text-red-800"
-                                  : "bg-yellow-100 text-yellow-800"
+                                  ? "bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-200"
+                                  : "bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-200"
                           }`}
                         >
                           {account.type === "bank" ? (
@@ -805,10 +805,10 @@ export default function BalancePage() {
                           )}
                         </div>
                         <div className="min-w-0 pr-2">
-                          <div className="font-medium text-gray-900 text-sm truncate">
+                          <div className="font-medium text-gray-900 dark:text-gray-100 text-sm truncate">
                             {account.name}
                           </div>
-                          <div className="text-[11px] text-gray-500 capitalize mt-0.5 truncate">
+                          <div className="text-[11px] text-gray-500 dark:text-gray-400 capitalize mt-0.5 truncate">
                             {account.type} •••• 1234
                           </div>
                         </div>
@@ -816,12 +816,12 @@ export default function BalancePage() {
                       <div className="text-right flex-shrink-0">
                         <div
                           className={`font-semibold text-sm ${
-                            account.balance >= 0 ? "text-green-600" : "text-red-600"
+                            account.balance >= 0 ? "text-green-600 dark:text-green-300" : "text-red-600 dark:text-red-300"
                           }`}
                         >
                           {formatCurrency(account.balance)}
                         </div>
-                        <div className="text-[10px] text-gray-400 mt-1">
+                        <div className="text-[10px] text-gray-400 dark:text-gray-500 mt-1">
                           {new Date(account.updatedAt).toLocaleDateString("en-GB")}
                         </div>
                       </div>
@@ -829,7 +829,7 @@ export default function BalancePage() {
                     {/* Actions */}
                     <div className="flex justify-end pt-3 mt-1 border-t border-gray-50">
                       {account.type === "system" ? (
-                        <span className="text-[11px] text-gray-400 italic">
+                        <span className="text-[11px] text-gray-400 dark:text-gray-500 italic">
                           System account
                         </span>
                       ) : account.type === "goal" ? (
@@ -849,7 +849,7 @@ export default function BalancePage() {
                       ) : (
                         <div className="flex gap-4">
                           <button
-                            className="text-gray-500 flex items-center gap-1.5 hover:text-gray-700 text-[12px] font-medium"
+                            className="text-gray-500 dark:text-gray-400 flex items-center gap-1.5 hover:text-gray-700 dark:hover:text-gray-200 text-[12px] font-medium"
                             onClick={() => {
                               setEditAccount(account);
                               setShowEditForm(true);
@@ -859,7 +859,7 @@ export default function BalancePage() {
                             <Edit size={14} /> Edit
                           </button>
                           <button
-                            className="text-red-500 flex items-center gap-1.5 hover:text-red-700 text-[12px] font-medium"
+                            className="text-red-500 dark:text-red-400 flex items-center gap-1.5 hover:text-red-700 text-[12px] font-medium"
                             onClick={() => setAccountToDelete(account._id)}
                           >
                             <Trash2 size={14} /> Delete
@@ -876,13 +876,13 @@ export default function BalancePage() {
             {accounts.length === 0 && (
               <div className="px-6 py-12 text-center">
                 <Wallet className="mx-auto text-gray-300 mb-3" size={40} />
-                <p className="text-gray-500">No accounts found</p>
+                <p className="text-gray-500 dark:text-gray-400">No accounts found</p>
                 <button
                   onClick={() => {
                     setShowAddForm(true);
                     setFormErrors({});
                   }}
-                  className="mt-3 text-indigo-600 hover:text-indigo-700 text-sm font-medium"
+                  className="mt-3 text-indigo-600 dark:text-indigo-300 hover:text-indigo-700 text-sm font-medium"
                 >
                   + Add your first account
                 </button>
@@ -893,8 +893,8 @@ export default function BalancePage() {
 
         {/* Pagination */}
         {pagination && pagination.totalPages > 1 && (
-          <div className="border-t border-gray-200 px-6 py-4 flex items-center justify-between">
-            <p className="text-sm text-gray-600">
+          <div className="border-t border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
               Showing {(pagination.page - 1) * pagination.limit + 1} to{" "}
               {Math.min(pagination.page * pagination.limit, pagination.total)}{" "}
               of {pagination.total} accounts
@@ -903,12 +903,12 @@ export default function BalancePage() {
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={pagination.page <= 1}
-                className="flex items-center gap-1 px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="flex items-center gap-1 px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <ChevronLeft size={14} />
                 Previous
               </button>
-              <span className="px-3 py-1.5 text-sm font-medium text-gray-700">
+              <span className="px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300">
                 Page {pagination.page} of {pagination.totalPages}
               </span>
               <button
@@ -916,7 +916,7 @@ export default function BalancePage() {
                   setPage((p) => Math.min(pagination.totalPages, p + 1))
                 }
                 disabled={pagination.page >= pagination.totalPages}
-                className="flex items-center gap-1 px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="flex items-center gap-1 px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 Next
                 <ChevronRight size={14} />
@@ -927,14 +927,14 @@ export default function BalancePage() {
       </div>
 
       {/* ─── Recent Transactions ───────────────────────────────────── */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-gray-800">
+      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+        <div className="border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
             Recent Transactions
           </h2>
           <button
             onClick={() => router.push("/dashboard/transactions")}
-            className="text-blue-600 text-sm font-medium hover:cursor-pointer"
+            className="text-blue-600 dark:text-blue-300 text-sm font-medium hover:cursor-pointer"
           >
             View All
           </button>
@@ -947,18 +947,18 @@ export default function BalancePage() {
             <>
             {/* Desktop Table View */}
             <table className="w-full hidden md:table">
-              <thead className="bg-gray-50">
+              <thead className="bg-gray-50 dark:bg-gray-800">
                 <tr>
-                  <th className="py-3 px-6 text-left text-sm font-medium text-gray-500">
+                  <th className="py-3 px-6 text-left text-sm font-medium text-gray-500 dark:text-gray-400">
                     Description
                   </th>
-                  <th className="py-3 px-6 text-left text-sm font-medium text-gray-500">
+                  <th className="py-3 px-6 text-left text-sm font-medium text-gray-500 dark:text-gray-400">
                     Date
                   </th>
-                  <th className="py-3 px-6 text-left text-sm font-medium text-gray-500">
+                  <th className="py-3 px-6 text-left text-sm font-medium text-gray-500 dark:text-gray-400">
                     Category
                   </th>
-                  <th className="py-3 px-6 text-right text-sm font-medium text-gray-500">
+                  <th className="py-3 px-6 text-right text-sm font-medium text-gray-500 dark:text-gray-400">
                     Amount
                   </th>
                 </tr>
@@ -971,24 +971,24 @@ export default function BalancePage() {
                   )
                   .slice(0, 5)
                   .map((transaction) => (
-                    <tr key={transaction._id} className="hover:bg-gray-50">
+                    <tr key={transaction._id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
                       <td className="py-4 px-6">
                         <div className="flex items-center">
                           <div
                             className={`p-2 rounded-lg mr-3 ${
                               transaction.type === "income"
-                                ? "bg-green-100"
-                                : "bg-red-100"
+                                ? "bg-green-100 dark:bg-green-900/40"
+                                : "bg-red-100 dark:bg-red-900/40"
                             }`}
                           >
                             {transaction.type === "income" ? (
                               <ArrowUpRight
-                                className="text-green-600"
+                                className="text-green-600 dark:text-green-300"
                                 size={16}
                               />
                             ) : (
                               <ArrowDownRight
-                                className="text-red-600"
+                                className="text-red-600 dark:text-red-300"
                                 size={16}
                               />
                             )}
@@ -996,19 +996,19 @@ export default function BalancePage() {
                           {transaction.description}
                         </div>
                       </td>
-                      <td className="py-4 px-6 text-gray-600">
+                      <td className="py-4 px-6 text-gray-600 dark:text-gray-400">
                         {new Date(transaction.date).toLocaleDateString("en-GB")}
                       </td>
                       <td className="py-4 px-6">
-                        <span className="bg-gray-100 text-gray-800 text-xs px-2.5 py-1 rounded-full">
+                        <span className="bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 text-xs px-2.5 py-1 rounded-full">
                           {transaction.category}
                         </span>
                       </td>
                       <td
                         className={`py-4 px-6 text-right font-medium ${
                           transaction.type === "income"
-                            ? "text-green-600"
-                            : "text-red-600"
+                            ? "text-green-600 dark:text-green-300"
+                            : "text-red-600 dark:text-red-300"
                         }`}
                       >
                         {transaction.type === "income" ? "+" : "-"}
@@ -1020,7 +1020,7 @@ export default function BalancePage() {
             </table>
 
             {/* Mobile List View */}
-            <div className="md:hidden divide-y divide-gray-50 border-t border-gray-100">
+            <div className="md:hidden divide-y divide-gray-50 border-t border-gray-100 dark:border-gray-800">
               {[...transactions]
                 .sort(
                   (a, b) =>
@@ -1028,13 +1028,13 @@ export default function BalancePage() {
                 )
                 .slice(0, 5)
                 .map((transaction) => (
-                  <div key={transaction._id} className="p-4 bg-white flex justify-between items-center">
+                  <div key={transaction._id} className="p-4 bg-white dark:bg-gray-900 flex justify-between items-center">
                     <div className="flex items-center gap-3 min-w-0 pr-4">
                       <div
                         className={`p-2.5 rounded-xl flex-shrink-0 ${
                           transaction.type === "income"
-                            ? "bg-green-100 text-green-600"
-                            : "bg-red-100 text-red-600"
+                            ? "bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-300"
+                            : "bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-300"
                         }`}
                       >
                         {transaction.type === "income" ? (
@@ -1044,17 +1044,17 @@ export default function BalancePage() {
                         )}
                       </div>
                       <div className="min-w-0">
-                        <p className="text-sm font-medium text-gray-900 leading-tight truncate">
+                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100 leading-tight truncate">
                           {transaction.description || "No description"}
                         </p>
-                        <p className="text-[11px] text-gray-500 mt-1 truncate">
+                        <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-1 truncate">
                           {transaction.category} • {new Date(transaction.date).toLocaleDateString("en-GB")}
                         </p>
                       </div>
                     </div>
                     <div
                       className={`font-semibold text-sm flex-shrink-0 ${
-                        transaction.type === "income" ? "text-green-600" : "text-red-600"
+                        transaction.type === "income" ? "text-green-600 dark:text-green-300" : "text-red-600 dark:text-red-300"
                       }`}
                     >
                       {transaction.type === "income" ? "+" : "-"}
@@ -1071,16 +1071,16 @@ export default function BalancePage() {
       {/* ─── Add Account Modal ─────────────────────────────────────── */}
       {showAddForm && typeof document !== "undefined" && createPortal(
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center z-[200] md:p-4">
-          <div className="bg-white w-full md:max-w-md rounded-t-[2rem] md:rounded-2xl shadow-2xl animate-slide-up md:animate-none flex flex-col max-h-[90vh]">
-            <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mt-4 mb-2 md:hidden"></div>
-            <div className="flex justify-between items-center px-6 pt-2 md:pt-6 pb-4 border-b border-gray-100">
-              <h2 className="text-xl font-bold">Add Account</h2>
+          <div className="bg-white dark:bg-gray-900 w-full md:max-w-md rounded-t-[2rem] md:rounded-2xl shadow-2xl animate-slide-up md:animate-none flex flex-col max-h-[90vh]">
+            <div className="w-12 h-1.5 bg-gray-300 dark:bg-gray-600 rounded-full mx-auto mt-4 mb-2 md:hidden"></div>
+            <div className="flex justify-between items-center px-6 pt-2 md:pt-6 pb-4 border-b border-gray-100 dark:border-gray-800">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">Add Account</h2>
               <button
                 onClick={() => {
                   setShowAddForm(false);
                   setFormErrors({});
                 }}
-                className="text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-100"
+                className="text-gray-400 dark:text-gray-500 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
               >
                 ✕
               </button>
@@ -1091,7 +1091,7 @@ export default function BalancePage() {
                 <div className="space-y-4">
                   {/* Account Name */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Account Name
                     </label>
                     <input
@@ -1099,13 +1099,13 @@ export default function BalancePage() {
                       name="name"
                       className={`w-full px-4 py-2 border rounded-xl text-base md:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
                         formErrors.name
-                          ? "border-red-300 bg-red-50"
-                          : "border-gray-300"
+                          ? "border-red-300 bg-red-50 dark:bg-red-950/30"
+                          : "border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                       }`}
                       placeholder="e.g. Cash, HDFC Bank, Wallet"
                     />
                     {formErrors.name && (
-                      <p className="mt-1 text-sm text-red-600">
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-300">
                         {formErrors.name[0]}
                       </p>
                     )}
@@ -1113,7 +1113,7 @@ export default function BalancePage() {
 
                   {/* Account Type */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Account Type
                     </label>
                     <select
@@ -1121,8 +1121,8 @@ export default function BalancePage() {
                       defaultValue=""
                       className={`w-full px-4 py-2 border rounded-xl text-base md:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
                         formErrors.type
-                          ? "border-red-300 bg-red-50"
-                          : "border-gray-300"
+                          ? "border-red-300 bg-red-50 dark:bg-red-950/30"
+                          : "border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                       }`}
                     >
                       <option value="" disabled>
@@ -1135,14 +1135,14 @@ export default function BalancePage() {
                       <option value="other">Other</option>
                     </select>
                     {formErrors.type && (
-                      <p className="mt-1 text-sm text-red-600">
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-300">
                         {formErrors.type[0]}
                       </p>
                     )}
                   </div>
                 </div>
                 <div className="mt-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Initial Balance (₹)
                   </label>
                   <input
@@ -1150,15 +1150,15 @@ export default function BalancePage() {
                     name="balance"
                     className={`w-full px-4 py-2 border rounded-xl text-base md:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
                       formErrors.balance
-                        ? "border-red-300 bg-red-50"
-                        : "border-gray-300"
+                        ? "border-red-300 bg-red-50 dark:bg-red-950/30"
+                        : "border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                     }`}
                     placeholder="0.00"
                     min="0"
                     step="0.01"
                   />
                   {formErrors.balance && (
-                    <p className="mt-1 text-sm text-red-600">
+                    <p className="mt-1 text-sm text-red-600 dark:text-red-300">
                       {formErrors.balance[0]}
                     </p>
                   )}
@@ -1170,7 +1170,7 @@ export default function BalancePage() {
                       setShowAddForm(false);
                       setFormErrors({});
                     }}
-                    className="flex-1 px-4 py-3 md:py-2 text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-50 font-medium"
+                    className="flex-1 px-4 py-3 md:py-2 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 font-medium"
                   >
                     Cancel
                   </button>
@@ -1195,17 +1195,17 @@ export default function BalancePage() {
       {/* ─── Edit Account Modal ────────────────────────────────────── */}
       {showEditForm && typeof document !== "undefined" && createPortal(
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center z-[200] md:p-4">
-          <div className="bg-white w-full md:max-w-md rounded-t-[2rem] md:rounded-2xl shadow-2xl animate-slide-up md:animate-none flex flex-col max-h-[90vh]">
-            <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mt-4 mb-2 md:hidden"></div>
-            <div className="flex justify-between items-center px-6 pt-2 md:pt-6 pb-4 border-b border-gray-100">
-              <h2 className="text-xl font-bold">Edit Account</h2>
+          <div className="bg-white dark:bg-gray-900 w-full md:max-w-md rounded-t-[2rem] md:rounded-2xl shadow-2xl animate-slide-up md:animate-none flex flex-col max-h-[90vh]">
+            <div className="w-12 h-1.5 bg-gray-300 dark:bg-gray-600 rounded-full mx-auto mt-4 mb-2 md:hidden"></div>
+            <div className="flex justify-between items-center px-6 pt-2 md:pt-6 pb-4 border-b border-gray-100 dark:border-gray-800">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">Edit Account</h2>
               <button
                 onClick={() => {
                   setShowEditForm(false);
                   setEditAccount(null);
                   setFormErrors({});
                 }}
-                className="text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-100"
+                className="text-gray-400 dark:text-gray-500 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
               >
                 ✕
               </button>
@@ -1216,7 +1216,7 @@ export default function BalancePage() {
                 <div className="space-y-4">
                   {/* Account Name */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Account Name
                     </label>
                     <input
@@ -1225,13 +1225,13 @@ export default function BalancePage() {
                       defaultValue={editAccount?.name || ""}
                       className={`w-full px-4 py-2 border rounded-xl text-base md:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
                         formErrors.name
-                          ? "border-red-300 bg-red-50"
-                          : "border-gray-300"
+                          ? "border-red-300 bg-red-50 dark:bg-red-950/30"
+                          : "border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                       }`}
                       placeholder="e.g. Cash, HDFC Bank, Wallet"
                     />
                     {formErrors.name && (
-                      <p className="mt-1 text-sm text-red-600">
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-300">
                         {formErrors.name[0]}
                       </p>
                     )}
@@ -1239,7 +1239,7 @@ export default function BalancePage() {
 
                   {/* Account Type */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Account Type
                     </label>
                     <select
@@ -1247,8 +1247,8 @@ export default function BalancePage() {
                       defaultValue={editAccount?.type || ""}
                       className={`w-full px-4 py-2 border rounded-xl text-base md:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
                         formErrors.type
-                          ? "border-red-300 bg-red-50"
-                          : "border-gray-300"
+                          ? "border-red-300 bg-red-50 dark:bg-red-950/30"
+                          : "border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                       }`}
                     >
                       <option value="cash">Cash</option>
@@ -1258,22 +1258,22 @@ export default function BalancePage() {
                       <option value="other">Other</option>
                     </select>
                     {formErrors.type && (
-                      <p className="mt-1 text-sm text-red-600">
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-300">
                         {formErrors.type[0]}
                       </p>
                     )}
                   </div>
                 </div>
                   {/* Balance — read-only, derived from transactions */}
-                  <div className="mt-4 p-4 rounded-xl bg-gray-50 border border-gray-200">
-                    <p className="text-xs text-gray-500 mb-1">Current Balance</p>
-                    <p className="text-xl font-semibold text-gray-800">
+                  <div className="mt-4 p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Current Balance</p>
+                    <p className="text-xl font-semibold text-gray-800 dark:text-gray-200">
                       {new Intl.NumberFormat("en-IN", {
                         style: "currency",
                         currency: "INR",
                       }).format(editAccount?.balance ?? 0)}
                     </p>
-                    <p className="text-xs text-gray-400 mt-2">
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
                       Balance is calculated from your transactions and cannot be edited directly.
                     </p>
                   </div>
@@ -1285,7 +1285,7 @@ export default function BalancePage() {
                       setEditAccount(null);
                       setFormErrors({});
                     }}
-                    className="flex-1 px-4 py-3 md:py-2 text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-50 font-medium"
+                    className="flex-1 px-4 py-3 md:py-2 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 font-medium"
                   >
                     Cancel
                   </button>

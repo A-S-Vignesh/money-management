@@ -24,31 +24,31 @@ export default function ExpenseTracking() {
     {
       name: "Food & Dining",
       amount: 425,
-      color: "bg-red-100 text-red-600",
+      color: "bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-300",
       icon: "🍔",
     },
     {
       name: "Transportation",
       amount: 210,
-      color: "bg-blue-100 text-blue-600",
+      color: "bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300",
       icon: "🚗",
     },
     {
       name: "Entertainment",
       amount: 150,
-      color: "bg-purple-100 text-purple-600",
+      color: "bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-300",
       icon: "🎬",
     },
     {
       name: "Shopping",
       amount: 320,
-      color: "bg-yellow-100 text-yellow-600",
+      color: "bg-yellow-100 dark:bg-yellow-900/40 text-yellow-600 dark:text-yellow-300",
       icon: "🛍️",
     },
     {
       name: "Utilities",
       amount: 180,
-      color: "bg-green-100 text-green-600",
+      color: "bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-300",
       icon: "💡",
     },
   ];
@@ -99,25 +99,25 @@ export default function ExpenseTracking() {
 
   const features = [
     {
-      icon: <Zap className="h-8 w-8 text-indigo-600" />,
+      icon: <Zap className="h-8 w-8 text-indigo-600 dark:text-indigo-300" />,
       title: "Instant Tracking",
       description:
         "Record expenses in seconds with our streamlined interface and smart suggestions.",
     },
     {
-      icon: <PieChart className="h-8 w-8 text-indigo-600" />,
+      icon: <PieChart className="h-8 w-8 text-indigo-600 dark:text-indigo-300" />,
       title: "Visual Analytics",
       description:
         "Understand your spending patterns with beautiful charts and category breakdowns.",
     },
     {
-      icon: <Smartphone className="h-8 w-8 text-indigo-600" />,
+      icon: <Smartphone className="h-8 w-8 text-indigo-600 dark:text-indigo-300" />,
       title: "Mobile Sync",
       description:
         "Access your expense data anywhere with our iOS and Android apps.",
     },
     {
-      icon: <Shield className="h-8 w-8 text-indigo-600" />,
+      icon: <Shield className="h-8 w-8 text-indigo-600 dark:text-indigo-300" />,
       title: "Bank-Level Security",
       description:
         "Your financial data is protected with 256-bit encryption and secure protocols.",
@@ -130,13 +130,13 @@ export default function ExpenseTracking() {
       <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               Smart{" "}
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-indigo-600">
                 Expense Tracking
               </span>
             </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
               Track, categorize, and analyze your spending with Money Nest's
               powerful expense tracking tools.
             </p>
@@ -144,15 +144,15 @@ export default function ExpenseTracking() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-6">
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">
                 Take Control of Your Spending
               </h2>
-              <p className="text-gray-600 mb-4">
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
                 Money Nest's expense tracking helps you understand where your
                 money is going with intuitive categorization, customizable
                 budgets, and insightful analytics.
               </p>
-              <p className="text-gray-600 mb-4">
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
                 Whether you're tracking daily coffee runs or monthly
                 subscriptions, our tools make it simple to stay on top of your
                 finances.
@@ -162,18 +162,18 @@ export default function ExpenseTracking() {
                   Start Tracking Now
                   <Plus className="ml-2 h-5 w-5" />
                 </button>
-                <button className="inline-flex items-center px-6 py-3.5 text-base font-medium rounded-xl text-indigo-600 bg-white border border-indigo-200 hover:border-indigo-300 transition-all shadow-sm hover:shadow-md">
+                <button className="inline-flex items-center px-6 py-3.5 text-base font-medium rounded-xl text-indigo-600 dark:text-indigo-300 bg-white dark:bg-gray-900 border border-indigo-200 hover:border-indigo-300 transition-all shadow-sm hover:shadow-md">
                   View Demo
                 </button>
               </div>
             </div>
             <div className="relative">
-              <div className="bg-white rounded-2xl shadow-xl p-6">
+              <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-6">
                 <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-lg font-bold text-gray-900">
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
                     October Expenses
                   </h3>
-                  <div className="text-2xl font-bold text-indigo-600">
+                  <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-300">
                     $1,295.24
                   </div>
                 </div>
@@ -185,22 +185,22 @@ export default function ExpenseTracking() {
                     >
                       <div className="flex items-center">
                         <span className="text-xl mr-3">{category.icon}</span>
-                        <span className="text-gray-700">{category.name}</span>
+                        <span className="text-gray-700 dark:text-gray-300">{category.name}</span>
                       </div>
-                      <div className="text-gray-900 font-medium">
+                      <div className="text-gray-900 dark:text-gray-100 font-medium">
                         ${category.amount}
                       </div>
                     </div>
                   ))}
                 </div>
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                     <div
                       className="bg-indigo-600 h-2 rounded-full"
                       style={{ width: "65%" }}
                     ></div>
                   </div>
-                  <div className="flex justify-between text-sm text-gray-600 mt-2">
+                  <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mt-2">
                     <span>Spent: $1,295</span>
                     <span>Budget: $2,000</span>
                   </div>
@@ -213,13 +213,13 @@ export default function ExpenseTracking() {
       </div>
 
       {/* Features Section */}
-      <div className="py-16 bg-white">
+      <div className="py-16 bg-white dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               Powerful Expense Tracking Features
             </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
+            <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
               Everything you need to track, analyze, and optimize your spending
               habits.
             </p>
@@ -228,13 +228,13 @@ export default function ExpenseTracking() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, index) => (
               <div key={index} className="text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-100 rounded-xl mb-4 mx-auto">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-100 dark:bg-indigo-900/40 rounded-xl mb-4 mx-auto">
                   {feature.icon}
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
                   {feature.title}
                 </h3>
-                <p className="text-gray-600">{feature.description}</p>
+                <p className="text-gray-600 dark:text-gray-400">{feature.description}</p>
               </div>
             ))}
           </div>
@@ -242,43 +242,43 @@ export default function ExpenseTracking() {
       </div>
 
       {/* Demo Section */}
-      <div className="py-16 bg-gray-50">
+      <div className="py-16 bg-gray-50 dark:bg-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-6">
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">
                 See Your Spending Patterns
               </h2>
-              <p className="text-gray-600 mb-4">
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
                 Our intuitive dashboard gives you a clear view of where your
                 money is going with interactive charts and category breakdowns.
               </p>
-              <p className="text-gray-600 mb-4">
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
                 Set monthly budgets, receive alerts when you're approaching
                 limits, and identify opportunities to save.
               </p>
               <div className="flex items-center mt-8">
                 <div className="flex-shrink-0">
-                  <div className="inline-flex items-center justify-center h-12 w-12 rounded-md bg-indigo-100 text-indigo-600">
+                  <div className="inline-flex items-center justify-center h-12 w-12 rounded-md bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-300">
                     <BarChart className="h-6 w-6" />
                   </div>
                 </div>
                 <div className="ml-4">
-                  <h4 className="text-lg font-bold text-gray-900">
+                  <h4 className="text-lg font-bold text-gray-900 dark:text-gray-100">
                     Smart Insights
                   </h4>
-                  <p className="text-gray-600">
+                  <p className="text-gray-600 dark:text-gray-400">
                     Get personalized recommendations to optimize your spending.
                   </p>
                 </div>
               </div>
             </div>
-            <div className="bg-white rounded-2xl shadow-xl p-6">
+            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-6">
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-bold text-gray-900">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
                   Recent Transactions
                 </h3>
-                <button className="text-sm text-indigo-600 hover:text-indigo-700 font-medium">
+                <button className="text-sm text-indigo-600 dark:text-indigo-300 hover:text-indigo-700 font-medium">
                   View All
                 </button>
               </div>
@@ -286,23 +286,23 @@ export default function ExpenseTracking() {
                 {transactions.map((transaction) => (
                   <div
                     key={transaction.id}
-                    className="flex items-center justify-between py-2 border-b border-gray-100"
+                    className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-800"
                   >
                     <div className="flex items-center">
                       <div
                         className={`p-2 rounded-lg ${
                           transaction.type === "income"
-                            ? "bg-green-100 text-green-600"
-                            : "bg-red-100 text-red-600"
+                            ? "bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-300"
+                            : "bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-300"
                         }`}
                       >
                         {transaction.type === "income" ? "⬆️" : "⬇️"}
                       </div>
                       <div className="ml-3">
-                        <div className="text-sm font-medium text-gray-900">
+                        <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
                           {transaction.name}
                         </div>
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
                           {transaction.category}
                         </div>
                       </div>
@@ -310,8 +310,8 @@ export default function ExpenseTracking() {
                     <div
                       className={`text-sm font-medium ${
                         transaction.type === "income"
-                          ? "text-green-600"
-                          : "text-red-600"
+                          ? "text-green-600 dark:text-green-300"
+                          : "text-red-600 dark:text-red-300"
                       }`}
                     >
                       {transaction.type === "income" ? "+" : "-"}$
@@ -336,7 +336,7 @@ export default function ExpenseTracking() {
             stress with Money Nest's expense tracking.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <button className="inline-flex items-center px-8 py-4 border border-transparent text-base font-medium rounded-md text-indigo-600 bg-white hover:bg-gray-100 shadow-lg transition-all">
+            <button className="inline-flex items-center px-8 py-4 border border-transparent text-base font-medium rounded-md text-indigo-600 dark:text-indigo-300 bg-white dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 shadow-lg transition-all">
               Get Started Free
             </button>
             <button className="inline-flex items-center px-8 py-4 border border-white text-base font-medium rounded-md text-white hover:bg-white hover:text-indigo-600 transition-all">

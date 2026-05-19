@@ -6,6 +6,7 @@ import ServiceWorkerProvider from "@/components/ServiceWorkerProvider";
 import Navbar from "@/landingcomponents/Navbar";
 import Footer from "@/landingcomponents/Footer";
 import LayoutWrapper from "@/landingcomponents/LayoutWrapper";
+import ThemeProvider from "@/components/ThemeProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -37,7 +38,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <meta name="theme-color" content="#4f46e5" />
         <meta
@@ -46,12 +47,14 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100`}
       >
         <ServiceWorkerProvider />
-        <LayoutWrapper>
-          <Providers>{children}</Providers>
-        </LayoutWrapper>
+        <ThemeProvider>
+          <LayoutWrapper>
+            <Providers>{children}</Providers>
+          </LayoutWrapper>
+        </ThemeProvider>
       </body>
     </html>
   );

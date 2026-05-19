@@ -28,6 +28,7 @@ import {
 } from "recharts";
 import { useDashboard } from "@/hooks/dashboard/useDashboard";
 import OnboardingChecklist from "@/components/OnboardingChecklist";
+import PullToRefresh from "@/components/PullToRefresh";
 import { categories } from "@/utils/categories";
 import { formatCurrency } from "@/utils/formatCurrency";
 import { useSession } from "next-auth/react";
@@ -35,14 +36,14 @@ import { useSession } from "next-auth/react";
 // ─── Skeleton Components ─────────────────────────────────────────────
 function CardSkeleton() {
   return (
-    <div className="bg-white p-4 md:p-5 rounded-xl shadow-sm border border-gray-100 animate-pulse">
+    <div className="bg-white dark:bg-gray-900 p-4 md:p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 animate-pulse">
       <div className="flex flex-col md:flex-row md:items-center mb-3 md:mb-4">
-        <div className="w-9 h-9 md:w-11 md:h-11 bg-gray-200 rounded-lg md:mr-4 mb-2 md:mb-0" />
-        <div className="h-3 bg-gray-200 rounded w-20 md:w-24" />
+        <div className="w-9 h-9 md:w-11 md:h-11 bg-gray-200 dark:bg-gray-700 rounded-lg md:mr-4 mb-2 md:mb-0" />
+        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-20 md:w-24" />
       </div>
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-2">
-        <div className="h-6 md:h-7 bg-gray-200 rounded w-20 md:w-28" />
-        <div className="h-4 md:h-5 bg-gray-100 rounded w-12 md:w-14" />
+        <div className="h-6 md:h-7 bg-gray-200 dark:bg-gray-700 rounded w-20 md:w-28" />
+        <div className="h-4 md:h-5 bg-gray-100 dark:bg-gray-800 rounded w-12 md:w-14" />
       </div>
     </div>
   );
@@ -54,14 +55,14 @@ function TableSkeleton() {
       {[...Array(5)].map((_, i) => (
         <div
           key={i}
-          className="flex items-center gap-4 py-4 border-b border-gray-100"
+          className="flex items-center gap-4 py-4 border-b border-gray-100 dark:border-gray-800"
         >
-          <div className="w-8 h-8 bg-gray-200 rounded-lg" />
+          <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-lg" />
           <div className="flex-1 space-y-2">
-            <div className="h-4 bg-gray-200 rounded w-1/3" />
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3" />
           </div>
-          <div className="h-4 bg-gray-200 rounded w-16" />
-          <div className="h-4 bg-gray-200 rounded w-20" />
+          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16" />
+          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-20" />
         </div>
       ))}
     </div>
@@ -74,10 +75,10 @@ function GoalsSkeleton() {
       {[...Array(3)].map((_, i) => (
         <div key={i}>
           <div className="flex justify-between mb-2">
-            <div className="h-4 bg-gray-200 rounded w-24" />
-            <div className="h-4 bg-gray-200 rounded w-32" />
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24" />
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-32" />
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2.5" />
+          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5" />
         </div>
       ))}
     </div>
@@ -88,9 +89,9 @@ function GoalsSkeleton() {
 const getCategoryBarColor = (categoryName: string): string => {
   const cat = categories.find((c) => c.name === categoryName);
   if (!cat) return "bg-gray-400";
-  // Extract bg color class from the combined color string e.g. "bg-red-100 text-red-800" → "bg-red-500"
+  // Extract bg color class from the combined color string e.g. "bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-200" → "bg-red-500"
   const parts = cat.color.split(" ");
-  const bgPart = parts[0]; // e.g. "bg-red-100"
+  const bgPart = parts[0]; // e.g. "bg-red-100 dark:bg-red-900/40"
   return bgPart.replace("100", "500");
 };
 
@@ -121,10 +122,10 @@ export default function DashboardPage() {
     return (
       <div className="flex flex-col items-center justify-center py-20">
         <AlertCircle size={48} className="text-red-400 mb-4" />
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
           Failed to load dashboard
         </h2>
-        <p className="text-gray-500 mb-4">
+        <p className="text-gray-500 dark:text-gray-400 mb-4">
           {(error as Error)?.message || "Something went wrong"}
         </p>
         <button
@@ -171,15 +172,16 @@ export default function DashboardPage() {
   );
 
   return (
+    <PullToRefresh onRefresh={() => refetch()}>
     <div className="space-y-6">
       {/* Welcome Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
           Welcome back, {userName}
         </h1>
-        <p className="text-gray-600">
+        <p className="text-gray-600 dark:text-gray-400">
           Your snapshot for{" "}
-          <span className="font-medium text-gray-800">{monthLabel}</span>
+          <span className="font-medium text-gray-800 dark:text-gray-200">{monthLabel}</span>
         </p>
       </div>
 
@@ -198,17 +200,17 @@ export default function DashboardPage() {
         ) : (
           <>
             {/* Month Income Card */}
-            <div className="bg-white p-4 md:p-5 rounded-xl shadow-sm border border-gray-100">
+            <div className="bg-white dark:bg-gray-900 p-4 md:p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
               <div className="flex flex-col md:flex-row md:items-center mb-3 md:mb-4">
-                <div className="bg-green-100 p-2 md:p-3 rounded-lg md:mr-4 w-fit mb-2 md:mb-0">
-                  <ArrowUpRight className="text-green-600 w-5 h-5 md:w-5 md:h-5" />
+                <div className="bg-green-100 dark:bg-green-900/40 p-2 md:p-3 rounded-lg md:mr-4 w-fit mb-2 md:mb-0">
+                  <ArrowUpRight className="text-green-600 dark:text-green-300 w-5 h-5 md:w-5 md:h-5" />
                 </div>
-                <h3 className="text-gray-500 text-xs md:text-sm font-medium">
+                <h3 className="text-gray-500 dark:text-gray-400 text-xs md:text-sm font-medium">
                   Income This Month
                 </h3>
               </div>
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-1 md:gap-0">
-                <p className="text-lg md:text-2xl font-bold text-green-600 truncate">
+                <p className="text-lg md:text-2xl font-bold text-green-600 dark:text-green-300 truncate">
                   {formatCurrency(data?.monthIncome ?? 0)}
                 </p>
                 {data?.incomeChange !== null &&
@@ -216,8 +218,8 @@ export default function DashboardPage() {
                     <span
                       className={`${
                         parseFloat(data.incomeChange) >= 0
-                          ? "text-green-500 bg-green-50"
-                          : "text-red-500 bg-red-50"
+                          ? "text-green-500 dark:text-green-400 bg-green-50 dark:bg-green-950/30"
+                          : "text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-950/30"
                       } px-2 py-0.5 md:py-1 rounded text-[10px] md:text-sm w-fit font-medium`}
                     >
                       {parseFloat(data.incomeChange) >= 0 ? "+" : ""}
@@ -228,17 +230,17 @@ export default function DashboardPage() {
             </div>
 
             {/* Month Expenses Card */}
-            <div className="bg-white p-4 md:p-5 rounded-xl shadow-sm border border-gray-100">
+            <div className="bg-white dark:bg-gray-900 p-4 md:p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
               <div className="flex flex-col md:flex-row md:items-center mb-3 md:mb-4">
-                <div className="bg-red-100 p-2 md:p-3 rounded-lg md:mr-4 w-fit mb-2 md:mb-0">
-                  <ArrowDownRight className="text-red-600 w-5 h-5 md:w-5 md:h-5" />
+                <div className="bg-red-100 dark:bg-red-900/40 p-2 md:p-3 rounded-lg md:mr-4 w-fit mb-2 md:mb-0">
+                  <ArrowDownRight className="text-red-600 dark:text-red-300 w-5 h-5 md:w-5 md:h-5" />
                 </div>
-                <h3 className="text-gray-500 text-xs md:text-sm font-medium">
+                <h3 className="text-gray-500 dark:text-gray-400 text-xs md:text-sm font-medium">
                   Spent This Month
                 </h3>
               </div>
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-1 md:gap-0">
-                <p className="text-lg md:text-2xl font-bold text-red-600 truncate">
+                <p className="text-lg md:text-2xl font-bold text-red-600 dark:text-red-300 truncate">
                   {formatCurrency(data?.monthExpense ?? 0)}
                 </p>
                 {data?.expenseChange !== null &&
@@ -246,8 +248,8 @@ export default function DashboardPage() {
                     <span
                       className={`${
                         parseFloat(data.expenseChange) >= 0
-                          ? "text-red-500 bg-red-50"
-                          : "text-green-500 bg-green-50"
+                          ? "text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-950/30"
+                          : "text-green-500 dark:text-green-400 bg-green-50 dark:bg-green-950/30"
                       } px-2 py-0.5 md:py-1 rounded text-[10px] md:text-sm w-fit font-medium`}
                     >
                       {parseFloat(data.expenseChange) >= 0 ? "+" : ""}
@@ -258,12 +260,12 @@ export default function DashboardPage() {
             </div>
 
             {/* Month Net Card */}
-            <div className="bg-white p-4 md:p-5 rounded-xl shadow-sm border border-gray-100">
+            <div className="bg-white dark:bg-gray-900 p-4 md:p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
               <div className="flex flex-col md:flex-row md:items-center mb-3 md:mb-4">
-                <div className="bg-blue-100 p-2 md:p-3 rounded-lg md:mr-4 w-fit mb-2 md:mb-0">
-                  <TrendingUp className="text-blue-600 w-5 h-5 md:w-5 md:h-5" />
+                <div className="bg-blue-100 dark:bg-blue-900/40 p-2 md:p-3 rounded-lg md:mr-4 w-fit mb-2 md:mb-0">
+                  <TrendingUp className="text-blue-600 dark:text-blue-300 w-5 h-5 md:w-5 md:h-5" />
                 </div>
-                <h3 className="text-gray-500 text-xs md:text-sm font-medium">
+                <h3 className="text-gray-500 dark:text-gray-400 text-xs md:text-sm font-medium">
                   Net Saved
                 </h3>
               </div>
@@ -271,26 +273,26 @@ export default function DashboardPage() {
                 <p
                   className={`text-lg md:text-2xl font-bold truncate ${
                     (data?.monthNet ?? 0) >= 0
-                      ? "text-blue-600"
-                      : "text-red-600"
+                      ? "text-blue-600 dark:text-blue-300"
+                      : "text-red-600 dark:text-red-300"
                   }`}
                 >
                   {(data?.monthNet ?? 0) >= 0 ? "+" : "-"}
                   {formatCurrency(Math.abs(data?.monthNet ?? 0))}
                 </p>
-                <span className="text-gray-500 bg-gray-50 px-2 py-0.5 md:py-1 rounded text-[10px] md:text-sm w-fit font-medium">
+                <span className="text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 px-2 py-0.5 md:py-1 rounded text-[10px] md:text-sm w-fit font-medium">
                   {data?.savingsRate ?? "0"}% rate
                 </span>
               </div>
             </div>
 
             {/* Net Worth Card */}
-            <div className="bg-white p-4 md:p-5 rounded-xl shadow-sm border border-gray-100">
+            <div className="bg-white dark:bg-gray-900 p-4 md:p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
               <div className="flex flex-col md:flex-row md:items-center mb-3 md:mb-4">
-                <div className="bg-purple-100 p-2 md:p-3 rounded-lg md:mr-4 w-fit mb-2 md:mb-0">
-                  <Wallet className="text-purple-600 w-5 h-5 md:w-5 md:h-5" />
+                <div className="bg-purple-100 dark:bg-purple-900/40 p-2 md:p-3 rounded-lg md:mr-4 w-fit mb-2 md:mb-0">
+                  <Wallet className="text-purple-600 dark:text-purple-300 w-5 h-5 md:w-5 md:h-5" />
                 </div>
-                <h3 className="text-gray-500 text-xs md:text-sm font-medium truncate">
+                <h3 className="text-gray-500 dark:text-gray-400 text-xs md:text-sm font-medium truncate">
                   Net Worth
                 </h3>
               </div>
@@ -298,7 +300,7 @@ export default function DashboardPage() {
                 <p className="text-lg md:text-2xl font-bold truncate">
                   {formatCurrency(data?.totalBalance ?? 0)}
                 </p>
-                <span className="text-gray-500 bg-gray-50 px-2 py-0.5 md:py-1 rounded text-[10px] md:text-sm w-fit font-medium truncate">
+                <span className="text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 px-2 py-0.5 md:py-1 rounded text-[10px] md:text-sm w-fit font-medium truncate">
                   {data?.totalAccounts ?? 0} acc
                 </span>
               </div>
@@ -310,17 +312,17 @@ export default function DashboardPage() {
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
         {/* Daily Cash Flow — Current Month */}
-        <div className="lg:col-span-2 bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-100">
+        <div className="lg:col-span-2 bg-white dark:bg-gray-900 p-4 md:p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 md:mb-6 gap-2">
             <div>
-              <h2 className="text-lg font-semibold text-gray-800">
+              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
                 Daily Cash Flow
               </h2>
-              <p className="text-xs text-gray-500 mt-0.5">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                 Cumulative net for {monthLabel}
               </p>
             </div>
-            <div className="flex items-center gap-3 text-xs text-gray-600">
+            <div className="flex items-center gap-3 text-xs text-gray-600 dark:text-gray-400">
               <span className="flex items-center gap-1">
                 <span className="inline-block w-2.5 h-2.5 rounded-full bg-green-500" />
                 Income
@@ -337,7 +339,7 @@ export default function DashboardPage() {
           </div>
 
           {isLoading ? (
-            <div className="bg-gray-50 rounded-lg h-56 md:h-64 animate-pulse" />
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg h-56 md:h-64 animate-pulse" />
           ) : trendData.length > 0 && trendHasActivity ? (
             <div className="h-56 md:h-72">
               <ResponsiveContainer width="100%" height="100%">
@@ -380,9 +382,9 @@ export default function DashboardPage() {
                       fontSize: 12,
                     }}
                     labelFormatter={(label) => `Day ${label}`}
-                    formatter={(value: number, name: string) => [
-                      formatCurrency(value),
-                      name.charAt(0).toUpperCase() + name.slice(1),
+                    formatter={(value, name) => [
+                      formatCurrency(Number(value)),
+                      String(name).charAt(0).toUpperCase() + String(name).slice(1),
                     ]}
                   />
                   <Area
@@ -411,10 +413,10 @@ export default function DashboardPage() {
               </ResponsiveContainer>
             </div>
           ) : (
-            <div className="bg-gray-50 rounded-lg h-56 md:h-64 flex items-center justify-center">
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg h-56 md:h-64 flex items-center justify-center">
               <div className="text-center p-4">
-                <TrendingUp className="mx-auto text-gray-400" size={40} />
-                <p className="text-gray-500 mt-2 text-sm md:text-base">
+                <TrendingUp className="mx-auto text-gray-400 dark:text-gray-500" size={40} />
+                <p className="text-gray-500 dark:text-gray-400 mt-2 text-sm md:text-base">
                   No activity yet this month
                 </p>
               </div>
@@ -423,24 +425,24 @@ export default function DashboardPage() {
         </div>
 
         {/* Spending Distribution — Pie + List */}
-        <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-100">
+        <div className="bg-white dark:bg-gray-900 p-4 md:p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
           <div className="mb-4 md:mb-6">
-            <h2 className="text-lg font-semibold text-gray-800">
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
               Spending Distribution
             </h2>
-            <p className="text-xs text-gray-500 mt-0.5">{monthLabel}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{monthLabel}</p>
           </div>
 
           {isLoading ? (
             <div className="animate-pulse space-y-4">
-              <div className="h-40 bg-gray-100 rounded-lg" />
+              <div className="h-40 bg-gray-100 dark:bg-gray-800 rounded-lg" />
               {[...Array(3)].map((_, i) => (
                 <div key={i}>
                   <div className="flex justify-between mb-1">
-                    <div className="h-3 bg-gray-200 rounded w-16" />
-                    <div className="h-3 bg-gray-200 rounded w-12" />
+                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-16" />
+                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-12" />
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2" />
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2" />
                 </div>
               ))}
             </div>
@@ -469,7 +471,7 @@ export default function DashboardPage() {
                         border: "1px solid #e5e7eb",
                         fontSize: 12,
                       }}
-                      formatter={(value: number) => formatCurrency(value)}
+                      formatter={(value) => formatCurrency(Number(value))}
                     />
                     <Legend
                       verticalAlign="bottom"
@@ -484,14 +486,14 @@ export default function DashboardPage() {
                 {data!.categoryBreakdown.slice(0, 4).map((item, index) => (
                   <div key={index}>
                     <div className="flex justify-between mb-1">
-                      <span className="text-gray-600 text-sm">
+                      <span className="text-gray-600 dark:text-gray-400 text-sm">
                         {item.category}
                       </span>
                       <span className="font-medium text-sm">
                         {formatCurrency(item.amount)}
                       </span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-1.5">
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
                       <div
                         className={`${getCategoryBarColor(item.category)} h-1.5 rounded-full transition-all`}
                         style={{ width: `${item.percentage}%` }}
@@ -504,7 +506,7 @@ export default function DashboardPage() {
           ) : (
             <div className="flex flex-col items-center justify-center py-12">
               <PieChart className="text-gray-300 mb-2" size={32} />
-              <p className="text-gray-400 text-sm">
+              <p className="text-gray-400 dark:text-gray-500 text-sm">
                 No expenses this month yet
               </p>
             </div>
@@ -515,14 +517,14 @@ export default function DashboardPage() {
       {/* Goals & Transactions Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
         {/* Financial Goals */}
-        <div className="lg:col-span-1 bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-100">
+        <div className="lg:col-span-1 bg-white dark:bg-gray-900 p-4 md:p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
           <div className="flex justify-between items-center mb-4 md:mb-6">
-            <h2 className="text-lg font-semibold text-gray-800">
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
               Financial Goals
             </h2>
             <Link
               href={"/dashboard/goals"}
-              className="text-blue-600 text-sm font-medium"
+              className="text-blue-600 dark:text-blue-300 text-sm font-medium"
             >
               See all
             </Link>
@@ -542,13 +544,13 @@ export default function DashboardPage() {
                   <div key={goal._id}>
                     <div className="flex justify-between mb-2">
                       <span className="font-medium">{goal.name}</span>
-                      <span className="text-gray-600 text-sm">
+                      <span className="text-gray-600 dark:text-gray-400 text-sm">
                         {formatCurrency(goal.current)}/{" "}
                         {formatCurrency(goal.target)}
                       </span>
                     </div>
 
-                    <div className="w-full bg-gray-200 rounded-full h-2.5">
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
                       <div
                         className="h-2.5 rounded-full transition-all"
                         style={{
@@ -558,7 +560,7 @@ export default function DashboardPage() {
                       ></div>
                     </div>
 
-                    <p className="text-right text-sm text-gray-500 mt-1">
+                    <p className="text-right text-sm text-gray-500 dark:text-gray-400 mt-1">
                       {progress.toFixed(0)}% completed
                     </p>
                   </div>
@@ -567,16 +569,16 @@ export default function DashboardPage() {
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-6">
-              <Target className="text-gray-400 mx-auto mb-4" size={48} />
-              <h3 className="text-xl font-medium text-gray-900 mb-2">
+              <Target className="text-gray-400 dark:text-gray-500 mx-auto mb-4" size={48} />
+              <h3 className="text-xl font-medium text-gray-900 dark:text-gray-100 mb-2">
                 No goals found
               </h3>
-              <p className="text-gray-500 max-w-md mb-2 text-center text-sm">
+              <p className="text-gray-500 dark:text-gray-400 max-w-md mb-2 text-center text-sm">
                 You haven&apos;t set any financial goals yet.
               </p>
               <Link
                 href="/dashboard/goals"
-                className="text-blue-600 text-sm font-medium"
+                className="text-blue-600 dark:text-blue-300 text-sm font-medium"
               >
                 Create a goal →
               </Link>
@@ -585,14 +587,14 @@ export default function DashboardPage() {
         </div>
 
         {/* Recent Transactions */}
-        <div className="lg:col-span-2 bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-100">
+        <div className="lg:col-span-2 bg-white dark:bg-gray-900 p-4 md:p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
           <div className="flex justify-between items-center mb-4 md:mb-6">
-            <h2 className="text-lg font-semibold text-gray-800">
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
               Recent Transactions
             </h2>
             <Link
               href={"/dashboard/transactions"}
-              className="text-blue-600 text-sm font-medium flex items-center"
+              className="text-blue-600 dark:text-blue-300 text-sm font-medium flex items-center"
             >
               View All
               <ArrowUpRight className="ml-1" size={16} />
@@ -607,7 +609,7 @@ export default function DashboardPage() {
               <div className="hidden md:block overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="text-gray-500 text-left border-b">
+                    <tr className="text-gray-500 dark:text-gray-400 text-left border-b">
                       <th className="pb-3 text-sm font-medium">Type</th>
                       <th className="pb-3 text-sm font-medium">Date</th>
                       <th className="pb-3 text-sm font-medium">Category</th>
@@ -622,32 +624,32 @@ export default function DashboardPage() {
                       data.recentTransactions.map((transaction) => (
                         <tr
                           key={transaction._id}
-                          className="border-b hover:bg-gray-50 transition-colors"
+                          className="border-b hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                         >
                           <td className="py-4">
                             <div className="flex items-center">
                               <div
                                 className={`p-2 rounded-lg mr-3 ${
                                   transaction.type === "income"
-                                    ? "bg-green-100"
+                                    ? "bg-green-100 dark:bg-green-900/40"
                                     : transaction.type === "expense"
-                                      ? "bg-red-100"
-                                      : "bg-blue-100"
+                                      ? "bg-red-100 dark:bg-red-900/40"
+                                      : "bg-blue-100 dark:bg-blue-900/40"
                                 }`}
                               >
                                 {transaction.type === "income" ? (
                                   <ArrowUpRight
-                                    className="text-green-600"
+                                    className="text-green-600 dark:text-green-300"
                                     size={16}
                                   />
                                 ) : transaction.type === "expense" ? (
                                   <ArrowDownRight
-                                    className="text-red-600"
+                                    className="text-red-600 dark:text-red-300"
                                     size={16}
                                   />
                                 ) : (
                                   <DollarSign
-                                    className="text-blue-600"
+                                    className="text-blue-600 dark:text-blue-300"
                                     size={16}
                                   />
                                 )}
@@ -657,7 +659,7 @@ export default function DashboardPage() {
                               </span>
                             </div>
                           </td>
-                          <td className="py-4 text-gray-600 text-sm">
+                          <td className="py-4 text-gray-600 dark:text-gray-400 text-sm">
                             {new Date(transaction.date).toLocaleDateString(
                               "en-GB",
                               {
@@ -669,17 +671,17 @@ export default function DashboardPage() {
                           </td>
 
                           <td className="py-4">
-                            <span className="bg-gray-100 text-gray-800 text-xs px-2.5 py-1 rounded-full">
+                            <span className="bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 text-xs px-2.5 py-1 rounded-full">
                               {transaction.category}
                             </span>
                           </td>
                           <td
                             className={`py-4 text-right font-medium ${
                               transaction.type === "income"
-                                ? "text-green-600"
+                                ? "text-green-600 dark:text-green-300"
                                 : transaction.type === "expense"
-                                  ? "text-red-600"
-                                  : "text-blue-600"
+                                  ? "text-red-600 dark:text-red-300"
+                                  : "text-blue-600 dark:text-blue-300"
                             }`}
                           >
                             {transaction.type === "income"
@@ -696,13 +698,13 @@ export default function DashboardPage() {
                         <td colSpan={4} className="py-12 text-center">
                           <div className="flex flex-col items-center justify-center">
                             <Search
-                              className="text-gray-400 mx-auto mb-4"
+                              className="text-gray-400 dark:text-gray-500 mx-auto mb-4"
                               size={40}
                             />
-                            <h3 className="text-lg font-medium text-gray-900 mb-1">
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-1">
                               No transactions found
                             </h3>
-                            <p className="text-gray-500 max-w-md">
+                            <p className="text-gray-500 dark:text-gray-400 max-w-md">
                               Start adding transactions to see them here
                             </p>
                           </div>
@@ -723,31 +725,31 @@ export default function DashboardPage() {
                     return (
                       <div
                         key={transaction._id}
-                        className="bg-gray-50 rounded-xl p-4 flex items-center justify-between"
+                        className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 flex items-center justify-between"
                       >
                         <div className="flex items-center">
                           <div
                             className={`p-3 rounded-xl mr-3 ${
                               isIncome
-                                ? "bg-green-100"
+                                ? "bg-green-100 dark:bg-green-900/40"
                                 : isExpense
-                                  ? "bg-red-100"
-                                  : "bg-blue-100"
+                                  ? "bg-red-100 dark:bg-red-900/40"
+                                  : "bg-blue-100 dark:bg-blue-900/40"
                             }`}
                           >
                             {isIncome ? (
-                              <ArrowUpRight className="text-green-600" size={18} />
+                              <ArrowUpRight className="text-green-600 dark:text-green-300" size={18} />
                             ) : isExpense ? (
-                              <ArrowDownRight className="text-red-600" size={18} />
+                              <ArrowDownRight className="text-red-600 dark:text-red-300" size={18} />
                             ) : (
-                              <DollarSign className="text-blue-600" size={18} />
+                              <DollarSign className="text-blue-600 dark:text-blue-300" size={18} />
                             )}
                           </div>
                           <div>
-                            <p className="font-medium text-gray-900 text-sm mb-0.5 line-clamp-1">
+                            <p className="font-medium text-gray-900 dark:text-gray-100 text-sm mb-0.5 line-clamp-1">
                               {transaction.description}
                             </p>
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
                               {new Date(transaction.date).toLocaleDateString(
                                 "en-GB",
                                 {
@@ -763,10 +765,10 @@ export default function DashboardPage() {
                         <div
                           className={`font-bold text-sm text-right shrink-0 pl-3 ${
                             isIncome
-                              ? "text-green-600"
+                              ? "text-green-600 dark:text-green-300"
                               : isExpense
-                                ? "text-red-600"
-                                : "text-blue-600"
+                                ? "text-red-600 dark:text-red-300"
+                                : "text-blue-600 dark:text-blue-300"
                           }`}
                         >
                           {isIncome ? "+" : isExpense ? "-" : ""}
@@ -776,9 +778,9 @@ export default function DashboardPage() {
                     );
                   })
                 ) : (
-                  <div className="py-8 text-center bg-gray-50 rounded-xl">
-                    <Search className="text-gray-400 mx-auto mb-3" size={32} />
-                    <h3 className="text-base font-medium text-gray-900 mb-1">
+                  <div className="py-8 text-center bg-gray-50 dark:bg-gray-800 rounded-xl">
+                    <Search className="text-gray-400 dark:text-gray-500 mx-auto mb-3" size={32} />
+                    <h3 className="text-base font-medium text-gray-900 dark:text-gray-100 mb-1">
                       No transactions
                     </h3>
                   </div>
@@ -796,7 +798,7 @@ export default function DashboardPage() {
             {[...Array(3)].map((_, i) => (
               <div
                 key={i}
-                className="bg-gray-200 animate-pulse p-6 rounded-xl h-24"
+                className="bg-gray-200 dark:bg-gray-700 animate-pulse p-6 rounded-xl h-24"
               />
             ))}
           </>
@@ -841,5 +843,6 @@ export default function DashboardPage() {
         )}
       </div>
     </div>
+    </PullToRefresh>
   );
 }

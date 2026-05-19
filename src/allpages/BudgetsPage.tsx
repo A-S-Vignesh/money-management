@@ -52,9 +52,9 @@ interface FormErrors {
 // ─── Skeleton Loaders ───────────────────────────────────────────────────
 function CardSkeleton() {
   return (
-    <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 animate-pulse">
-      <div className="h-3 bg-gray-200 rounded w-20 mb-2" />
-      <div className="h-7 bg-gray-200 rounded w-28" />
+    <div className="bg-white dark:bg-gray-900 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 animate-pulse">
+      <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-20 mb-2" />
+      <div className="h-7 bg-gray-200 dark:bg-gray-700 rounded w-28" />
     </div>
   );
 }
@@ -65,15 +65,15 @@ function TableSkeleton() {
       {[...Array(5)].map((_, i) => (
         <div
           key={i}
-          className="flex items-center gap-4 px-6 py-4 border-b border-gray-100"
+          className="flex items-center gap-4 px-6 py-4 border-b border-gray-100 dark:border-gray-800"
         >
-          <div className="w-8 h-8 bg-gray-200 rounded-lg" />
+          <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-lg" />
           <div className="flex-1 space-y-2">
-            <div className="h-4 bg-gray-200 rounded w-1/3" />
-            <div className="h-3 bg-gray-100 rounded w-1/4" />
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3" />
+            <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded w-1/4" />
           </div>
-          <div className="h-4 bg-gray-200 rounded w-16" />
-          <div className="h-4 bg-gray-200 rounded w-20" />
+          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16" />
+          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-20" />
         </div>
       ))}
     </div>
@@ -217,10 +217,10 @@ export default function BudgetsPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
             Budget Management
           </h1>
-          <p className="text-gray-600">Track and control your spending</p>
+          <p className="text-gray-600 dark:text-gray-400">Track and control your spending</p>
         </div>
 
         <button
@@ -247,29 +247,29 @@ export default function BudgetsPage() {
           </>
         ) : (
           <>
-            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-center">
-              <p className="text-gray-500 text-xs md:text-sm mb-1">Total Budget</p>
+            <div className="bg-white dark:bg-gray-900 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col justify-center">
+              <p className="text-gray-500 dark:text-gray-400 text-xs md:text-sm mb-1">Total Budget</p>
               <p className="text-lg md:text-xl font-bold truncate">
                 {formatCurrency(totalAllocated)}
               </p>
             </div>
 
-            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-center">
-              <p className="text-gray-500 text-xs md:text-sm mb-1">Amount Spent</p>
-              <p className="text-lg md:text-xl font-bold text-red-600 truncate">
+            <div className="bg-white dark:bg-gray-900 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col justify-center">
+              <p className="text-gray-500 dark:text-gray-400 text-xs md:text-sm mb-1">Amount Spent</p>
+              <p className="text-lg md:text-xl font-bold text-red-600 dark:text-red-300 truncate">
                 {formatCurrency(totalSpent)}
               </p>
             </div>
 
-            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-center">
-              <p className="text-gray-500 text-xs md:text-sm mb-1">Amount Remaining</p>
-              <p className="text-lg md:text-xl font-bold text-green-600 truncate">
+            <div className="bg-white dark:bg-gray-900 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col justify-center">
+              <p className="text-gray-500 dark:text-gray-400 text-xs md:text-sm mb-1">Amount Remaining</p>
+              <p className="text-lg md:text-xl font-bold text-green-600 dark:text-green-300 truncate">
                 {formatCurrency(remaining)}
               </p>
             </div>
 
-            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-center">
-              <p className="text-gray-500 text-xs md:text-sm mb-1">Utilization</p>
+            <div className="bg-white dark:bg-gray-900 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col justify-center">
+              <p className="text-gray-500 dark:text-gray-400 text-xs md:text-sm mb-1">Utilization</p>
               <p className="text-lg md:text-xl font-bold truncate">{utilization.toFixed(1)}%</p>
             </div>
           </>
@@ -279,9 +279,9 @@ export default function BudgetsPage() {
       {/* Charts Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Budget Overview Chart */}
-        <div className="md:col-span-2 lg:col-span-2 bg-white p-6 rounded-xl shadow-sm w-full border border-gray-100">
+        <div className="md:col-span-2 lg:col-span-2 bg-white dark:bg-gray-900 p-6 rounded-xl shadow-sm w-full border border-gray-100 dark:border-gray-800">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-lg font-semibold text-gray-800">
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
               Budget Overview
             </h2>
             <div className="flex space-x-2">
@@ -289,8 +289,8 @@ export default function BudgetsPage() {
                 onClick={() => setSelectedRange("thisMonth")}
                 className={`text-xs px-3 py-1 rounded ${
                   selectedRange === "thisMonth"
-                    ? "bg-blue-100 text-blue-600"
-                    : "bg-gray-100 text-gray-700"
+                    ? "bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300"
+                    : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300"
                 }`}
               >
                 This Month
@@ -299,8 +299,8 @@ export default function BudgetsPage() {
                 onClick={() => setSelectedRange("lastMonth")}
                 className={`text-xs px-3 py-1 rounded ${
                   selectedRange === "lastMonth"
-                    ? "bg-blue-100 text-blue-600"
-                    : "bg-gray-100 text-gray-700"
+                    ? "bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300"
+                    : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300"
                 }`}
               >
                 Last Month
@@ -308,11 +308,11 @@ export default function BudgetsPage() {
             </div>
           </div>
 
-          <div className="bg-gray-50 rounded-lg px-4 py-2">
+          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg px-4 py-2">
             {isEmpty ? (
               <div className="text-center mt-16 h-64 lg:h-95 flex flex-col justify-center items-center">
-                <PieChart className="mx-auto text-gray-400" size={40} />
-                <p className="text-gray-500 mt-2">No data available</p>
+                <PieChart className="mx-auto text-gray-400 dark:text-gray-500" size={40} />
+                <p className="text-gray-500 dark:text-gray-400 mt-2">No data available</p>
               </div>
             ) : (
               <div className="h-64 lg:h-110">
@@ -347,8 +347,8 @@ export default function BudgetsPage() {
         </div>
 
         {/* Category Distribution */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <h2 className="text-lg font-semibold text-gray-800 mb-6">
+        <div className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-6">
             Category Distribution
           </h2>
 
@@ -374,13 +374,13 @@ export default function BudgetsPage() {
                       >
                         <Icon />
                       </span>
-                      <span className="text-gray-600">{category.name}</span>
+                      <span className="text-gray-600 dark:text-gray-400">{category.name}</span>
                     </div>
                     <span className="font-medium">
                       {formatCurrency(allocated)}
                     </span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                     <div
                       className={`${category.color} h-2 rounded-full`}
                       style={{ width: `${percentage}%` }}
@@ -394,15 +394,15 @@ export default function BudgetsPage() {
       </div>
 
       {/* Budget Controls */}
-      <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+      <div className="bg-white dark:bg-gray-900 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex flex-wrap gap-2"></div>
           <div className="flex flex-row gap-2">
             <div className="flex items-center gap-2">
-              <span className="text-gray-600 text-sm text-nowrap">Period:</span>
+              <span className="text-gray-600 dark:text-gray-400 text-sm text-nowrap">Period:</span>
               <div className="relative">
                 <select
-                  className="appearance-none pl-3 pr-8 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="appearance-none pl-3 pr-8 py-1.5 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   value={sortPeriodBy}
                   onChange={(e) => {
                     setSortPeriodBy(e.target.value);
@@ -416,19 +416,19 @@ export default function BudgetsPage() {
                   <option value="Yearly">Yearly</option>
                 </select>
                 <ChevronDown
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 pointer-events-none"
                   size={16}
                 />
               </div>
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-gray-600 text-sm text-nowrap">
+              <span className="text-gray-600 dark:text-gray-400 text-sm text-nowrap">
                 Sort by:
               </span>
               <div className="relative">
                 <select
-                  className="appearance-none pl-3 pr-8 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="appearance-none pl-3 pr-8 py-1.5 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
                 >
@@ -437,7 +437,7 @@ export default function BudgetsPage() {
                   <option value="allocated">Amount</option>
                 </select>
                 <ChevronDown
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 pointer-events-none"
                   size={16}
                 />
               </div>
@@ -447,12 +447,12 @@ export default function BudgetsPage() {
       </div>
 
       {/* ─── Budgets Table ────────────────────────────────── */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
         {/* Error State */}
         {budgetsError && (
           <div className="px-6 py-12 text-center">
             <AlertCircle className="mx-auto text-red-400 mb-3" size={40} />
-            <p className="text-gray-600 mb-2">
+            <p className="text-gray-600 dark:text-gray-400 mb-2">
               {budgetsErrorObj?.message || "Failed to load budgets"}
             </p>
             <button
@@ -471,36 +471,36 @@ export default function BudgetsPage() {
         {!budgetsLoading && !budgetsError && (
           <div className="overflow-x-auto">
             <table className="w-full hidden md:table">
-              <thead className="bg-gray-50">
+              <thead className="bg-gray-50 dark:bg-gray-800">
                 <tr>
-                  <th className="py-3 px-6 text-left text-sm font-medium text-gray-500">
+                  <th className="py-3 px-6 text-left text-sm font-medium text-gray-500 dark:text-gray-400">
                     Budget
                   </th>
-                  <th className="py-3 px-6 text-left text-sm font-medium text-gray-500">
+                  <th className="py-3 px-6 text-left text-sm font-medium text-gray-500 dark:text-gray-400">
                     Category
                   </th>
-                  <th className="py-3 px-6 text-left text-sm font-medium text-gray-500">
+                  <th className="py-3 px-6 text-left text-sm font-medium text-gray-500 dark:text-gray-400">
                     Period
                   </th>
-                  <th className="py-3 px-6 text-right text-sm font-medium text-gray-500">
+                  <th className="py-3 px-6 text-right text-sm font-medium text-gray-500 dark:text-gray-400">
                     Allocated
                   </th>
-                  <th className="py-3 px-6 text-right text-sm font-medium text-gray-500">
+                  <th className="py-3 px-6 text-right text-sm font-medium text-gray-500 dark:text-gray-400">
                     Spent
                   </th>
-                  <th className="py-3 px-6 text-right text-sm font-medium text-gray-500">
+                  <th className="py-3 px-6 text-right text-sm font-medium text-gray-500 dark:text-gray-400">
                     Remaining
                   </th>
-                  <th className="py-3 px-6 text-center text-sm font-medium text-gray-500">
+                  <th className="py-3 px-6 text-center text-sm font-medium text-gray-500 dark:text-gray-400">
                     Progress
                   </th>
-                  <th className="py-3 px-6 text-right text-sm font-medium text-gray-500">
+                  <th className="py-3 px-6 text-right text-sm font-medium text-gray-500 dark:text-gray-400">
                     Start Date
                   </th>
-                  <th className="py-3 px-6 text-right text-sm font-medium text-gray-500">
+                  <th className="py-3 px-6 text-right text-sm font-medium text-gray-500 dark:text-gray-400">
                     End Date
                   </th>
-                  <th className="py-3 px-6 text-right text-sm font-medium text-gray-500">
+                  <th className="py-3 px-6 text-right text-sm font-medium text-gray-500 dark:text-gray-400">
                     Actions
                   </th>
                 </tr>
@@ -537,17 +537,17 @@ export default function BudgetsPage() {
                   const Icon = categoryMap[budget.category]?.icon || DollarSign;
 
                   return (
-                    <tr key={budget._id} className="hover:bg-gray-50">
+                    <tr key={budget._id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
                       <td className="py-4 px-6">
                         <div className="flex items-center">
                           <span className="w-8 h-8 rounded-lg flex items-center justify-center mr-3">
                             <Icon />
                           </span>
                           <div>
-                            <div className="font-medium text-gray-900">
+                            <div className="font-medium text-gray-900 dark:text-gray-100">
                               {budget.name}
                             </div>
-                            <div className="text-sm text-gray-500">
+                            <div className="text-sm text-gray-500 dark:text-gray-400">
                               {budget.category}
                             </div>
                           </div>
@@ -557,33 +557,33 @@ export default function BudgetsPage() {
                         <span
                           className={`text-xs px-3 py-1 rounded-full ${
                             categoryMap[budget.category]?.color ||
-                            "bg-gray-100 text-gray-700"
+                            "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300"
                           }`}
                         >
                           {budget.category}
                         </span>
                       </td>
-                      <td className="py-4 px-6 text-gray-600 capitalize">
+                      <td className="py-4 px-6 text-gray-600 dark:text-gray-400 capitalize">
                         {budget.period}
                       </td>
                       <td className="py-4 px-6 text-right font-medium">
                         {formatCurrency(budget.allocated)}
                       </td>
-                      <td className="py-4 px-6 text-right font-medium text-red-600">
+                      <td className="py-4 px-6 text-right font-medium text-red-600 dark:text-red-300">
                         {formatCurrency(spent)}
                       </td>
                       <td
                         className={`py-4 px-6 text-right font-medium ${
                           budgetRemaining >= 0
-                            ? "text-green-600"
-                            : "text-red-600"
+                            ? "text-green-600 dark:text-green-300"
+                            : "text-red-600 dark:text-red-300"
                         }`}
                       >
                         {formatCurrency(budgetRemaining)}
                       </td>
                       <td className="py-4 px-6">
                         <div className="flex items-center">
-                          <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                             <div
                               className={`h-2 rounded-full ${
                                 isOverBudget
@@ -597,13 +597,13 @@ export default function BudgetsPage() {
                               }}
                             ></div>
                           </div>
-                          <span className="text-xs text-gray-500 ml-2 w-10">
+                          <span className="text-xs text-gray-500 dark:text-gray-400 ml-2 w-10">
                             {Math.round(progress)}%
                           </span>
                         </div>
                       </td>
                       <td className="py-4 px-6 text-right">
-                        <span className="text-gray-600">
+                        <span className="text-gray-600 dark:text-gray-400">
                           {startDate?.toLocaleDateString("en-IN", {
                             day: "2-digit",
                             month: "2-digit",
@@ -612,7 +612,7 @@ export default function BudgetsPage() {
                         </span>
                       </td>
                       <td className="py-4 px-6 text-right">
-                        <span className="text-gray-600">
+                        <span className="text-gray-600 dark:text-gray-400">
                           {endDate?.toLocaleDateString("en-IN", {
                             day: "2-digit",
                             month: "2-digit",
@@ -623,7 +623,7 @@ export default function BudgetsPage() {
                       <td className="py-4 px-6 text-right">
                         <div className="flex justify-end">
                           <button
-                            className="p-1 text-gray-500 hover:text-indigo-600 rounded hover:bg-gray-100"
+                            className="p-1 text-gray-500 dark:text-gray-400 hover:text-indigo-600 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
                             onClick={() => {
                               setEditBudget(budget);
                               setShowForm(true);
@@ -633,7 +633,7 @@ export default function BudgetsPage() {
                             <Edit size={16} />
                           </button>
                           <button
-                            className="p-1 text-gray-500 hover:text-red-500 rounded hover:bg-gray-100 ml-2"
+                            className="p-1 text-gray-500 dark:text-gray-400 hover:text-red-500 rounded hover:bg-gray-100 dark:hover:bg-gray-800 ml-2"
                             onClick={() =>
                               budget._id && handleDelete(budget._id)
                             }
@@ -686,18 +686,18 @@ export default function BudgetsPage() {
                   const Icon = categoryMap[budget.category]?.icon || DollarSign;
 
                   return (
-                    <div key={budget._id} className="p-4 bg-white">
+                    <div key={budget._id} className="p-4 bg-white dark:bg-gray-900">
                       <div className="flex justify-between items-start mb-3">
                         <div className="flex items-center gap-3">
-                           <div className={`p-2.5 rounded-xl flex-shrink-0 ${categoryMap[budget.category]?.color?.replace("text", "bg").replace("bg-", "bg-opacity-20 ") || "bg-gray-100"}`}>
-                              <Icon className={categoryMap[budget.category]?.color || "text-gray-500"} size={20} />
+                           <div className={`p-2.5 rounded-xl flex-shrink-0 ${categoryMap[budget.category]?.color?.replace("text", "bg").replace("bg-", "bg-opacity-20 ") || "bg-gray-100 dark:bg-gray-800"}`}>
+                              <Icon className={categoryMap[budget.category]?.color || "text-gray-500 dark:text-gray-400"} size={20} />
                            </div>
                            <div>
-                             <h4 className="text-sm font-semibold text-gray-900 leading-tight mb-1">{budget.name}</h4>
+                             <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 leading-tight mb-1">{budget.name}</h4>
                              <span
                                 className={`text-[10px] px-2 py-0.5 rounded flex-shrink-0 ${
                                   categoryMap[budget.category]?.color ||
-                                  "bg-gray-100 text-gray-700"
+                                  "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300"
                                 }`}
                               >
                                 {budget.category}
@@ -707,7 +707,7 @@ export default function BudgetsPage() {
 
                         <div className="flex gap-3">
                           <button
-                            className="text-gray-400 hover:text-gray-700"
+                            className="text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-200"
                             onClick={() => {
                               setEditBudget(budget);
                               setShowForm(true);
@@ -717,7 +717,7 @@ export default function BudgetsPage() {
                             <Edit size={16} />
                           </button>
                           <button
-                            className="text-gray-400 hover:text-red-500 disabled:opacity-50"
+                            className="text-gray-400 dark:text-gray-500 hover:text-red-500 disabled:opacity-50"
                             onClick={() => budget._id && handleDelete(budget._id)}
                             disabled={deleteMutation.isPending}
                           >
@@ -733,15 +733,15 @@ export default function BudgetsPage() {
                       {/* Progress Information */}
                       <div className="mb-2">
                         <div className="flex justify-between text-xs mb-1.5">
-                          <span className="text-gray-500">
-                             Spent: <span className="font-medium text-gray-900">{formatCurrency(spent)}</span>
+                          <span className="text-gray-500 dark:text-gray-400">
+                             Spent: <span className="font-medium text-gray-900 dark:text-gray-100">{formatCurrency(spent)}</span>
                           </span>
-                           <span className="text-gray-500">
-                             Total: <span className="font-medium text-gray-900">{formatCurrency(budget.allocated)}</span>
+                           <span className="text-gray-500 dark:text-gray-400">
+                             Total: <span className="font-medium text-gray-900 dark:text-gray-100">{formatCurrency(budget.allocated)}</span>
                           </span>
                         </div>
                          
-                        <div className="w-full bg-gray-100 rounded-full h-2 mb-1.5 overflow-hidden">
+                        <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-2 mb-1.5 overflow-hidden">
                           <div
                             className={`h-full rounded-full ${
                               isOverBudget
@@ -757,16 +757,16 @@ export default function BudgetsPage() {
                         </div>
                         
                         <div className="flex justify-between text-[11px]">
-                           <span className={`font-medium ${budgetRemaining >= 0 ? "text-green-600" : "text-red-600"}`}>
+                           <span className={`font-medium ${budgetRemaining >= 0 ? "text-green-600 dark:text-green-300" : "text-red-600 dark:text-red-300"}`}>
                              {budgetRemaining >= 0 ? `${formatCurrency(budgetRemaining)} left` : `${formatCurrency(Math.abs(budgetRemaining))} over`}
                            </span>
-                           <span className="text-gray-400 capitalize">{budget.period}</span>
+                           <span className="text-gray-400 dark:text-gray-500 capitalize">{budget.period}</span>
                         </div>
                       </div>
 
                        {/* Date Range Footer */}
                        {startDate && endDate && (
-                          <div className="mt-3 pt-3 border-t border-gray-50 flex justify-between text-[10px] text-gray-400">
+                          <div className="mt-3 pt-3 border-t border-gray-50 flex justify-between text-[10px] text-gray-400 dark:text-gray-500">
                             <span>
                               Start: {startDate.toLocaleDateString("en-IN", { day: '2-digit', month: 'short' })}
                             </span>
@@ -785,11 +785,11 @@ export default function BudgetsPage() {
             {sortedBudgets.length === 0 && (
               <div className="py-12 text-center">
                 <div className="flex flex-col items-center justify-center">
-                  <PieChart className="text-gray-400 mx-auto mb-4" size={40} />
-                  <h3 className="text-lg font-medium text-gray-900 mb-1">
+                  <PieChart className="text-gray-400 dark:text-gray-500 mx-auto mb-4" size={40} />
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-1">
                     No budgets found
                   </h3>
-                  <p className="text-gray-500 max-w-md mb-4">
+                  <p className="text-gray-500 dark:text-gray-400 max-w-md mb-4">
                     You haven&apos;t created any budgets yet.
                   </p>
                   <button
@@ -811,8 +811,8 @@ export default function BudgetsPage() {
 
         {/* Pagination */}
         {pagination && pagination.totalPages > 1 && (
-          <div className="border-t border-gray-200 px-6 py-4 flex items-center justify-between">
-            <p className="text-sm text-gray-600">
+          <div className="border-t border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
               Showing {(pagination.page - 1) * pagination.limit + 1} to{" "}
               {Math.min(pagination.page * pagination.limit, pagination.total)}{" "}
               of {pagination.total} budgets
@@ -821,12 +821,12 @@ export default function BudgetsPage() {
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={pagination.page <= 1}
-                className="flex items-center gap-1 px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="flex items-center gap-1 px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <ChevronLeft size={14} />
                 Previous
               </button>
-              <span className="px-2 md:px-3 py-1.5 text-xs md:text-sm font-medium text-gray-700">
+              <span className="px-2 md:px-3 py-1.5 text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300">
                 Page {pagination.page} of {pagination.totalPages}
               </span>
               <button
@@ -834,7 +834,7 @@ export default function BudgetsPage() {
                   setPage((p) => Math.min(pagination.totalPages, p + 1))
                 }
                 disabled={pagination.page >= pagination.totalPages}
-                className="flex items-center gap-1 px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="flex items-center gap-1 px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 Next
                 <ChevronRight size={14} />
@@ -846,40 +846,40 @@ export default function BudgetsPage() {
 
       {/* Budget Tips */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mt-6 md:mt-0">
-        <div className="bg-blue-50 p-4 md:p-5 rounded-xl border border-blue-100">
+        <div className="bg-blue-50 dark:bg-blue-950/30 p-4 md:p-5 rounded-xl border border-blue-100">
           <div className="flex items-start mb-3">
-            <div className="bg-blue-100 p-2 rounded-lg mr-3">
-              <TrendingUp className="text-blue-600" size={20} />
+            <div className="bg-blue-100 dark:bg-blue-900/40 p-2 rounded-lg mr-3">
+              <TrendingUp className="text-blue-600 dark:text-blue-300" size={20} />
             </div>
-            <h3 className="font-medium text-blue-800">Budgeting Tip #1</h3>
+            <h3 className="font-medium text-blue-800 dark:text-blue-200">Budgeting Tip #1</h3>
           </div>
-          <p className="text-blue-700">
+          <p className="text-blue-700 dark:text-blue-300">
             Review your budgets weekly to ensure you&apos;re on track. Small
             adjustments can prevent overspending.
           </p>
         </div>
 
-        <div className="bg-green-50 p-5 rounded-xl border border-green-100">
+        <div className="bg-green-50 dark:bg-green-950/30 p-5 rounded-xl border border-green-100">
           <div className="flex items-start mb-3">
-            <div className="bg-green-100 p-2 rounded-lg mr-3">
-              <DollarSign className="text-green-600" size={20} />
+            <div className="bg-green-100 dark:bg-green-900/40 p-2 rounded-lg mr-3">
+              <DollarSign className="text-green-600 dark:text-green-300" size={20} />
             </div>
-            <h3 className="font-medium text-green-800">Budgeting Tip #2</h3>
+            <h3 className="font-medium text-green-800 dark:text-green-200">Budgeting Tip #2</h3>
           </div>
-          <p className="text-green-700">
+          <p className="text-green-700 dark:text-green-300">
             Allocate 20% of your income to savings and investments before
             budgeting for expenses.
           </p>
         </div>
 
-        <div className="bg-purple-50 p-5 rounded-xl border border-purple-100">
+        <div className="bg-purple-50 dark:bg-purple-950/30 p-5 rounded-xl border border-purple-100">
           <div className="flex items-start mb-3">
-            <div className="bg-purple-100 p-2 rounded-lg mr-3">
-              <PieChart className="text-purple-600" size={20} />
+            <div className="bg-purple-100 dark:bg-purple-900/40 p-2 rounded-lg mr-3">
+              <PieChart className="text-purple-600 dark:text-purple-300" size={20} />
             </div>
-            <h3 className="font-medium text-purple-800">Budgeting Tip #3</h3>
+            <h3 className="font-medium text-purple-800 dark:text-purple-200">Budgeting Tip #3</h3>
           </div>
-          <p className="text-purple-700">
+          <p className="text-purple-700 dark:text-purple-300">
             Use the 50/30/20 rule: 50% needs, 30% wants, 20% savings for
             balanced budgeting.
           </p>
@@ -889,11 +889,11 @@ export default function BudgetsPage() {
       {/* ─── Create/Edit Budget Modal ────────────────────── */}
       {showForm && typeof document !== "undefined" && createPortal(
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center z-[200] md:p-4">
-          <div className="bg-white rounded-t-[2rem] md:rounded-2xl w-full max-w-md shadow-2xl animate-slide-up md:animate-none flex flex-col max-h-[90vh]">
-            <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mt-4 mb-2 md:hidden"></div>
+          <div className="bg-white dark:bg-gray-900 rounded-t-[2rem] md:rounded-2xl w-full max-w-md shadow-2xl animate-slide-up md:animate-none flex flex-col max-h-[90vh]">
+            <div className="w-12 h-1.5 bg-gray-300 dark:bg-gray-600 rounded-full mx-auto mt-4 mb-2 md:hidden"></div>
             
-            <div className="flex justify-between items-center px-6 pt-2 md:pt-6 pb-4 border-b border-gray-100">
-              <h2 className="text-xl font-bold text-gray-900">
+            <div className="flex justify-between items-center px-6 pt-2 md:pt-6 pb-4 border-b border-gray-100 dark:border-gray-800">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
                 {editBudget ? "Edit Budget" : "Create Budget"}
               </h2>
               <button
@@ -902,7 +902,7 @@ export default function BudgetsPage() {
                   setEditBudget(null);
                   setFormErrors({});
                 }}
-                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+                className="p-2 text-gray-400 dark:text-gray-500 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
               >
                 ✕
               </button>
@@ -912,8 +912,8 @@ export default function BudgetsPage() {
               <form onSubmit={handleSubmit} className="space-y-5 p-6">
                 {/* Budget Name */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                    Budget Name <span className="text-red-500">*</span>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                    Budget Name <span className="text-red-500 dark:text-red-400">*</span>
                   </label>
                   <input
                     type="text"
@@ -921,13 +921,13 @@ export default function BudgetsPage() {
                     defaultValue={editBudget?.name || ""}
                     className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
                       formErrors.name
-                        ? "border-red-300 bg-red-50"
-                        : "border-gray-300 bg-white"
+                        ? "border-red-300 bg-red-50 dark:bg-red-950/30"
+                        : "border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                     }`}
                     placeholder="e.g. Groceries, Rent"
                   />
                   {formErrors.name && (
-                    <p className="mt-1.5 text-xs text-red-600">
+                    <p className="mt-1.5 text-xs text-red-600 dark:text-red-300">
                       {formErrors.name[0]}
                       </p>
                     )}
@@ -935,16 +935,16 @@ export default function BudgetsPage() {
 
                   {/* Category */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                      Category <span className="text-red-500">*</span>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                      Category <span className="text-red-500 dark:text-red-400">*</span>
                     </label>
                     <select
                       name="category"
                       defaultValue={editBudget?.category || ""}
-                      className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white transition-colors ${
+                      className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 transition-colors ${
                         formErrors.category
-                          ? "border-red-300 bg-red-50"
-                          : "border-gray-300"
+                          ? "border-red-300 bg-red-50 dark:bg-red-950/30"
+                          : "border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                       }`}
                     >
                       <option value="">Select a category</option>
@@ -957,7 +957,7 @@ export default function BudgetsPage() {
                         ))}
                     </select>
                     {formErrors.category && (
-                      <p className="mt-1.5 text-xs text-red-600">
+                      <p className="mt-1.5 text-xs text-red-600 dark:text-red-300">
                         {formErrors.category[0]}
                       </p>
                     )}
@@ -965,16 +965,16 @@ export default function BudgetsPage() {
 
                   {/* Period */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                      Budget Period <span className="text-red-500">*</span>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                      Budget Period <span className="text-red-500 dark:text-red-400">*</span>
                     </label>
                     <select
                       name="period"
                       defaultValue={editBudget?.period || "Monthly"}
-                      className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white transition-colors ${
+                      className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 transition-colors ${
                         formErrors.period
-                          ? "border-red-300 bg-red-50"
-                          : "border-gray-300"
+                          ? "border-red-300 bg-red-50 dark:bg-red-950/30"
+                          : "border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                       }`}
                     >
                       <option value="Weekly">Weekly</option>
@@ -983,7 +983,7 @@ export default function BudgetsPage() {
                       <option value="Yearly">Yearly</option>
                     </select>
                     {formErrors.period && (
-                      <p className="mt-1.5 text-xs text-red-600">
+                      <p className="mt-1.5 text-xs text-red-600 dark:text-red-300">
                         {formErrors.period[0]}
                       </p>
                     )}
@@ -991,8 +991,8 @@ export default function BudgetsPage() {
 
                   {/* Allocated */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                      Allocated Amount (₹) <span className="text-red-500">*</span>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                      Allocated Amount (₹) <span className="text-red-500 dark:text-red-400">*</span>
                     </label>
                     <input
                       type="number"
@@ -1000,20 +1000,20 @@ export default function BudgetsPage() {
                       defaultValue={editBudget?.allocated || ""}
                       className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
                         formErrors.allocated
-                          ? "border-red-300 bg-red-50"
-                          : "border-gray-300 bg-white"
+                          ? "border-red-300 bg-red-50 dark:bg-red-950/30"
+                          : "border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                       }`}
                       placeholder="0"
                       min="0"
                     />
                     {formErrors.allocated && (
-                      <p className="mt-1.5 text-xs text-red-600">
+                      <p className="mt-1.5 text-xs text-red-600 dark:text-red-300">
                         {formErrors.allocated[0]}
                       </p>
                     )}
                 </div>
 
-                <div className="flex gap-3 pt-6 mt-6 border-t border-gray-100">
+                <div className="flex gap-3 pt-6 mt-6 border-t border-gray-100 dark:border-gray-800">
                   <button
                     type="button"
                     onClick={() => {
@@ -1021,7 +1021,7 @@ export default function BudgetsPage() {
                       setEditBudget(null);
                       setFormErrors({});
                     }}
-                    className="flex-1 px-4 py-3 md:py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-50 font-medium cursor-pointer"
+                    className="flex-1 px-4 py-3 md:py-2.5 text-sm text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 font-medium cursor-pointer"
                   >
                     Cancel
                   </button>

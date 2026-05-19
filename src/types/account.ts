@@ -1,7 +1,8 @@
 import { Types, Document } from "mongoose";
 
 // ✅ Full MongoDB document (for backend / DB use only)
-export interface IAccount extends Document {
+// `_id` is the string form returned after lean()/JSON, not the raw ObjectId.
+export interface IAccount extends Omit<Document, "_id"> {
   _id: string;
   userId: Types.ObjectId;
   name: string;

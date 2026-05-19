@@ -24,42 +24,42 @@ import {
 export default function Landing() {
    const features = [
      {
-       icon: <PieChart className="h-8 w-8 text-indigo-600" />,
+       icon: <PieChart className="h-8 w-8 text-indigo-600 dark:text-indigo-300" />,
        title: "Expense Tracking",
        description:
          "Track every dollar with automatic categorization and smart insights.",
        link: "/features/expense-tracking",
      },
      {
-       icon: <Target className="h-8 w-8 text-indigo-600" />,
+       icon: <Target className="h-8 w-8 text-indigo-600 dark:text-indigo-300" />,
        title: "Budget Planning",
        description:
          "Create custom budgets and get alerts when you're approaching limits.",
        link: "/features/budget-planning",
      },
      {
-       icon: <TrendingUp className="h-8 w-8 text-indigo-600" />,
+       icon: <TrendingUp className="h-8 w-8 text-indigo-600 dark:text-indigo-300" />,
        title: "Investment Tracking",
        description:
          "Monitor your portfolio performance and analyze investment returns.",
        link: "/features/investments",
      },
      {
-       icon: <Bell className="h-8 w-8 text-indigo-600" />,
+       icon: <Bell className="h-8 w-8 text-indigo-600 dark:text-indigo-300" />,
        title: "Bill Reminders",
        description:
          "Never miss a payment with smart alerts and automated reminders.",
        link: "/features/bill-reminders",
      },
      {
-       icon: <Award className="h-8 w-8 text-indigo-600" />,
+       icon: <Award className="h-8 w-8 text-indigo-600 dark:text-indigo-300" />,
        title: "Financial Reports",
        description:
          "Generate comprehensive reports to understand your financial health.",
        link: "/features/reports",
      },
      {
-       icon: <PiggyBank className="h-8 w-8 text-indigo-600" />,
+       icon: <PiggyBank className="h-8 w-8 text-indigo-600 dark:text-indigo-300" />,
        title: "Savings Goals",
        description:
          "Set, track, and achieve your financial targets with smart goal management.",
@@ -103,13 +103,13 @@ export default function Landing() {
       <div className="relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24 flex flex-col md:flex-row items-center">
           <div className="md:w-1/2 mb-12 md:mb-0">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-4">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-gray-100 leading-tight mb-4">
               Take Control of Your{" "}
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-indigo-600">
                 Finances
               </span>
             </h1>
-            <p className="text-lg md:text-xl text-gray-600 mb-8 max-w-2xl">
+            <p className="text-lg md:text-xl text-gray-600 dark:text-gray-400 mb-8 max-w-2xl">
               Money Manager helps you track expenses, analyze spending patterns,
               set budgets, and achieve your financial goals with powerful,
               intuitive tools.
@@ -124,7 +124,7 @@ export default function Landing() {
               </Link>
               <Link
                 href="#features"
-                className="inline-flex items-center justify-center px-8 py-3.5 text-base font-medium rounded-xl text-indigo-600 bg-white border border-indigo-200 hover:border-indigo-300 transition-all shadow-sm hover:shadow-md"
+                className="inline-flex items-center justify-center px-8 py-3.5 text-base font-medium rounded-xl text-indigo-600 dark:text-indigo-300 bg-white dark:bg-gray-900 border border-indigo-200 hover:border-indigo-300 transition-all shadow-sm hover:shadow-md"
               >
                 Explore Features
                 <ChevronRight className="ml-2 h-5 w-5" />
@@ -135,14 +135,14 @@ export default function Landing() {
                 {[1, 2, 3, 4].map((item) => (
                   <div
                     key={item}
-                    className="w-10 h-10 rounded-full bg-indigo-100 border-2 border-white flex items-center justify-center text-indigo-800 font-medium"
+                    className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/40 border-2 border-white flex items-center justify-center text-indigo-800 dark:text-indigo-200 font-medium"
                   >
                     {item}
                   </div>
                 ))}
               </div>
               <div className="ml-4">
-                <p className="text-gray-600 text-sm">
+                <p className="text-gray-600 dark:text-gray-400 text-sm">
                   Join <span className="font-semibold">15,000+</span> satisfied
                   users
                 </p>
@@ -152,46 +152,46 @@ export default function Landing() {
           <div className="md:w-1/2 relative">
             <div className="relative z-10 rounded-2xl overflow-hidden shadow-2xl">
               <div className="bg-gradient-to-br from-indigo-50 to-blue-100 p-8">
-                <div className="bg-white rounded-xl shadow-lg p-6">
+                <div className="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-6">
                   <div className="flex justify-between items-center mb-6">
                     <div className="flex items-center">
-                      <div className="bg-indigo-100 w-10 h-10 rounded-lg flex items-center justify-center">
-                        <DollarSign className="h-6 w-6 text-indigo-600" />
+                      <div className="bg-indigo-100 dark:bg-indigo-900/40 w-10 h-10 rounded-lg flex items-center justify-center">
+                        <DollarSign className="h-6 w-6 text-indigo-600 dark:text-indigo-300" />
                       </div>
                       <div className="ml-3">
-                        <h3 className="font-semibold text-gray-800">
+                        <h3 className="font-semibold text-gray-800 dark:text-gray-200">
                           Monthly Overview
                         </h3>
-                        <p className="text-sm text-gray-500">July 2023</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">July 2023</p>
                       </div>
                     </div>
-                    <div className="bg-green-50 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
+                    <div className="bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-300 px-3 py-1 rounded-full text-sm font-medium">
                       +12.5%
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4 mb-6">
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <p className="text-gray-500 text-sm mb-1">Income</p>
-                      <p className="font-bold text-gray-800">$4,850</p>
+                    <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                      <p className="text-gray-500 dark:text-gray-400 text-sm mb-1">Income</p>
+                      <p className="font-bold text-gray-800 dark:text-gray-200">$4,850</p>
                     </div>
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <p className="text-gray-500 text-sm mb-1">Expenses</p>
-                      <p className="font-bold text-gray-800">$2,920</p>
+                    <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                      <p className="text-gray-500 dark:text-gray-400 text-sm mb-1">Expenses</p>
+                      <p className="font-bold text-gray-800 dark:text-gray-200">$2,920</p>
                     </div>
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <p className="text-gray-500 text-sm mb-1">Savings</p>
-                      <p className="font-bold text-gray-800">$1,930</p>
+                    <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                      <p className="text-gray-500 dark:text-gray-400 text-sm mb-1">Savings</p>
+                      <p className="font-bold text-gray-800 dark:text-gray-200">$1,930</p>
                     </div>
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <p className="text-gray-500 text-sm mb-1">Investments</p>
-                      <p className="font-bold text-gray-800">$450</p>
+                    <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                      <p className="text-gray-500 dark:text-gray-400 text-sm mb-1">Investments</p>
+                      <p className="font-bold text-gray-800 dark:text-gray-200">$450</p>
                     </div>
                   </div>
 
                   <div className="h-32 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-lg flex items-center justify-center">
                     <div className="text-center">
-                      <p className="text-indigo-600 font-medium">
+                      <p className="text-indigo-600 dark:text-indigo-300 font-medium">
                         Spending Analysis
                       </p>
                       <div className="mt-2 flex items-center justify-center space-x-1">
@@ -219,13 +219,13 @@ export default function Landing() {
       {/* Features Section */}
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
         {/* Features Section */}
-        <section className="py-16 bg-white">
+        <section className="py-16 bg-white dark:bg-gray-900">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
                 Everything You Need to Manage Your Money
               </h2>
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
                 Money Nest combines powerful tools with intuitive design to help
                 you take control of your financial life.
               </p>
@@ -234,15 +234,15 @@ export default function Landing() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {features.map((feature, index) => (
                 <Link key={index} href={feature.link}>
-                  <div className="bg-gray-50 rounded-xl p-6 border border-gray-100 hover:border-indigo-200 transition-all duration-300 hover:shadow-md group cursor-pointer">
-                    <div className="inline-flex items-center justify-center w-12 h-12 bg-indigo-100 rounded-lg mb-4">
+                  <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-6 border border-gray-100 dark:border-gray-800 hover:border-indigo-200 transition-all duration-300 hover:shadow-md group cursor-pointer">
+                    <div className="inline-flex items-center justify-center w-12 h-12 bg-indigo-100 dark:bg-indigo-900/40 rounded-lg mb-4">
                       {feature.icon}
                     </div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-indigo-600 transition-colors">
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-indigo-600 transition-colors">
                       {feature.title}
                     </h3>
-                    <p className="text-gray-600 mb-4">{feature.description}</p>
-                    <div className="flex items-center text-indigo-600 font-medium">
+                    <p className="text-gray-600 dark:text-gray-400 mb-4">{feature.description}</p>
+                    <div className="flex items-center text-indigo-600 dark:text-indigo-300 font-medium">
                       Learn more
                       <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                     </div>
@@ -270,13 +270,13 @@ export default function Landing() {
         </section>
 
         {/* How It Works Section */}
-        <section className="py-16 bg-white">
+        <section className="py-16 bg-white dark:bg-gray-900">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
                 How Money Nest Works
               </h2>
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
                 Getting started with Money Nest is simple. Here's how you can
                 transform your financial life in minutes.
               </p>
@@ -304,13 +304,13 @@ export default function Landing() {
                 },
               ].map((item, index) => (
                 <div key={index} className="text-center">
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-100 text-indigo-600 rounded-full text-xl font-bold mb-6 mx-auto">
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-300 rounded-full text-xl font-bold mb-6 mx-auto">
                     {item.step}
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-4">
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
                     {item.title}
                   </h3>
-                  <p className="text-gray-600">{item.description}</p>
+                  <p className="text-gray-600 dark:text-gray-400">{item.description}</p>
                 </div>
               ))}
             </div>
@@ -318,13 +318,13 @@ export default function Landing() {
         </section>
 
         {/* Testimonials Section */}
-        <section className="py-16 bg-gray-50">
+        <section className="py-16 bg-gray-50 dark:bg-gray-800">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
                 Trusted by Thousands of Users
               </h2>
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
                 See what our users are saying about their experience with Money
                 Nest.
               </p>
@@ -334,25 +334,25 @@ export default function Landing() {
               {testimonials.map((testimonial, index) => (
                 <div
                   key={index}
-                  className="bg-white p-6 rounded-xl shadow-sm border border-gray-100"
+                  className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800"
                 >
                   <div className="flex text-yellow-400 mb-4">
                     {[...Array(testimonial.rating)].map((_, i) => (
                       <Star key={i} className="h-5 w-5 fill-current" />
                     ))}
                   </div>
-                  <p className="text-gray-700 italic mb-6">
+                  <p className="text-gray-700 dark:text-gray-300 italic mb-6">
                     "{testimonial.quote}"
                   </p>
                   <div className="flex items-center">
-                    <div className="bg-gray-200 rounded-full w-12 h-12 flex items-center justify-center">
-                      <Users className="h-6 w-6 text-gray-600" />
+                    <div className="bg-gray-200 dark:bg-gray-700 rounded-full w-12 h-12 flex items-center justify-center">
+                      <Users className="h-6 w-6 text-gray-600 dark:text-gray-400" />
                     </div>
                     <div className="ml-4">
-                      <h4 className="font-bold text-gray-900">
+                      <h4 className="font-bold text-gray-900 dark:text-gray-100">
                         {testimonial.name}
                       </h4>
-                      <p className="text-gray-600">{testimonial.role}</p>
+                      <p className="text-gray-600 dark:text-gray-400">{testimonial.role}</p>
                     </div>
                   </div>
                 </div>
@@ -362,14 +362,14 @@ export default function Landing() {
         </section>
 
         {/* Security Section */}
-        <section className="py-16 bg-white">
+        <section className="py-16 bg-white dark:bg-gray-900">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               <div>
-                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-6">
                   Bank-Level Security for Your Peace of Mind
                 </h2>
-                <p className="text-gray-600 mb-6">
+                <p className="text-gray-600 dark:text-gray-400 mb-6">
                   At Money Nest, we take security seriously. Your financial data
                   is protected with the same level of security used by major
                   banks.
@@ -383,8 +383,8 @@ export default function Landing() {
                     "Read-only access to your accounts",
                   ].map((item, index) => (
                     <div key={index} className="flex items-center">
-                      <Check className="h-5 w-5 text-green-500 mr-3" />
-                      <span className="text-gray-700">{item}</span>
+                      <Check className="h-5 w-5 text-green-500 dark:text-green-400 mr-3" />
+                      <span className="text-gray-700 dark:text-gray-300">{item}</span>
                     </div>
                   ))}
                 </div>
@@ -419,7 +419,7 @@ export default function Landing() {
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <Link
                 href="/login"
-                className="inline-flex items-center px-8 py-4 text-base font-medium rounded-md text-indigo-600 bg-white hover:bg-gray-100 shadow-lg transition-all"
+                className="inline-flex items-center px-8 py-4 text-base font-medium rounded-md text-indigo-600 dark:text-indigo-300 bg-white dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 shadow-lg transition-all"
               >
                 Get Started Free
               </Link>

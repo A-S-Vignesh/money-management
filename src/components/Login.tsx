@@ -30,17 +30,17 @@ export default function Login() {
 
   if (status === "loading" || isLoading) {
     return (
-      <div className="fixed inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-indigo-50 to-white pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
+      <div className="fixed inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-indigo-50 to-white dark:from-gray-900 dark:to-gray-950 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
         <div className="text-center">
           <div className="mx-auto mb-4">
             <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-indigo-600 mx-auto">
-              <Loader className="h-6 w-6 text-indigo-600 mx-auto mt-2" />
+              <Loader className="h-6 w-6 text-indigo-600 dark:text-indigo-300 mx-auto mt-2" />
             </div>
           </div>
-          <h2 className="text-xl font-bold text-gray-800 mb-2">
+          <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">
             Securing Your Account
           </h2>
-          <p className="text-sm text-gray-500 max-w-sm px-6">
+          <p className="text-sm text-gray-500 dark:text-gray-400 max-w-sm px-6">
             We're verifying your credentials and setting up your financial dashboard...
           </p>
         </div>
@@ -49,10 +49,11 @@ export default function Login() {
   }
 
   return (
-    <div className="fixed inset-0 flex bg-white lg:bg-gradient-to-br lg:from-gray-50 lg:to-gray-100 overflow-hidden">
+    <div className="fixed inset-0 flex bg-white dark:bg-gray-900 lg:bg-gradient-to-br lg:from-gray-50 lg:to-gray-100 lg:dark:from-gray-950 lg:dark:to-gray-900 overflow-hidden">
       {/* Left Panel - Graphic Section (Hidden on Mobile for App Feel) */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-indigo-600 to-indigo-900 p-12 flex-col justify-between relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden opacity-20 pointer-events-none">
+            {/* Decorative blur blobs — stay white in both modes for the overlay effect */}
             <div className="absolute -top-[20%] -right-[10%] w-[70%] h-[70%] rounded-full bg-white blur-3xl mix-blend-overlay"></div>
             <div className="absolute top-[60%] -left-[20%] w-[50%] h-[50%] rounded-full bg-blue-300 blur-3xl mix-blend-overlay"></div>
         </div>
@@ -118,10 +119,10 @@ export default function Login() {
       <div className="w-full lg:w-1/2 flex flex-col justify-between h-[100dvh] mt-[max(env(safe-area-inset-top),16px)] pb-[env(safe-area-inset-bottom)] lg:py-0 overflow-y-auto no-scrollbar lg:justify-center">
         
         {/* Mobile Header Graphic */}
-        <div className="flex-[0.8] flex flex-col items-center justify-center px-6 lg:hidden bg-gradient-to-b from-indigo-50 to-white relative">
-           <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-100 rounded-full blur-2xl opacity-50 -translate-y-10 translate-x-10 pointer-events-none"></div>
-           <div className="absolute bottom-0 left-0 w-40 h-40 bg-blue-100 rounded-full blur-2xl opacity-50 translate-y-10 -translate-x-10 pointer-events-none"></div>
-           <div className="relative z-10 w-20 h-20 bg-white shadow-lg shadow-indigo-100/50 rounded-2xl flex items-center justify-center mb-4 border border-gray-50 transform rotate-3">
+        <div className="flex-[0.8] flex flex-col items-center justify-center px-6 lg:hidden bg-gradient-to-b from-indigo-50 to-white dark:from-gray-900 dark:to-gray-950 relative">
+           <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-100 dark:bg-indigo-900/40 rounded-full blur-2xl opacity-50 -translate-y-10 translate-x-10 pointer-events-none"></div>
+           <div className="absolute bottom-0 left-0 w-40 h-40 bg-blue-100 dark:bg-blue-900/40 rounded-full blur-2xl opacity-50 translate-y-10 -translate-x-10 pointer-events-none"></div>
+           <div className="relative z-10 w-20 h-20 bg-white dark:bg-gray-800 shadow-lg shadow-indigo-100/50 dark:shadow-none rounded-2xl flex items-center justify-center mb-4 border border-gray-50 dark:border-gray-700 transform rotate-3">
              <Image
                 src={"/images/logo/mainlogo2.png"}
                 alt="Money Nest Logo"
@@ -130,8 +131,8 @@ export default function Login() {
                 className="w-12 h-12 drop-shadow-md"
               />
            </div>
-           <h2 className="text-xl font-extrabold text-gray-900 text-center tracking-tight mb-1">Money Nest</h2>
-           <p className="text-xs text-gray-500 font-medium text-center">Smart financial tracking</p>
+           <h2 className="text-xl font-extrabold text-gray-900 dark:text-gray-100 text-center tracking-tight mb-1">Money Nest</h2>
+           <p className="text-xs text-gray-500 dark:text-gray-400 font-medium text-center">Smart financial tracking</p>
         </div>
 
         {/* Desktop Header Content */}
@@ -139,7 +140,7 @@ export default function Login() {
            <div className="text-center w-full max-w-md">
             <div>
               <Link href={"/"} className="inline-block group">
-                <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 group-hover:shadow-md transition-shadow inline-block">
+                <div className="bg-white dark:bg-gray-900 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 group-hover:shadow-md transition-shadow inline-block">
                   <Image
                     src={"/images/logo/mainlogo.png"}
                     alt="Money Nest Logo"
@@ -151,10 +152,10 @@ export default function Login() {
               </Link>
             </div>
             <div className="mt-8">
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
                 Welcome Back
               </h2>
-              <p className="text-gray-500 font-medium">
+              <p className="text-gray-500 dark:text-gray-400 font-medium">
                 Log in to access your financial dashboard
               </p>
             </div>
@@ -162,12 +163,12 @@ export default function Login() {
         </div>
 
         {/* Login Area Core */}
-        <div className="w-full px-6 lg:px-12 pb-6 lg:pb-0 flex flex-col justify-end lg:justify-center lg:items-center relative z-10 bg-white lg:bg-transparent rounded-t-3xl pt-6 lg:pt-0 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.05)] lg:shadow-none lg:h-auto border-t border-gray-50 lg:border-none lg:w-full mt-auto">
-            <div className="w-full max-w-md lg:bg-white lg:rounded-[2rem] lg:shadow-xl lg:p-10 lg:border lg:border-gray-100 mx-auto">
+        <div className="w-full px-6 lg:px-12 pb-6 lg:pb-0 flex flex-col justify-end lg:justify-center lg:items-center relative z-10 bg-white dark:bg-gray-900 lg:bg-transparent rounded-t-3xl pt-6 lg:pt-0 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.05)] lg:shadow-none lg:h-auto border-t border-gray-50 dark:border-gray-800 lg:border-none lg:w-full mt-auto">
+            <div className="w-full max-w-md lg:bg-white lg:dark:bg-gray-900 lg:rounded-[2rem] lg:shadow-xl lg:p-10 lg:border lg:border-gray-100 lg:dark:border-gray-800 mx-auto">
               
               <div className="mb-5 lg:hidden text-center">
-                  <h3 className="text-xl font-bold text-gray-900 mb-1">Let's sign you in.</h3>
-                  <p className="text-xs text-gray-500 font-medium">Welcome back, you've been missed!</p>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">Let's sign you in.</h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Welcome back, you've been missed!</p>
               </div>
 
               <div className="space-y-3">
@@ -201,10 +202,10 @@ export default function Login() {
 
               <div className="relative mt-6 mb-5 hidden lg:block">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-100"></div>
+                  <div className="w-full border-t border-gray-100 dark:border-gray-800"></div>
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-4 bg-white text-gray-400 font-medium">
+                  <span className="px-4 bg-white dark:bg-gray-900 text-gray-400 dark:text-gray-500 font-medium">
                     Or continue with email
                   </span>
                 </div>
@@ -212,10 +213,10 @@ export default function Login() {
               
               <div className="relative mt-5 mb-5 lg:hidden">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-100"></div>
+                  <div className="w-full border-t border-gray-100 dark:border-gray-800"></div>
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-3 bg-white text-gray-400 font-medium text-[10px] uppercase tracking-widest">
+                  <span className="px-3 bg-white dark:bg-gray-900 text-gray-400 dark:text-gray-500 font-medium text-[10px] uppercase tracking-widest">
                     Or
                   </span>
                 </div>
@@ -223,11 +224,11 @@ export default function Login() {
 
               <div className="space-y-3">
                 <div>
-                  <div className="relative text-gray-400 focus-within:text-gray-600">
+                  <div className="relative text-gray-400 dark:text-gray-500 focus-within:text-gray-600 dark:focus-within:text-gray-300">
                     <input
                       type="email"
                       id="email"
-                      className="w-full px-4 py-3.5 bg-gray-50 border-0 outline-none ring-1 ring-inset ring-gray-200 rounded-xl focus:ring-2 focus:ring-inset focus:ring-indigo-600 focus:bg-white transition-all text-[14px] font-medium text-gray-800 disabled:opacity-50 disabled:bg-gray-100"
+                      className="w-full px-4 py-3.5 bg-gray-50 dark:bg-gray-800 border-0 outline-none ring-1 ring-inset ring-gray-200 dark:ring-gray-700 rounded-xl focus:ring-2 focus:ring-inset focus:ring-indigo-600 focus:bg-white dark:focus:bg-gray-800 transition-all text-[14px] font-medium text-gray-800 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 disabled:opacity-50 disabled:bg-gray-100 dark:disabled:bg-gray-800"
                       placeholder="Email Address"
                       disabled
                     />
@@ -235,11 +236,11 @@ export default function Login() {
                 </div>
 
                 <div>
-                  <div className="relative text-gray-400 focus-within:text-gray-600">
+                  <div className="relative text-gray-400 dark:text-gray-500 focus-within:text-gray-600 dark:focus-within:text-gray-300">
                     <input
                       type="password"
                       id="password"
-                      className="w-full px-4 py-3.5 bg-gray-50 border-0 outline-none ring-1 ring-inset ring-gray-200 rounded-xl focus:ring-2 focus:ring-inset focus:ring-indigo-600 focus:bg-white transition-all text-[14px] font-medium text-gray-800 disabled:opacity-50 disabled:bg-gray-100"
+                      className="w-full px-4 py-3.5 bg-gray-50 dark:bg-gray-800 border-0 outline-none ring-1 ring-inset ring-gray-200 dark:ring-gray-700 rounded-xl focus:ring-2 focus:ring-inset focus:ring-indigo-600 focus:bg-white dark:focus:bg-gray-800 transition-all text-[14px] font-medium text-gray-800 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 disabled:opacity-50 disabled:bg-gray-100 dark:disabled:bg-gray-800"
                       placeholder="Password"
                       disabled
                     />
@@ -247,7 +248,7 @@ export default function Login() {
                   <div className="flex justify-end mt-1.5">
                      <a
                       href="#"
-                      className="text-[12px] font-semibold text-indigo-600 hover:text-indigo-700 hover:underline"
+                      className="text-[12px] font-semibold text-indigo-600 dark:text-indigo-300 hover:text-indigo-700 dark:hover:text-indigo-200 hover:underline"
                     >
                       Forgot password?
                     </a>
@@ -266,11 +267,11 @@ export default function Login() {
             </div>
 
             <div className="mt-5 mb-2 text-center lg:mt-8">
-              <p className="text-[13px] font-medium text-gray-500">
+              <p className="text-[13px] font-medium text-gray-500 dark:text-gray-400">
                 Don't have an account?{" "}
                 <a
                   href="#"
-                  className="font-bold text-indigo-600 hover:text-indigo-700"
+                  className="font-bold text-indigo-600 dark:text-indigo-300 hover:text-indigo-700 dark:hover:text-indigo-200"
                 >
                   Sign up
                 </a>

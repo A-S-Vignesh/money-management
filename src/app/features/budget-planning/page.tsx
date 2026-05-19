@@ -41,25 +41,25 @@ export default function BudgetPlanning() {
 
   const features = [
     {
-      icon: <Target className="h-8 w-8 text-indigo-600" />,
+      icon: <Target className="h-8 w-8 text-indigo-600 dark:text-indigo-300" />,
       title: "Custom Budgets",
       description:
         "Create personalized budgets for different categories with flexible time periods.",
     },
     {
-      icon: <Bell className="h-8 w-8 text-indigo-600" />,
+      icon: <Bell className="h-8 w-8 text-indigo-600 dark:text-indigo-300" />,
       title: "Smart Alerts",
       description:
         "Get notified when you're approaching budget limits or have unusual spending patterns.",
     },
     {
-      icon: <TrendingUp className="h-8 w-8 text-indigo-600" />,
+      icon: <TrendingUp className="h-8 w-8 text-indigo-600 dark:text-indigo-300" />,
       title: "Progress Tracking",
       description:
         "Monitor your budget performance with visual progress indicators and forecasts.",
     },
     {
-      icon: <PieChart className="h-8 w-8 text-indigo-600" />,
+      icon: <PieChart className="h-8 w-8 text-indigo-600 dark:text-indigo-300" />,
       title: "Visual Reports",
       description:
         "Understand your spending patterns with beautiful charts and category breakdowns.",
@@ -68,19 +68,19 @@ export default function BudgetPlanning() {
 
   const benefits = [
     {
-      icon: <Wallet className="h-6 w-6 text-indigo-600" />,
+      icon: <Wallet className="h-6 w-6 text-indigo-600 dark:text-indigo-300" />,
       title: "Save More Money",
       description:
         "Users save an average of 20% more when using our budget planning tools.",
     },
     {
-      icon: <Goal className="h-6 w-6 text-indigo-600" />,
+      icon: <Goal className="h-6 w-6 text-indigo-600 dark:text-indigo-300" />,
       title: "Reach Goals Faster",
       description:
         "83% of users report achieving financial goals sooner with structured budgeting.",
     },
     {
-      icon: <Repeat className="h-6 w-6 text-indigo-600" />,
+      icon: <Repeat className="h-6 w-6 text-indigo-600 dark:text-indigo-300" />,
       title: "Reduce Financial Stress",
       description:
         "Knowing where your money goes reduces anxiety about finances.",
@@ -93,13 +93,13 @@ export default function BudgetPlanning() {
       <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               Smart{" "}
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-indigo-600">
                 Budget Planning
               </span>
             </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
               Create, track, and optimize your budgets with Money Nest's
               powerful planning tools.
             </p>
@@ -107,15 +107,15 @@ export default function BudgetPlanning() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-6">
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">
                 Plan Your Financial Future
               </h2>
-              <p className="text-gray-600 mb-4">
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
                 Money Nest's budget planning tools help you allocate your income
                 effectively, track spending against your goals, and adjust as
                 needed to stay on track.
               </p>
-              <p className="text-gray-600 mb-4">
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
                 Whether you're saving for a big purchase, paying down debt, or
                 just want more control over your finances, our budgeting
                 features make it simple and effective.
@@ -125,18 +125,18 @@ export default function BudgetPlanning() {
                   Create Your Budget
                   <Plus className="ml-2 h-5 w-5" />
                 </button>
-                <button className="inline-flex items-center px-6 py-3.5 text-base font-medium rounded-xl text-indigo-600 bg-white border border-indigo-200 hover:border-indigo-300 transition-all shadow-sm hover:shadow-md">
+                <button className="inline-flex items-center px-6 py-3.5 text-base font-medium rounded-xl text-indigo-600 dark:text-indigo-300 bg-white dark:bg-gray-900 border border-indigo-200 hover:border-indigo-300 transition-all shadow-sm hover:shadow-md">
                   View Demo
                 </button>
               </div>
             </div>
             <div className="relative">
-              <div className="bg-white rounded-2xl shadow-xl p-6">
+              <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-6">
                 <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-lg font-bold text-gray-900">
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
                     October Budget
                   </h3>
-                  <div className="flex items-center text-sm text-green-600">
+                  <div className="flex items-center text-sm text-green-600 dark:text-green-300">
                     <TrendingUp className="h-4 w-4 mr-1" />
                     <span>On Track</span>
                   </div>
@@ -150,12 +150,12 @@ export default function BudgetPlanning() {
                     return (
                       <div key={index}>
                         <div className="flex justify-between text-sm mb-1">
-                          <span className="text-gray-700">{category.name}</span>
-                          <span className="text-gray-900">
+                          <span className="text-gray-700 dark:text-gray-300">{category.name}</span>
+                          <span className="text-gray-900 dark:text-gray-100">
                             ${category.spent} / ${category.allocated}
                           </span>
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                           <div
                             className={`h-2 rounded-full ${
                               percentage > 90
@@ -171,18 +171,18 @@ export default function BudgetPlanning() {
                     );
                   })}
                 </div>
-                <div className="flex justify-between pt-4 border-t border-gray-200">
+                <div className="flex justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
                   <div className="text-sm">
-                    <div className="text-gray-500">Total Budget</div>
-                    <div className="font-bold text-gray-900">$3,050</div>
+                    <div className="text-gray-500 dark:text-gray-400">Total Budget</div>
+                    <div className="font-bold text-gray-900 dark:text-gray-100">$3,050</div>
                   </div>
                   <div className="text-sm">
-                    <div className="text-gray-500">Total Spent</div>
-                    <div className="font-bold text-gray-900">$2,810</div>
+                    <div className="text-gray-500 dark:text-gray-400">Total Spent</div>
+                    <div className="font-bold text-gray-900 dark:text-gray-100">$2,810</div>
                   </div>
                   <div className="text-sm">
-                    <div className="text-gray-500">Remaining</div>
-                    <div className="font-bold text-green-600">$240</div>
+                    <div className="text-gray-500 dark:text-gray-400">Remaining</div>
+                    <div className="font-bold text-green-600 dark:text-green-300">$240</div>
                   </div>
                 </div>
               </div>
@@ -193,13 +193,13 @@ export default function BudgetPlanning() {
       </div>
 
       {/* Features Section */}
-      <div className="py-16 bg-white">
+      <div className="py-16 bg-white dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               Powerful Budget Planning Features
             </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
+            <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
               Everything you need to create, manage, and optimize your budgets.
             </p>
           </div>
@@ -207,13 +207,13 @@ export default function BudgetPlanning() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, index) => (
               <div key={index} className="text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-100 rounded-xl mb-4 mx-auto">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-100 dark:bg-indigo-900/40 rounded-xl mb-4 mx-auto">
                   {feature.icon}
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
                   {feature.title}
                 </h3>
-                <p className="text-gray-600">{feature.description}</p>
+                <p className="text-gray-600 dark:text-gray-400">{feature.description}</p>
               </div>
             ))}
           </div>
@@ -221,13 +221,13 @@ export default function BudgetPlanning() {
       </div>
 
       {/* Benefits Section */}
-      <div className="py-16 bg-gray-50">
+      <div className="py-16 bg-gray-50 dark:bg-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               Why Budget with Money Nest?
             </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
+            <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
               Our users experience real financial benefits from using our
               budgeting tools.
             </p>
@@ -237,15 +237,15 @@ export default function BudgetPlanning() {
             {benefits.map((benefit, index) => (
               <div
                 key={index}
-                className="bg-white p-6 rounded-xl shadow-sm border border-gray-100"
+                className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800"
               >
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-indigo-100 rounded-lg mb-4">
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-indigo-100 dark:bg-indigo-900/40 rounded-lg mb-4">
                   {benefit.icon}
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
                   {benefit.title}
                 </h3>
-                <p className="text-gray-600">{benefit.description}</p>
+                <p className="text-gray-600 dark:text-gray-400">{benefit.description}</p>
               </div>
             ))}
           </div>
@@ -253,13 +253,13 @@ export default function BudgetPlanning() {
       </div>
 
       {/* How It Works Section */}
-      <div className="py-16 bg-white">
+      <div className="py-16 bg-white dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               How Budget Planning Works
             </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
+            <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
               Getting started with Money Nest's budget planning is simple and
               effective.
             </p>
@@ -296,10 +296,10 @@ export default function BudgetPlanning() {
                 <div className="inline-flex items-center justify-center w-12 h-12 bg-indigo-600 text-white rounded-full text-lg font-bold mb-4 mx-auto">
                   {item.step}
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
                   {item.title}
                 </h3>
-                <p className="text-gray-600">{item.description}</p>
+                <p className="text-gray-600 dark:text-gray-400">{item.description}</p>
               </div>
             ))}
           </div>
@@ -317,7 +317,7 @@ export default function BudgetPlanning() {
             Money Nest's budget planning.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <button className="inline-flex items-center px-8 py-4 border border-transparent text-base font-medium rounded-md text-indigo-600 bg-white hover:bg-gray-100 shadow-lg transition-all">
+            <button className="inline-flex items-center px-8 py-4 border border-transparent text-base font-medium rounded-md text-indigo-600 dark:text-indigo-300 bg-white dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 shadow-lg transition-all">
               Start Budgeting
             </button>
             <button className="inline-flex items-center px-8 py-4 border border-white text-base font-medium rounded-md text-white hover:bg-white hover:text-indigo-600 transition-all">

@@ -119,21 +119,21 @@ export default function OnboardingChecklist({
         onClick={dismiss}
         disabled={dismissing}
         aria-label="Dismiss welcome card"
-        className="absolute top-3 right-3 p-1.5 rounded-full text-gray-400 hover:text-gray-600 hover:bg-white/70 transition-colors disabled:opacity-50"
+        className="absolute top-3 right-3 p-1.5 rounded-full text-gray-400 dark:text-gray-500 hover:text-gray-600 hover:bg-white/70 transition-colors disabled:opacity-50"
       >
         <X size={16} />
       </button>
 
       {/* Header */}
       <div className="flex items-start gap-3 mb-4">
-        <div className="bg-white shadow-sm border border-indigo-100 p-2 rounded-xl">
-          <Sparkles className="text-indigo-600" size={20} />
+        <div className="bg-white dark:bg-gray-900 shadow-sm border border-indigo-100 p-2 rounded-xl">
+          <Sparkles className="text-indigo-600 dark:text-indigo-300" size={20} />
         </div>
         <div className="flex-1 min-w-0 pr-6">
-          <h2 className="text-lg font-semibold text-gray-900">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
             Welcome to Money Nest
           </h2>
-          <p className="text-sm text-gray-600 mt-0.5">
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">
             A few quick steps to get the most out of the app.
           </p>
         </div>
@@ -142,10 +142,10 @@ export default function OnboardingChecklist({
       {/* Progress bar */}
       <div className="mb-4">
         <div className="flex justify-between items-center mb-1.5">
-          <span className="text-xs font-medium text-gray-500">
+          <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
             {completed} of {total} complete
           </span>
-          <span className="text-xs font-semibold text-indigo-600">
+          <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-300">
             {Math.round(pct)}%
           </span>
         </div>
@@ -171,7 +171,7 @@ function StepRow({ step }: { step: Step }) {
   const className = `group flex items-center gap-3 p-3 rounded-xl border transition-all ${
     step.done
       ? "bg-white/60 border-green-200"
-      : "bg-white border-gray-200 hover:border-indigo-300 hover:shadow-sm"
+      : "bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 hover:border-indigo-300 hover:shadow-sm"
   }`;
 
   const inner = (
@@ -179,8 +179,8 @@ function StepRow({ step }: { step: Step }) {
       <div
         className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
           step.done
-            ? "bg-green-100 text-green-700"
-            : "bg-indigo-100 text-indigo-700 group-hover:bg-indigo-200"
+            ? "bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300"
+            : "bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 group-hover:bg-indigo-200"
         }`}
       >
         {step.done ? <Check size={16} strokeWidth={3} /> : step.icon}
@@ -189,13 +189,13 @@ function StepRow({ step }: { step: Step }) {
         <p
           className={`text-sm font-medium ${
             step.done
-              ? "text-gray-500 line-through"
-              : "text-gray-900"
+              ? "text-gray-500 dark:text-gray-400 line-through"
+              : "text-gray-900 dark:text-gray-100"
           }`}
         >
           {step.label}
         </p>
-        <p className="text-xs text-gray-500 truncate">{step.description}</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{step.description}</p>
       </div>
     </>
   );

@@ -9,6 +9,8 @@ import { useUpdateTransaction } from "@/hooks/transactions/useUpdateTransaction"
 import { useDeleteTransaction } from "@/hooks/transactions/useDeleteTransaction";
 import { useAccounts } from "@/hooks/accounts/useAccounts";
 import ExportCSVButton from "@/components/ExportCSVButton";
+import PullToRefresh from "@/components/PullToRefresh";
+import SwipeableRow from "@/components/SwipeableRow";
 import { categories, CategoryName } from "@/utils/categories";
 import {
   ArrowDownRight,
@@ -50,15 +52,15 @@ function TableSkeleton() {
       {[...Array(5)].map((_, i) => (
         <div
           key={i}
-          className="flex items-center gap-4 px-4 py-4 border-b border-gray-100"
+          className="flex items-center gap-4 px-4 py-4 border-b border-gray-100 dark:border-gray-800"
         >
-          <div className="w-8 h-8 bg-gray-200 rounded-lg" />
+          <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-lg" />
           <div className="flex-1 space-y-2">
-            <div className="h-4 bg-gray-200 rounded w-1/3" />
-            <div className="h-3 bg-gray-100 rounded w-1/4" />
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3" />
+            <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded w-1/4" />
           </div>
-          <div className="h-4 bg-gray-200 rounded w-16" />
-          <div className="h-4 bg-gray-200 rounded w-20" />
+          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16" />
+          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-20" />
         </div>
       ))}
     </div>
@@ -67,9 +69,9 @@ function TableSkeleton() {
 
 function CardSkeleton() {
   return (
-    <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 animate-pulse">
-      <div className="h-3 bg-gray-200 rounded w-20 mb-2" />
-      <div className="h-7 bg-gray-200 rounded w-28" />
+    <div className="bg-white dark:bg-gray-900 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 animate-pulse">
+      <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-20 mb-2" />
+      <div className="h-7 bg-gray-200 dark:bg-gray-700 rounded w-28" />
     </div>
   );
 }
@@ -237,14 +239,15 @@ export default function TransactionsPage() {
   const isMutating = addMutation.isPending || updateMutation.isPending;
 
   return (
+    <PullToRefresh onRefresh={() => refetchTx()}>
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
             Transaction History
           </h1>
-          <p className="text-gray-600">Manage all your income and expenses</p>
+          <p className="text-gray-600 dark:text-gray-400">Manage all your income and expenses</p>
         </div>
 
         <button
@@ -270,27 +273,27 @@ export default function TransactionsPage() {
           </>
         ) : (
           <>
-            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-center">
-              <p className="text-gray-500 text-xs md:text-sm mb-1">Total Income</p>
-              <p className="text-lg md:text-2xl font-bold text-green-600 truncate">
+            <div className="bg-white dark:bg-gray-900 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col justify-center">
+              <p className="text-gray-500 dark:text-gray-400 text-xs md:text-sm mb-1">Total Income</p>
+              <p className="text-lg md:text-2xl font-bold text-green-600 dark:text-green-300 truncate">
                 {formatCurrency(summary?.totalIncome ?? 0)}
               </p>
             </div>
 
-            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-center">
-              <p className="text-gray-500 text-xs md:text-sm mb-1">Total Expenses</p>
-              <p className="text-lg md:text-2xl font-bold text-red-600 truncate">
+            <div className="bg-white dark:bg-gray-900 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col justify-center">
+              <p className="text-gray-500 dark:text-gray-400 text-xs md:text-sm mb-1">Total Expenses</p>
+              <p className="text-lg md:text-2xl font-bold text-red-600 dark:text-red-300 truncate">
                 {formatCurrency(summary?.totalExpense ?? 0)}
               </p>
             </div>
 
-            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-center col-span-2 md:col-span-1">
-              <p className="text-gray-500 text-xs md:text-sm mb-1">Net Cash Flow</p>
+            <div className="bg-white dark:bg-gray-900 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col justify-center col-span-2 md:col-span-1">
+              <p className="text-gray-500 dark:text-gray-400 text-xs md:text-sm mb-1">Net Cash Flow</p>
               <p
                 className={`text-xl md:text-2xl font-bold truncate ${
                   (summary?.netFlow ?? 0) >= 0
-                    ? "text-green-600"
-                    : "text-red-600"
+                    ? "text-green-600 dark:text-green-300"
+                    : "text-red-600 dark:text-red-300"
                 }`}
               >
                 {formatCurrency(summary?.netFlow ?? 0)}
@@ -301,23 +304,23 @@ export default function TransactionsPage() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+      <div className="bg-white dark:bg-gray-900 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           {/* Search */}
           <div className="md:col-span-1">
-            <label className="hidden md:block text-sm font-medium text-gray-700 mb-1">
+            <label className="hidden md:block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Search
             </label>
             <div className="relative">
               <input
                 type="text"
                 placeholder="Search transactions..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl md:rounded-lg text-base md:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-xl md:rounded-lg text-base md:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
               <Search
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500"
                 size={18}
               />
             </div>
@@ -326,11 +329,11 @@ export default function TransactionsPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 md:col-span-4 gap-3 md:gap-4">
             {/* Type Filter */}
             <div>
-              <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Type
               </label>
               <select
-                className="w-full px-2 md:px-4 py-2 border border-gray-300 rounded-xl md:rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full px-2 md:px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-xl md:rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 value={filter}
                 onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
                   setFilter(
@@ -347,11 +350,11 @@ export default function TransactionsPage() {
 
             {/* Account Filter */}
             <div>
-              <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Account
               </label>
               <select
-                className="w-full px-2 md:px-4 py-2 border border-gray-300 rounded-xl md:rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full px-2 md:px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-xl md:rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 value={selectedAccount}
                 onChange={(e) => setSelectedAccount(e.target.value)}
               >
@@ -366,13 +369,13 @@ export default function TransactionsPage() {
 
             {/* Date Range Start */}
             <div>
-              <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Start Date
               </label>
               <div className="relative flex items-center">
                 <input
                   type="date"
-                  className="w-full pl-2 pr-1 md:pl-9 py-2 border border-gray-300 rounded-xl md:rounded-lg text-[13px] md:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 md:block hidden"
+                  className="w-full pl-2 pr-1 md:pl-9 py-2 border border-gray-300 dark:border-gray-700 rounded-xl md:rounded-lg text-[13px] md:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 md:block hidden"
                   value={dateRange.start}
                   onChange={(e) =>
                     setDateRange({ ...dateRange, start: e.target.value })
@@ -381,14 +384,14 @@ export default function TransactionsPage() {
                  {/* Native date input for mobile looks better standard, using calendar icon */}
                  <input
                   type="date"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-xl md:hidden text-[13px] focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl md:hidden text-[13px] focus:ring-2 focus:ring-indigo-500"
                   value={dateRange.start}
                   onChange={(e) =>
                     setDateRange({ ...dateRange, start: e.target.value })
                   }
                 />
                 <Calendar
-                  className="hidden md:block absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"
+                  className="hidden md:block absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 pointer-events-none"
                   size={16}
                 />
               </div>
@@ -396,13 +399,13 @@ export default function TransactionsPage() {
 
             {/* Date Range End */}
             <div>
-              <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 End Date
               </label>
               <div className="relative flex items-center">
                 <input
                   type="date"
-                  className="w-full pl-2 pr-1 md:pl-9 py-2 border border-gray-300 rounded-xl md:rounded-lg text-[13px] md:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 md:block hidden"
+                  className="w-full pl-2 pr-1 md:pl-9 py-2 border border-gray-300 dark:border-gray-700 rounded-xl md:rounded-lg text-[13px] md:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 md:block hidden"
                   value={dateRange.end}
                   onChange={(e) =>
                     setDateRange({ ...dateRange, end: e.target.value })
@@ -411,14 +414,14 @@ export default function TransactionsPage() {
                 {/* Native date input for mobile */}
                 <input
                   type="date"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-xl md:hidden text-[13px] focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl md:hidden text-[13px] focus:ring-2 focus:ring-indigo-500"
                   value={dateRange.end}
                   onChange={(e) =>
                     setDateRange({ ...dateRange, end: e.target.value })
                   }
                 />
                 <Calendar
-                  className="hidden md:block absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"
+                  className="hidden md:block absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 pointer-events-none"
                   size={16}
                 />
               </div>
@@ -429,7 +432,7 @@ export default function TransactionsPage() {
         <div className="flex justify-between md:justify-end mt-4 gap-2 border-t border-gray-50 pt-4 md:border-t-0 md:pt-0">
           <button
             onClick={resetFilters}
-            className="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-xl md:rounded-lg hover:bg-gray-50 flex-1 md:flex-none"
+            className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-700 rounded-xl md:rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 flex-1 md:flex-none"
           >
             Reset Filters
           </button>
@@ -444,12 +447,12 @@ export default function TransactionsPage() {
       </div>
 
       {/* ─── Transactions Table ──────────────────────────────── */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
         {/* Error State */}
         {txError && (
           <div className="px-6 py-12 text-center">
             <AlertCircle className="mx-auto text-red-400 mb-3" size={40} />
-            <p className="text-gray-600 mb-2">
+            <p className="text-gray-600 dark:text-gray-400 mb-2">
               {txErrorObj?.message || "Failed to load transactions"}
             </p>
             <button
@@ -469,27 +472,27 @@ export default function TransactionsPage() {
           <div className="overflow-x-auto">
             {/* Desktop Table */}
             <table className="w-full hidden md:table">
-              <thead className="bg-gray-50">
+              <thead className="bg-gray-50 dark:bg-gray-800">
                 <tr>
-                  <th className="py-3 px-4 text-left text-sm font-medium text-gray-500">
+                  <th className="py-3 px-4 text-left text-sm font-medium text-gray-500 dark:text-gray-400">
                     Description
                   </th>
-                  <th className="py-3 px-4 text-left text-sm font-medium text-gray-500">
+                  <th className="py-3 px-4 text-left text-sm font-medium text-gray-500 dark:text-gray-400">
                     Category
                   </th>
-                  <th className="py-3 px-4 text-left text-sm font-medium text-gray-500">
+                  <th className="py-3 px-4 text-left text-sm font-medium text-gray-500 dark:text-gray-400">
                     Account
                   </th>
-                  <th className="py-3 px-4 text-left text-sm font-medium text-gray-500">
+                  <th className="py-3 px-4 text-left text-sm font-medium text-gray-500 dark:text-gray-400">
                     Date
                   </th>
-                  <th className="py-3 px-4 text-left text-sm font-medium text-gray-500">
+                  <th className="py-3 px-4 text-left text-sm font-medium text-gray-500 dark:text-gray-400">
                     Type
                   </th>
-                  <th className="py-3 px-4 text-right text-sm font-medium text-gray-500">
+                  <th className="py-3 px-4 text-right text-sm font-medium text-gray-500 dark:text-gray-400">
                     Amount
                   </th>
-                  <th className="py-3 px-4 text-right text-sm font-medium text-gray-500">
+                  <th className="py-3 px-4 text-right text-sm font-medium text-gray-500 dark:text-gray-400">
                     Actions
                   </th>
                 </tr>
@@ -497,33 +500,33 @@ export default function TransactionsPage() {
               <tbody className="divide-y divide-gray-200">
                 {transactions.length > 0 ? (
                   transactions.map((transaction) => (
-                    <tr key={transaction._id} className="hover:bg-gray-50">
+                    <tr key={transaction._id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
                       <td className="py-4 px-4">
                         <div className="flex items-center">
                           <div
                             className={`p-2 rounded-lg mr-3 flex-shrink-0 ${
                               transaction.type === "income"
-                                ? "bg-green-100"
-                                : "bg-red-100"
+                                ? "bg-green-100 dark:bg-green-900/40"
+                                : "bg-red-100 dark:bg-red-900/40"
                             }`}
                           >
                             {transaction.type === "income" ? (
                               <ArrowUpRight
-                                className="text-green-600"
+                                className="text-green-600 dark:text-green-300"
                                 size={16}
                               />
                             ) : (
                               <ArrowDownRight
-                                className="text-red-600"
+                                className="text-red-600 dark:text-red-300"
                                 size={16}
                               />
                             )}
                           </div>
                           <div>
-                            <div className="font-medium text-gray-900">
+                            <div className="font-medium text-gray-900 dark:text-gray-100">
                               {transaction.description}
                             </div>
-                            <div className="text-sm text-gray-500">
+                            <div className="text-sm text-gray-500 dark:text-gray-400">
                               Transaction ID: {transaction._id}
                             </div>
                           </div>
@@ -534,14 +537,14 @@ export default function TransactionsPage() {
                           className={`text-xs px-3 py-1 rounded-full ${
                             categories.find(
                               (c) => c.name === transaction.category,
-                            )?.color || "bg-gray-100 text-gray-800"
+                            )?.color || "bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200"
                           }`}
                         >
                           {transaction.category}
                         </span>
                       </td>
                       <td className="py-4 px-4">
-                        <span className="text-sm text-gray-800">
+                        <span className="text-sm text-gray-800 dark:text-gray-200">
                           {transaction.type === "expense" &&
                             ` (From: ${
                               accounts.find(
@@ -568,15 +571,15 @@ export default function TransactionsPage() {
                             })`}
                         </span>
                       </td>
-                      <td className="py-4 px-4 text-gray-600">
+                      <td className="py-4 px-4 text-gray-600 dark:text-gray-400">
                         {new Date(transaction.date).toLocaleDateString("en-GB")}
                       </td>
                       <td className="py-4 px-4">
                         <span
                           className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
                             transaction.type === "expense"
-                              ? "bg-red-100 text-red-800"
-                              : " bg-green-100 text-green-800"
+                              ? "bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-200"
+                              : " bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-200"
                           }`}
                         >
                           {transaction.type.charAt(0).toUpperCase() +
@@ -586,8 +589,8 @@ export default function TransactionsPage() {
                       <td
                         className={`py-4 px-4 text-right font-medium ${
                           transaction.type === "expense"
-                            ? " text-red-600"
-                            : "text-green-600"
+                            ? " text-red-600 dark:text-red-300"
+                            : "text-green-600 dark:text-green-300"
                         }`}
                       >
                         {transaction.type === "expense" ? "-" : "+"}
@@ -597,7 +600,7 @@ export default function TransactionsPage() {
                         <div className="flex justify-end">
                           <div className="relative">
                             <button
-                              className="p-1 text-gray-500 hover:text-gray-700 rounded hover:bg-gray-100"
+                              className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
                               onClick={() => {
                                 setEditTransaction(transaction);
                                 setShowForm(true);
@@ -607,7 +610,7 @@ export default function TransactionsPage() {
                               <Edit size={16} />
                             </button>
                             <button
-                              className="p-1 text-gray-500 hover:text-red-500 rounded hover:bg-gray-100 ml-2"
+                              className="p-1 text-gray-500 dark:text-gray-400 hover:text-red-500 rounded hover:bg-gray-100 dark:hover:bg-gray-800 ml-2"
                               onClick={() => handleDelete(transaction._id)}
                               disabled={deleteMutation.isPending}
                             >
@@ -627,13 +630,13 @@ export default function TransactionsPage() {
                     <td colSpan={7} className="py-12 text-center">
                       <div className="flex flex-col items-center justify-center">
                         <Filter
-                          className="text-gray-400 mx-auto mb-4"
+                          className="text-gray-400 dark:text-gray-500 mx-auto mb-4"
                           size={40}
                         />
-                        <h3 className="text-lg font-medium text-gray-900 mb-1">
+                        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-1">
                           No transactions found
                         </h3>
-                        <p className="text-gray-500 max-w-md">
+                        <p className="text-gray-500 dark:text-gray-400 max-w-md">
                           Try adjusting your search or filter criteria to find
                           what you&apos;re looking for.
                         </p>
@@ -648,16 +651,20 @@ export default function TransactionsPage() {
             {transactions.length > 0 && (
               <div className="md:hidden divide-y divide-gray-50">
                 {transactions.map((transaction) => (
-                  <div key={transaction._id} className="p-4 bg-white">
+                  <SwipeableRow
+                    key={transaction._id}
+                    onDelete={() => handleDelete(transaction._id)}
+                  >
+                  <div className="p-4 bg-white dark:bg-gray-900">
                     <div className="flex justify-between items-start mb-2">
                       <div className="flex items-center gap-3 min-w-0 pr-2">
                         <div
                           className={`p-2.5 rounded-xl flex-shrink-0 ${
                             transaction.type === "income"
-                              ? "bg-green-100 text-green-600"
+                              ? "bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-300"
                               : transaction.type === "transfer"
-                                ? "bg-blue-100 text-blue-600"
-                                : "bg-red-100 text-red-600"
+                                ? "bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300"
+                                : "bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-300"
                           }`}
                         >
                           {transaction.type === "income" ? (
@@ -669,7 +676,7 @@ export default function TransactionsPage() {
                           )}
                         </div>
                         <div className="min-w-0">
-                          <p className="text-sm font-medium text-gray-900 leading-tight truncate">
+                          <p className="text-sm font-medium text-gray-900 dark:text-gray-100 leading-tight truncate">
                             {transaction.description || "No description"}
                           </p>
                           <div className="flex items-center gap-2 mt-1">
@@ -677,7 +684,7 @@ export default function TransactionsPage() {
                               className={`text-[10px] px-2 py-0.5 rounded flex-shrink-0 ${
                                 categories.find(
                                   (c) => c.name === transaction.category,
-                                )?.color || "bg-gray-100 text-gray-600"
+                                )?.color || "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
                               }`}
                             >
                               {transaction.category}
@@ -689,23 +696,23 @@ export default function TransactionsPage() {
                         <div
                           className={`font-semibold text-sm ${
                             transaction.type === "income"
-                              ? "text-green-600"
+                              ? "text-green-600 dark:text-green-300"
                               : transaction.type === "transfer"
-                                ? "text-blue-600"
-                                : "text-red-600"
+                                ? "text-blue-600 dark:text-blue-300"
+                                : "text-red-600 dark:text-red-300"
                           }`}
                         >
                           {transaction.type === "expense" ? "-" : transaction.type === "income" ? "+" : ""}
                           {formatCurrency(transaction.amount)}
                         </div>
-                        <div className="text-[10px] text-gray-400 mt-1">
+                        <div className="text-[10px] text-gray-400 dark:text-gray-500 mt-1">
                           {new Date(transaction.date).toLocaleDateString("en-GB")}
                         </div>
                       </div>
                     </div>
                     
                     <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-50">
-                       <span className="text-[11px] text-gray-500 truncate pr-4">
+                       <span className="text-[11px] text-gray-500 dark:text-gray-400 truncate pr-4">
                           {transaction.type === "expense" &&
                             `From: ${
                               accounts.find(
@@ -734,7 +741,7 @@ export default function TransactionsPage() {
 
                       <div className="flex gap-4">
                         <button
-                          className="text-gray-500 flex items-center gap-1.5 hover:text-gray-700 text-[12px] font-medium"
+                          className="text-gray-500 dark:text-gray-400 flex items-center gap-1.5 hover:text-gray-700 dark:hover:text-gray-200 text-[12px] font-medium"
                           onClick={() => {
                             setEditTransaction(transaction);
                             setShowForm(true);
@@ -744,7 +751,7 @@ export default function TransactionsPage() {
                           <Edit size={14} /> Edit
                         </button>
                         <button
-                          className="text-red-500 flex items-center gap-1.5 hover:text-red-700 text-[12px] font-medium disabled:opacity-50"
+                          className="text-red-500 dark:text-red-400 flex items-center gap-1.5 hover:text-red-700 text-[12px] font-medium disabled:opacity-50"
                           onClick={() => handleDelete(transaction._id)}
                           disabled={deleteMutation.isPending}
                         >
@@ -752,26 +759,27 @@ export default function TransactionsPage() {
                             <Loader2 size={14} className="animate-spin" />
                           ) : (
                             <Trash2 size={14} />
-                          )} 
+                          )}
                           Del
                         </button>
                       </div>
                     </div>
                   </div>
+                  </SwipeableRow>
                 ))}
               </div>
             )}
             {/* Empty State Mobile */}
             {transactions.length === 0 && (
-              <div className="md:hidden px-4 py-8 text-center bg-white">
+              <div className="md:hidden px-4 py-8 text-center bg-white dark:bg-gray-900">
                 <Filter
                   className="text-gray-300 mx-auto mb-3"
                   size={32}
                 />
-                <h3 className="text-base font-medium text-gray-900 mb-1">
+                <h3 className="text-base font-medium text-gray-900 dark:text-gray-100 mb-1">
                   No transactions found
                 </h3>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
                   Try adjusting your filters.
                 </p>
               </div>
@@ -782,19 +790,19 @@ export default function TransactionsPage() {
       {/* Pagination */}
       {pagination && pagination.totalPages > 1 && (
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 py-2">
-          <div className="text-sm text-gray-500 order-2 md:order-1">
-            Showing <span className="font-medium text-gray-900">{(pagination.page - 1) * pagination.limit + 1}</span> to{" "}
-            <span className="font-medium text-gray-900">
+          <div className="text-sm text-gray-500 dark:text-gray-400 order-2 md:order-1">
+            Showing <span className="font-medium text-gray-900 dark:text-gray-100">{(pagination.page - 1) * pagination.limit + 1}</span> to{" "}
+            <span className="font-medium text-gray-900 dark:text-gray-100">
               {Math.min(pagination.page * pagination.limit, pagination.total)}
             </span>{" "}
-            of <span className="font-medium text-gray-900">{pagination.total}</span>
+            of <span className="font-medium text-gray-900 dark:text-gray-100">{pagination.total}</span>
           </div>
           
           <div className="flex items-center gap-1.5 order-1 md:order-2 self-stretch md:self-auto justify-between md:justify-start">
             <button
               onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
               disabled={pagination.page <= 1}
-              className="flex items-center justify-center p-2 md:px-3 md:py-1.5 min-w-[40px] md:min-w-[auto] border border-gray-300 rounded-xl md:rounded-lg text-sm font-medium hover:bg-gray-50 disabled:opacity-50 transition-colors bg-white"
+              className="flex items-center justify-center p-2 md:px-3 md:py-1.5 min-w-[40px] md:min-w-[auto] border border-gray-300 dark:border-gray-700 rounded-xl md:rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 transition-colors bg-white dark:bg-gray-900"
             >
               <ChevronLeft size={16} />
               <span className="hidden md:inline ml-1">Prev</span>
@@ -821,7 +829,7 @@ export default function TransactionsPage() {
                       className={`min-w-[36px] h-[36px] flex items-center justify-center text-sm font-medium rounded-xl md:rounded-lg transition-colors border ${
                         currentPage === pageNum
                           ? "bg-indigo-600 border-indigo-600 text-white"
-                          : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                          : "border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
                       }`}
                     >
                       {pageNum}
@@ -836,7 +844,7 @@ export default function TransactionsPage() {
                 setCurrentPage((p) => Math.min(p + 1, pagination.totalPages))
               }
               disabled={pagination.page >= pagination.totalPages}
-              className="flex items-center justify-center p-2 md:px-3 md:py-1.5 min-w-[40px] md:min-w-[auto] border border-gray-300 rounded-xl md:rounded-lg text-sm font-medium hover:bg-gray-50 disabled:opacity-50 transition-colors bg-white"
+              className="flex items-center justify-center p-2 md:px-3 md:py-1.5 min-w-[40px] md:min-w-[auto] border border-gray-300 dark:border-gray-700 rounded-xl md:rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 transition-colors bg-white dark:bg-gray-900"
             >
               <span className="hidden md:inline mr-1">Next</span>
               <ChevronRight size={16} />
@@ -849,11 +857,11 @@ export default function TransactionsPage() {
       {/* ─── Add/Edit Transaction Modal ─────────────────────── */}
       {showForm && typeof document !== "undefined" && createPortal(
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center z-[200] md:p-4">
-          <div className="bg-white rounded-t-[2rem] md:rounded-2xl w-full max-w-md shadow-2xl animate-slide-up md:animate-none flex flex-col max-h-[90vh]">
-            <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mt-4 mb-2 md:hidden"></div>
+          <div className="bg-white dark:bg-gray-900 rounded-t-[2rem] md:rounded-2xl w-full max-w-md shadow-2xl animate-slide-up md:animate-none flex flex-col max-h-[90vh]">
+            <div className="w-12 h-1.5 bg-gray-300 dark:bg-gray-600 rounded-full mx-auto mt-4 mb-2 md:hidden"></div>
             {/* Modal Header */}
-            <div className="flex justify-between items-center px-6 pt-2 md:pt-6 pb-4 border-b border-gray-100">
-              <h2 className="text-xl font-bold text-gray-900">
+            <div className="flex justify-between items-center px-6 pt-2 md:pt-6 pb-4 border-b border-gray-100 dark:border-gray-800">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
                 {editTransaction ? "Edit Transaction" : "Add Transaction"}
               </h2>
               <button
@@ -862,7 +870,7 @@ export default function TransactionsPage() {
                   setEditTransaction(null);
                   setFormErrors({});
                 }}
-                className="text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-100"
+                className="text-gray-400 dark:text-gray-500 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
               >
                 ✕
               </button>
@@ -872,26 +880,26 @@ export default function TransactionsPage() {
               <form onSubmit={handleSubmit} className="p-6 space-y-5">
                 {/* Type Tabs */}
                 <div>
-                  <div className="grid grid-cols-3 gap-1 bg-gray-100 p-1.5 rounded-xl">
+                  <div className="grid grid-cols-3 gap-1 bg-gray-100 dark:bg-gray-800 p-1.5 rounded-xl">
                   {(
                     [
                       {
                         value: "expense",
                         label: "Expense",
                         icon: <ArrowDownRight size={16} />,
-                        colorActive: "text-red-600",
+                        colorActive: "text-red-600 dark:text-red-300",
                       },
                       {
                         value: "income",
                         label: "Income",
                         icon: <ArrowUpRight size={16} />,
-                        colorActive: "text-green-600",
+                        colorActive: "text-green-600 dark:text-green-300",
                       },
                       {
                         value: "transfer",
                         label: "Transfer",
                         icon: <ArrowRightLeft size={16} />,
-                        colorActive: "text-blue-600",
+                        colorActive: "text-blue-600 dark:text-blue-300",
                       },
                     ] as const
                   ).map(({ value, label, icon, colorActive }) => (
@@ -905,8 +913,8 @@ export default function TransactionsPage() {
                       }}
                       className={`py-2 px-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-all ${
                         transactionType === value
-                          ? `bg-white shadow ${colorActive}`
-                          : "text-gray-500 hover:text-gray-700"
+                          ? `bg-white dark:bg-gray-700 shadow ${colorActive}`
+                          : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
                       } disabled:cursor-not-allowed`}
                     >
                       {icon} {label}
@@ -914,7 +922,7 @@ export default function TransactionsPage() {
                   ))}
                   </div>
                   {editTransaction && (
-                    <p className="mt-1.5 text-xs text-gray-400 text-center">
+                    <p className="mt-1.5 text-xs text-gray-400 dark:text-gray-500 text-center">
                       Type cannot be changed when editing
                     </p>
                   )}
@@ -923,7 +931,7 @@ export default function TransactionsPage() {
 
                 {/* Description */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Description
                   </label>
                   <input
@@ -933,12 +941,12 @@ export default function TransactionsPage() {
                     placeholder="e.g. Grocery shopping"
                     className={`w-full px-4 py-2 border rounded-xl text-base md:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
                       formErrors.description
-                        ? "border-red-300 bg-red-50"
-                        : "border-gray-300"
+                        ? "border-red-300 bg-red-50 dark:bg-red-950/30"
+                        : "border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                     }`}
                   />
                   {formErrors.description && (
-                    <p className="mt-1 text-xs text-red-600">
+                    <p className="mt-1 text-xs text-red-600 dark:text-red-300">
                       {formErrors.description[0]}
                     </p>
                   )}
@@ -947,7 +955,7 @@ export default function TransactionsPage() {
                 {/* Amount + Date */}
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Amount (₹)
                     </label>
                     <input
@@ -959,18 +967,18 @@ export default function TransactionsPage() {
                       step="0.01"
                       className={`w-full px-4 py-2 border rounded-xl text-base md:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
                         formErrors.amount
-                          ? "border-red-300 bg-red-50"
-                          : "border-gray-300"
+                          ? "border-red-300 bg-red-50 dark:bg-red-950/30"
+                          : "border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                       }`}
                     />
                     {formErrors.amount && (
-                      <p className="mt-1 text-xs text-red-600">
+                      <p className="mt-1 text-xs text-red-600 dark:text-red-300">
                         {formErrors.amount[0]}
                       </p>
                     )}
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Date
                     </label>
                     <input
@@ -985,12 +993,12 @@ export default function TransactionsPage() {
                       }
                       className={`w-full px-4 py-2 border rounded-xl text-base md:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
                         formErrors.date
-                          ? "border-red-300 bg-red-50"
-                          : "border-gray-300"
+                          ? "border-red-300 bg-red-50 dark:bg-red-950/30"
+                          : "border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                       }`}
                     />
                     {formErrors.date && (
-                      <p className="mt-1 text-xs text-red-600">
+                      <p className="mt-1 text-xs text-red-600 dark:text-red-300">
                         {formErrors.date[0]}
                       </p>
                     )}
@@ -1000,7 +1008,7 @@ export default function TransactionsPage() {
                 {/* Category (not for transfer) */}
                 {transactionType !== "transfer" && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Category
                     </label>
                     <select
@@ -1008,8 +1016,8 @@ export default function TransactionsPage() {
                       defaultValue={editTransaction?.category || ""}
                       className={`w-full px-4 py-2 border rounded-xl text-base md:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
                         formErrors.category
-                          ? "border-red-300 bg-red-50"
-                          : "border-gray-300"
+                          ? "border-red-300 bg-red-50 dark:bg-red-950/30"
+                          : "border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                       }`}
                     >
                       <option value="">Select category</option>
@@ -1030,7 +1038,7 @@ export default function TransactionsPage() {
                         ))}
                     </select>
                     {formErrors.category && (
-                      <p className="mt-1 text-xs text-red-600">
+                      <p className="mt-1 text-xs text-red-600 dark:text-red-300">
                         {formErrors.category[0]}
                       </p>
                     )}
@@ -1041,7 +1049,7 @@ export default function TransactionsPage() {
                 {(transactionType === "expense" ||
                   transactionType === "transfer") && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       {transactionType === "transfer"
                         ? "From Account"
                         : "Account (Spent From)"}
@@ -1051,8 +1059,8 @@ export default function TransactionsPage() {
                       defaultValue={editTransaction?.fromAccountId || ""}
                       className={`w-full px-4 py-2 border rounded-xl text-base md:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
                         formErrors.fromAccountId
-                          ? "border-red-300 bg-red-50"
-                          : "border-gray-300"
+                          ? "border-red-300 bg-red-50 dark:bg-red-950/30"
+                          : "border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                       }`}
                     >
                       <option value="">Select account</option>
@@ -1070,7 +1078,7 @@ export default function TransactionsPage() {
                         ))}
                     </select>
                     {formErrors.fromAccountId && (
-                      <p className="mt-1 text-xs text-red-600">
+                      <p className="mt-1 text-xs text-red-600 dark:text-red-300">
                         {formErrors.fromAccountId[0]}
                       </p>
                     )}
@@ -1081,7 +1089,7 @@ export default function TransactionsPage() {
                 {(transactionType === "income" ||
                   transactionType === "transfer") && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       {transactionType === "transfer"
                         ? "To Account"
                         : "Account (Received Into)"}
@@ -1091,8 +1099,8 @@ export default function TransactionsPage() {
                       defaultValue={editTransaction?.toAccountId || ""}
                       className={`w-full px-4 py-2 border rounded-xl text-base md:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
                         formErrors.toAccountId
-                          ? "border-red-300 bg-red-50"
-                          : "border-gray-300"
+                          ? "border-red-300 bg-red-50 dark:bg-red-950/30"
+                          : "border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                       }`}
                     >
                       <option value="">Select account</option>
@@ -1110,7 +1118,7 @@ export default function TransactionsPage() {
                         ))}
                     </select>
                     {formErrors.toAccountId && (
-                      <p className="mt-1 text-xs text-red-600">
+                      <p className="mt-1 text-xs text-red-600 dark:text-red-300">
                         {formErrors.toAccountId[0]}
                       </p>
                     )}
@@ -1118,7 +1126,7 @@ export default function TransactionsPage() {
                 )}
 
                 {/* Actions */}
-                <div className="flex gap-3 pt-6 mt-6 border-t border-gray-100">
+                <div className="flex gap-3 pt-6 mt-6 border-t border-gray-100 dark:border-gray-800">
                   <button
                     type="button"
                     onClick={() => {
@@ -1126,7 +1134,7 @@ export default function TransactionsPage() {
                       setEditTransaction(null);
                       setFormErrors({});
                     }}
-                    className="flex-1 px-4 py-3 md:py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-50 font-medium"
+                    className="flex-1 px-4 py-3 md:py-2.5 text-sm text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 font-medium"
                   >
                     Cancel
                   </button>
@@ -1154,6 +1162,6 @@ export default function TransactionsPage() {
         document.body
       )}
       </div>
-    
+    </PullToRefresh>
   );
 }

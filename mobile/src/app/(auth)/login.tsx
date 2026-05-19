@@ -1,0 +1,197 @@
+// app/(auth)/login.tsx
+// OAuth via the backend relay. Flow:
+//   1. Mobile builds its return-URL (`Linking.createURL("auth")`) which is
+//      either `exp://<ip>:<port>/--/auth` (Expo Go) or `moneynest://auth`
+//      (dev/standalone build).
+//   2. WebBrowser.openAuthSessionAsync opens an in-app browser pointed at
+//      `${AUTH_BASE_URL}/api/auth/mobile/start?returnTo=<return-url>`.
+//   3. Backend redirects to Google, user signs in, Google redirects to the
+//      backend's /callback, backend mints our JWT and bounces to the
+//      return-URL with `token` + `user` query params.
+//   4. WebBrowser detects the return-URL prefix, closes itself, and hands
+//      us the redirected URL via the `result.url` field.
+//   5. We parse `token` + `user` out of the URL and persist them.
+//
+// Why this approach: Google only accepts https:// redirect URIs on Web
+// OAuth clients, so the app cannot talk to Google directly from Expo Go
+// (Expo Go can't register a custom scheme). Routing through the backend
+// keeps Google happy while still letting the JWT land in the app.
+
+import { useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  Pressable,
+  Text,
+  View,
+} from "react-native";
+import { useRouter } from "expo-router";
+import * as WebBrowser from "expo-web-browser";
+import * as Linking from "expo-linking";
+import { LinearGradient } from "expo-linear-gradient";
+import Constants from "expo-constants";
+import {
+  ShieldCheck,
+  PieChart as PieChartIcon,
+  DollarSign,
+} from "lucide-react-native";
+
+import { useAuth } from "@/lib/auth";
+
+WebBrowser.maybeCompleteAuthSession();
+
+const authBaseUrl = (Constants.expoConfig?.extra?.authBaseUrl as
+  | string
+  | undefined) ?? "";
+
+interface ReturnPayload {
+  token: string;
+  user: { _id: string; email: string; name?: string; image?: string };
+}
+
+function parseReturnUrl(returnedUrl: string): ReturnPayload | null {
+  // Custom-scheme URLs (`exp://`, `moneynest://`) parse fine in the URL API
+  // on Hermes — the protocol just needs to be non-empty.
+  let url: URL;
+  try {
+    url = new URL(returnedUrl);
+  } catch {
+    return null;
+  }
+  const token = url.searchParams.get("token");
+  const userRaw = url.searchParams.get("user");
+  if (!token || !userRaw) return null;
+  try {
+    const user = JSON.parse(decodeURIComponent(userRaw));
+    return { token, user };
+  } catch {
+    return null;
+  }
+}
+
+export default function LoginScreen() {
+  const signIn = useAuth((s) => s.signIn);
+  const router = useRouter();
+  const [busy, setBusy] = useState(false);
+
+  const handleGoogle = async () => {
+    if (!authBaseUrl) {
+      Alert.alert(
+        "Setup required",
+        "Set EXPO_PUBLIC_AUTH_BASE_URL in mobile/.env (e.g. https://moneynestapp.vercel.app), then restart Metro with `pnpm start --clear`.",
+      );
+      return;
+    }
+
+    setBusy(true);
+    try {
+      // `Linking.createURL("auth")` returns the right deep link for the
+      // current runtime:
+      //   - Expo Go:        exp://<ip>:<port>/--/auth
+      //   - Dev client:     exp+money-nest://expo-development-client/--/auth
+      //   - Standalone:     moneynest://auth
+      // The backend whitelist (isAllowedReturnUrl) covers all three.
+      const returnUrl = Linking.createURL("auth");
+      const start = `${authBaseUrl}/api/auth/mobile/start?returnTo=${encodeURIComponent(returnUrl)}`;
+
+      const result = await WebBrowser.openAuthSessionAsync(start, returnUrl);
+      if (result.type === "cancel" || result.type === "dismiss") return;
+      if (result.type !== "success") {
+        Alert.alert("Sign-in failed", "The browser closed unexpectedly.");
+        return;
+      }
+      const payload = parseReturnUrl(result.url);
+      if (!payload) {
+        Alert.alert(
+          "Sign-in failed",
+          "The backend didn't return a usable token.",
+        );
+        return;
+      }
+      await signIn(payload);
+      router.replace("/(tabs)");
+    } catch (err) {
+      const e = err as { message?: string };
+      Alert.alert("Sign-in failed", e.message ?? "Please try again.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <View className="flex-1 bg-white dark:bg-gray-950">
+      <LinearGradient
+        colors={["#4f46e5", "#312e81"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={{
+          height: "55%",
+          paddingHorizontal: 24,
+          paddingTop: 80,
+          paddingBottom: 40,
+          justifyContent: "flex-end",
+        }}
+      >
+        <Text className="text-4xl font-bold text-white leading-tight">
+          Take control of your{"\n"}financial future.
+        </Text>
+        <Text className="text-indigo-100 text-base mt-3">
+          Track expenses, set budgets, hit goals — all on your phone.
+        </Text>
+      </LinearGradient>
+
+      <View className="flex-1 -mt-8 px-6">
+        <View className="bg-white dark:bg-gray-900 rounded-3xl p-6 shadow-xl border border-gray-100 dark:border-gray-800">
+          <View className="flex-row justify-around mb-6">
+            <Feature icon={<ShieldCheck size={18} color="#4f46e5" />} label="Secure" />
+            <Feature icon={<PieChartIcon size={18} color="#22c55e" />} label="Smart" />
+            <Feature icon={<DollarSign size={18} color="#f59e0b" />} label="Free" />
+          </View>
+
+          <Text className="text-xl font-bold text-gray-900 dark:text-gray-100 text-center mb-1">
+            Welcome to Money Nest
+          </Text>
+          <Text className="text-sm text-gray-500 dark:text-gray-400 text-center mb-6">
+            Sign in with Google to continue
+          </Text>
+
+          <Pressable
+            onPress={handleGoogle}
+            disabled={busy}
+            className="w-full h-12 rounded-2xl bg-gray-900 dark:bg-gray-100 flex-row items-center justify-center active:opacity-80"
+          >
+            {busy ? (
+              <ActivityIndicator color="#ffffff" />
+            ) : (
+              <>
+                <View className="w-5 h-5 bg-white rounded-full mr-2.5 items-center justify-center">
+                  <Text className="text-gray-900 text-[11px] font-bold">G</Text>
+                </View>
+                <Text className="text-white dark:text-gray-900 font-semibold text-base">
+                  Continue with Google
+                </Text>
+              </>
+            )}
+          </Pressable>
+
+          <Text className="text-[11px] text-gray-400 dark:text-gray-500 text-center mt-4">
+            By continuing you agree to our Terms & Privacy Policy.
+          </Text>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+function Feature({ icon, label }: { icon: React.ReactNode; label: string }) {
+  return (
+    <View className="items-center">
+      <View className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 items-center justify-center mb-1">
+        {icon}
+      </View>
+      <Text className="text-[11px] font-medium text-gray-700 dark:text-gray-300">
+        {label}
+      </Text>
+    </View>
+  );
+}

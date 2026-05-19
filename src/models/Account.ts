@@ -2,7 +2,10 @@
 import { Schema, models, model, Document, Model, Types } from "mongoose";
 
 // 1. Define Account interface
-export interface IAccount extends Document {
+// Note: we override Mongoose's `Document._id: ObjectId` to `string` because
+// every consumer of this type lives on the JSON side (API responses, lean()
+// reads) where ObjectId has already been serialized.
+export interface IAccount extends Omit<Document, "_id"> {
   _id: string;
   userId: Types.ObjectId; // reference to User
   name: string;

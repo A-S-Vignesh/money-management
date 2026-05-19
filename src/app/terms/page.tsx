@@ -1,6 +1,6 @@
 export default function TermsPage() {
   return (
-    <main className="max-w-4xl mx-auto px-6 py-12 text-gray-800">
+    <main className="max-w-4xl mx-auto px-6 py-12 text-gray-800 dark:text-gray-200">
       <h1 className="text-3xl font-bold mb-6">Terms & Conditions</h1>
       <p className="mb-4">
         Welcome to <strong>Money Nest</strong>. By using our website and
@@ -67,7 +67,7 @@ export default function TermsPage() {
         us at{" "}
         <a
           href="mailto:support@codolve.com"
-          className="text-indigo-600 underline"
+          className="text-indigo-600 dark:text-indigo-300 underline"
         >
           support@codolve.com
         </a>

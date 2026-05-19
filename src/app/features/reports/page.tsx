@@ -63,25 +63,25 @@ export default function FinancialReports() {
 
   const features = [
     {
-      icon: <BarChart className="h-8 w-8 text-indigo-600" />,
+      icon: <BarChart className="h-8 w-8 text-indigo-600 dark:text-indigo-300" />,
       title: "Customizable Reports",
       description:
         "Create tailored reports with the metrics that matter most to your financial goals.",
     },
     {
-      icon: <TrendingUp className="h-8 w-8 text-indigo-600" />,
+      icon: <TrendingUp className="h-8 w-8 text-indigo-600 dark:text-indigo-300" />,
       title: "Trend Analysis",
       description:
         "Identify spending patterns and income trends with historical data comparisons.",
     },
     {
-      icon: <PieChart className="h-8 w-8 text-indigo-600" />,
+      icon: <PieChart className="h-8 w-8 text-indigo-600 dark:text-indigo-300" />,
       title: "Visual Analytics",
       description:
         "Understand your finances at a glance with beautiful charts and graphs.",
     },
     {
-      icon: <Download className="h-8 w-8 text-indigo-600" />,
+      icon: <Download className="h-8 w-8 text-indigo-600 dark:text-indigo-300" />,
       title: "Export Options",
       description:
         "Download reports in PDF, CSV, or Excel formats for offline analysis.",
@@ -90,19 +90,19 @@ export default function FinancialReports() {
 
   const benefits = [
     {
-      icon: <Zap className="h-6 w-6 text-indigo-600" />,
+      icon: <Zap className="h-6 w-6 text-indigo-600 dark:text-indigo-300" />,
       title: "Save Time",
       description:
         "Generate comprehensive reports in seconds instead of hours with manual spreadsheets.",
     },
     {
-      icon: <Target className="h-6 w-6 text-indigo-600" />,
+      icon: <Target className="h-6 w-6 text-indigo-600 dark:text-indigo-300" />,
       title: "Better Decisions",
       description:
         "92% of users report making better financial decisions with access to detailed reports.",
     },
     {
-      icon: <Eye className="h-6 w-6 text-indigo-600" />,
+      icon: <Eye className="h-6 w-6 text-indigo-600 dark:text-indigo-300" />,
       title: "Complete Visibility",
       description:
         "See the full picture of your financial health with consolidated reporting.",
@@ -115,13 +115,13 @@ export default function FinancialReports() {
       <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               Comprehensive{" "}
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-indigo-600">
                 Financial Reports
               </span>
             </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
               Transform your financial data into actionable insights with Money
               Nest's powerful reporting tools.
             </p>
@@ -129,15 +129,15 @@ export default function FinancialReports() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-6">
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">
                 Understand Your Financial Health
               </h2>
-              <p className="text-gray-600 mb-4">
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
                 Money Nest's financial reports help you analyze spending
                 patterns, track progress toward goals, and make informed
                 decisions with comprehensive data visualizations.
               </p>
-              <p className="text-gray-600 mb-4">
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
                 Whether you need a quick spending snapshot or a detailed net
                 worth analysis, our reporting tools provide the clarity you need
                 to take control of your finances.
@@ -147,25 +147,25 @@ export default function FinancialReports() {
                   Generate Reports
                   <FileText className="ml-2 h-5 w-5" />
                 </button>
-                <button className="inline-flex items-center px-6 py-3.5 text-base font-medium rounded-xl text-indigo-600 bg-white border border-indigo-200 hover:border-indigo-300 transition-all shadow-sm hover:shadow-md">
+                <button className="inline-flex items-center px-6 py-3.5 text-base font-medium rounded-xl text-indigo-600 dark:text-indigo-300 bg-white dark:bg-gray-900 border border-indigo-200 hover:border-indigo-300 transition-all shadow-sm hover:shadow-md">
                   View Sample
                 </button>
               </div>
             </div>
             <div className="relative">
-              <div className="bg-white rounded-2xl shadow-xl p-6">
+              <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-6">
                 <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-lg font-bold text-gray-900">
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
                     Spending Analysis
                   </h3>
                   <div className="flex items-center space-x-2">
-                    <button className="p-2 text-gray-500 hover:text-indigo-600 rounded-lg hover:bg-indigo-50">
+                    <button className="p-2 text-gray-500 dark:text-gray-400 hover:text-indigo-600 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-950/40">
                       <Filter className="h-4 w-4" />
                     </button>
-                    <button className="p-2 text-gray-500 hover:text-indigo-600 rounded-lg hover:bg-indigo-50">
+                    <button className="p-2 text-gray-500 dark:text-gray-400 hover:text-indigo-600 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-950/40">
                       <Calendar className="h-4 w-4" />
                     </button>
-                    <button className="p-2 text-gray-500 hover:text-indigo-600 rounded-lg hover:bg-indigo-50">
+                    <button className="p-2 text-gray-500 dark:text-gray-400 hover:text-indigo-600 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-950/40">
                       <Download className="h-4 w-4" />
                     </button>
                   </div>
@@ -173,8 +173,8 @@ export default function FinancialReports() {
 
                 <div className="mb-6">
                   <div className="flex justify-between items-center mb-4">
-                    <div className="text-sm text-gray-500">October 2023</div>
-                    <div className="text-lg font-bold text-gray-900">
+                    <div className="text-sm text-gray-500 dark:text-gray-400">October 2023</div>
+                    <div className="text-lg font-bold text-gray-900 dark:text-gray-100">
                       $3,400 Total
                     </div>
                   </div>
@@ -183,12 +183,12 @@ export default function FinancialReports() {
                     {spendingData.map((item, index) => (
                       <div key={index}>
                         <div className="flex justify-between text-sm mb-1">
-                          <span className="text-gray-700">{item.category}</span>
-                          <span className="text-gray-900">
+                          <span className="text-gray-700 dark:text-gray-300">{item.category}</span>
+                          <span className="text-gray-900 dark:text-gray-100">
                             ${item.amount} ({item.percentage}%)
                           </span>
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                           <div
                             className={`h-2 rounded-full ${item.color}`}
                             style={{ width: `${item.percentage}%` }}
@@ -199,15 +199,15 @@ export default function FinancialReports() {
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-gray-200">
+                <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
                   <div className="flex justify-between">
                     <div className="text-sm">
-                      <div className="text-gray-500">Report Generated</div>
-                      <div className="font-medium text-gray-900">
+                      <div className="text-gray-500 dark:text-gray-400">Report Generated</div>
+                      <div className="font-medium text-gray-900 dark:text-gray-100">
                         Oct 15, 2023
                       </div>
                     </div>
-                    <button className="inline-flex items-center px-4 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100">
+                    <button className="inline-flex items-center px-4 py-2 text-sm font-medium text-indigo-600 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/40 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/40">
                       <Download className="h-4 w-4 mr-1" />
                       Export PDF
                     </button>
@@ -221,13 +221,13 @@ export default function FinancialReports() {
       </div>
 
       {/* Report Types Section */}
-      <div className="py-16 bg-white">
+      <div className="py-16 bg-white dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               Comprehensive Report Types
             </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
+            <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
               Access a wide range of financial reports tailored to your needs.
             </p>
           </div>
@@ -239,23 +239,23 @@ export default function FinancialReports() {
                 onClick={() => setActiveReport(report.id)}
                 className={`p-6 rounded-xl border transition-all ${
                   activeReport === report.id
-                    ? "border-indigo-500 bg-indigo-50 shadow-md"
-                    : "border-gray-200 bg-white hover:border-indigo-300"
+                    ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-950/40 shadow-md"
+                    : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:border-indigo-300"
                 }`}
               >
                 <div
                   className={`inline-flex items-center justify-center w-12 h-12 rounded-lg mb-4 ${
                     activeReport === report.id
-                      ? "bg-indigo-100 text-indigo-600"
-                      : "bg-gray-100 text-gray-600"
+                      ? "bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-300"
+                      : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
                   }`}
                 >
                   {report.icon}
                 </div>
-                <h3 className="text-lg font-bold text-gray-900 mb-2">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2">
                   {report.name}
                 </h3>
-                <p className="text-sm text-gray-600 text-left">
+                <p className="text-sm text-gray-600 dark:text-gray-400 text-left">
                   {report.id === "overview" &&
                     "Complete summary of income, expenses, and savings"}
                   {report.id === "cashflow" &&
@@ -272,13 +272,13 @@ export default function FinancialReports() {
       </div>
 
       {/* Features Section */}
-      <div className="py-16 bg-gray-50">
+      <div className="py-16 bg-gray-50 dark:bg-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               Powerful Reporting Features
             </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
+            <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
               Everything you need to analyze and understand your financial data.
             </p>
           </div>
@@ -286,13 +286,13 @@ export default function FinancialReports() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, index) => (
               <div key={index} className="text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-100 rounded-xl mb-4 mx-auto">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-100 dark:bg-indigo-900/40 rounded-xl mb-4 mx-auto">
                   {feature.icon}
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
                   {feature.title}
                 </h3>
-                <p className="text-gray-600">{feature.description}</p>
+                <p className="text-gray-600 dark:text-gray-400">{feature.description}</p>
               </div>
             ))}
           </div>
@@ -300,45 +300,45 @@ export default function FinancialReports() {
       </div>
 
       {/* Demo Section */}
-      <div className="py-16 bg-white">
+      <div className="py-16 bg-white dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-6">
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">
                 Customizable & Shareable
               </h2>
-              <p className="text-gray-600 mb-4">
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
                 Money Nest's financial reports are fully customizable with date
                 ranges, categories, and visualization options to show exactly
                 what you need to see.
               </p>
-              <p className="text-gray-600 mb-4">
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
                 Share reports with financial advisors, family members, or export
                 for tax purposes with just a few clicks.
               </p>
               <div className="flex items-center mt-8">
                 <div className="flex-shrink-0">
-                  <div className="inline-flex items-center justify-center h-12 w-12 rounded-md bg-indigo-100 text-indigo-600">
+                  <div className="inline-flex items-center justify-center h-12 w-12 rounded-md bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-300">
                     <Eye className="h-6 w-6" />
                   </div>
                 </div>
                 <div className="ml-4">
-                  <h4 className="text-lg font-bold text-gray-900">
+                  <h4 className="text-lg font-bold text-gray-900 dark:text-gray-100">
                     Real-time Data
                   </h4>
-                  <p className="text-gray-600">
+                  <p className="text-gray-600 dark:text-gray-400">
                     Reports update automatically as new transactions are
                     recorded.
                   </p>
                 </div>
               </div>
             </div>
-            <div className="bg-white rounded-2xl shadow-xl p-6 border border-gray-200">
+            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-6 border border-gray-200 dark:border-gray-700">
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-bold text-gray-900">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
                   Report Customization
                 </h3>
-                <div className="text-sm text-indigo-600 font-medium">
+                <div className="text-sm text-indigo-600 dark:text-indigo-300 font-medium">
                   Options
                 </div>
               </div>
@@ -353,14 +353,14 @@ export default function FinancialReports() {
                     key={index}
                     className="flex items-center justify-between py-2"
                   >
-                    <span className="text-sm text-gray-600">{item.label}</span>
-                    <span className="text-sm font-medium text-gray-900">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{item.label}</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                       {item.value}
                     </span>
                   </div>
                 ))}
-                <div className="pt-4 border-t border-gray-200">
-                  <button className="w-full flex items-center justify-center px-4 py-2.5 text-sm font-medium rounded-lg text-indigo-600 bg-indigo-50 hover:bg-indigo-100">
+                <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <button className="w-full flex items-center justify-center px-4 py-2.5 text-sm font-medium rounded-lg text-indigo-600 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/40">
                     Customize Report
                   </button>
                 </div>
@@ -371,13 +371,13 @@ export default function FinancialReports() {
       </div>
 
       {/* Benefits Section */}
-      <div className="py-16 bg-gray-50">
+      <div className="py-16 bg-gray-50 dark:bg-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               Why Use Financial Reports?
             </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
+            <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
               Our users experience real benefits from using our comprehensive
               reporting tools.
             </p>
@@ -387,15 +387,15 @@ export default function FinancialReports() {
             {benefits.map((benefit, index) => (
               <div
                 key={index}
-                className="bg-white p-6 rounded-xl shadow-sm border border-gray-100"
+                className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800"
               >
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-indigo-100 rounded-lg mb-4">
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-indigo-100 dark:bg-indigo-900/40 rounded-lg mb-4">
                   {benefit.icon}
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
                   {benefit.title}
                 </h3>
-                <p className="text-gray-600">{benefit.description}</p>
+                <p className="text-gray-600 dark:text-gray-400">{benefit.description}</p>
               </div>
             ))}
           </div>
@@ -413,7 +413,7 @@ export default function FinancialReports() {
             with Money Nest's reporting tools.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <button className="inline-flex items-center px-8 py-4 border border-transparent text-base font-medium rounded-md text-indigo-600 bg-white hover:bg-gray-100 shadow-lg transition-all">
+            <button className="inline-flex items-center px-8 py-4 border border-transparent text-base font-medium rounded-md text-indigo-600 dark:text-indigo-300 bg-white dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 shadow-lg transition-all">
               Generate Reports
             </button>
             <button className="inline-flex items-center px-8 py-4 border border-white text-base font-medium rounded-md text-white hover:bg-white hover:text-indigo-600 transition-all">

@@ -11,6 +11,7 @@ import {
   CreditCard,
   LucideIcon,
 } from "lucide-react";
+import { haptic } from "@/lib/haptic";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -86,21 +87,13 @@ export default function MobileBottomNav({
       {/* ── Floating Action Button (bottom-right) ── */}
       <button
         onClick={() => {
+          haptic("medium");
           setShowQuickAdd(true);
           setQuickErrors({});
           setQuickType("expense");
         }}
         aria-label="Add transaction"
-        className="md:hidden fixed right-4 z-50
-                   w-14 h-14 rounded-full
-                   bg-gradient-to-br from-indigo-500 via-indigo-600 to-violet-600
-                   text-white flex items-center justify-center
-                   ring-4 ring-white
-                   shadow-[0_10px_24px_-6px_rgba(79,70,229,0.6)]
-                   hover:shadow-[0_14px_28px_-6px_rgba(79,70,229,0.75)]
-                   active:scale-90 transition-all duration-200
-                   focus-visible:outline-none focus-visible:ring-4
-                   focus-visible:ring-indigo-300"
+        className="md:hidden fixed right-4 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-indigo-500 via-indigo-600 to-violet-600 text-white flex items-center justify-center ring-4 ring-white shadow-[0_10px_24px_-6px_rgba(79,70,229,0.6)] hover:shadow-[0_14px_28px_-6px_rgba(79,70,229,0.75)] active:scale-90 transition-all duration-200 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-300"
         style={{
           bottom: "calc(env(safe-area-inset-bottom, 0px) + 88px)",
         }}
@@ -116,11 +109,7 @@ export default function MobileBottomNav({
         }}
       >
         <nav
-          className="pointer-events-auto flex items-stretch justify-between
-                     bg-white/95 backdrop-blur-md
-                     border border-gray-100 rounded-3xl
-                     shadow-[0_8px_24px_-6px_rgba(15,23,42,0.12)]
-                     px-1.5 py-2"
+          className="pointer-events-auto flex items-stretch justify-between bg-white/95 backdrop-blur-md border border-gray-100 dark:border-gray-800 rounded-3xl shadow-[0_8px_24px_-6px_rgba(15,23,42,0.12)] px-1.5 py-2"
           aria-label="Primary"
         >
           {navItems.map((item) => {
@@ -132,8 +121,8 @@ export default function MobileBottomNav({
                                active:scale-95 transition-all duration-200
                                ${
                                  active
-                                   ? "bg-indigo-50 text-indigo-600"
-                                   : "text-gray-400 hover:text-gray-600"
+                                   ? "bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-300"
+                                   : "text-gray-400 dark:text-gray-500 hover:text-gray-600"
                                }`;
 
             const content = (

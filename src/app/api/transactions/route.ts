@@ -7,6 +7,10 @@ import Budget from "@/models/Budget";
 import { createTransactionSchema } from "@/validations/transaction";
 import { createNotification } from "@/lib/notifications";
 import { syncGoalCompletion } from "@/lib/recomputeBalance";
+import {
+  budgetUnionWindow,
+  getBudgetAlerts,
+} from "@/utils/budgetThreshold";
 import mongoose from "mongoose";
 
 export async function GET(req: Request) {
@@ -265,7 +269,10 @@ export async function POST(req: Request) {
         }),
       );
 
-      // 2. Budget threshold check (only for expenses)
+      // 2. Budget threshold check (only for expenses).
+      // Batched: one fetch covering the union of all active budget windows,
+      // then a pure in-memory roll-up per budget. Avoids the previous
+      // N+1 aggregation loop that ran one $group per budget.
       if (type === "expense" && category) {
         notifPromises.push(
           (async () => {
@@ -275,36 +282,39 @@ export async function POST(req: Request) {
               category,
               startDate: { $lte: now },
               endDate: { $gte: now },
-            }).lean();
+            })
+              .select("_id name allocated startDate endDate")
+              .lean();
 
-            for (const budget of budgets) {
-              const spent = await Transaction.aggregate([
-                {
-                  $match: {
-                    userId: new mongoose.Types.ObjectId(userId),
-                    type: "expense",
-                    category,
-                    date: { $gte: budget.startDate, $lte: budget.endDate },
-                  },
-                },
-                { $group: { _id: null, total: { $sum: "$amount" } } },
-              ]);
-              const totalSpent = spent[0]?.total || 0;
-              const pct = Math.round((totalSpent / budget.allocated) * 100);
+            const window = budgetUnionWindow(budgets);
+            if (!window) return;
 
-              if (pct >= 100) {
+            const txns = await Transaction.find({
+              userId: new mongoose.Types.ObjectId(userId),
+              type: "expense",
+              category,
+              date: { $gte: window.start, $lte: window.end },
+            })
+              .select("date amount")
+              .lean();
+
+            const alerts = getBudgetAlerts(budgets, txns);
+            for (const a of alerts) {
+              const allocatedFmt = a.allocated.toLocaleString("en-IN");
+              const spentFmt = a.spent.toLocaleString("en-IN");
+              if (a.level === "exceeded") {
                 await createNotification({
                   userId,
                   type: "budget",
-                  title: `Budget Exceeded: ${budget.name}`,
-                  message: `You've spent ₹${totalSpent.toLocaleString("en-IN")} of ₹${budget.allocated.toLocaleString("en-IN")} (${pct}%) on ${category}`,
+                  title: `Budget Exceeded: ${a.name}`,
+                  message: `You've spent ₹${spentFmt} of ₹${allocatedFmt} (${a.pct}%) on ${category}`,
                 });
-              } else if (pct >= 80) {
+              } else {
                 await createNotification({
                   userId,
                   type: "budget",
-                  title: `Budget Warning: ${budget.name}`,
-                  message: `You've used ${pct}% of your ${category} budget (₹${totalSpent.toLocaleString("en-IN")} / ₹${budget.allocated.toLocaleString("en-IN")})`,
+                  title: `Budget Warning: ${a.name}`,
+                  message: `You've used ${a.pct}% of your ${category} budget (₹${spentFmt} / ₹${allocatedFmt})`,
                 });
               }
             }
@@ -333,8 +343,9 @@ export async function POST(req: Request) {
         );
       }
 
-      // Don't await — let them run in background
-      Promise.allSettled(notifPromises).catch(() => {});
+      // Don't await — let them run in background. `allSettled` already
+      // swallows individual rejections, so no outer .catch is needed.
+      void Promise.allSettled(notifPromises);
 
       return Response.json(
         {

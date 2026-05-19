@@ -1,0 +1,15 @@
+{
+  "// Tailwind extension config": "The web app uses Tailwind v4 and the mobile app uses Tailwind v3.4 (NativeWind 4 doesn't support v4 yet). Without these overrides the extension applies v4 rules to mobile/src/global.css and flags `@tailwind base/components/utilities` as deprecated.",
+  "tailwindCSS.experimental.configFile": {
+    "src/app/globals.css": "tailwind.config.js",
+    "mobile/src/global.css": "mobile/tailwind.config.js"
+  },
+  "tailwindCSS.includeLanguages": {
+    "typescriptreact": "javascript"
+  },
+  "css.validate": true,
+  "files.associations": {
+    "mobile/src/global.css": "tailwindcss",
+    "src/app/globals.css": "tailwindcss"
+  }
+}

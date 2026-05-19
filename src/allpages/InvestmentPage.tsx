@@ -46,6 +46,7 @@ import {
 } from "@/validations/holding";
 import { formatCurrency } from "@/utils/formatCurrency";
 import DeleteConfirmationModal from "@/components/DeleteConfirmationModal";
+import PullToRefresh from "@/components/PullToRefresh";
 import { IAccount } from "@/types/account";
 
 // ─── Color map per holding type (allocation chart) ──────────────────
@@ -121,12 +122,17 @@ export default function InvestmentPage() {
   }
 
   return (
+    <PullToRefresh
+      onRefresh={async () => {
+        await Promise.all([portfolio.refetch(), holdingsQuery.refetch()]);
+      }}
+    >
     <div className="space-y-6">
       {/* ── Header ──────────────────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Investments</h1>
-          <p className="text-gray-600">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Investments</h1>
+          <p className="text-gray-600 dark:text-gray-400">
             Track holdings, P&L and asset allocation
           </p>
         </div>
@@ -149,20 +155,20 @@ export default function InvestmentPage() {
 
       {/* ── Pre-flight: need an investment account ──────────────── */}
       {!portfolio.isLoading && investmentAccounts.length === 0 && (
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
-          <AlertCircle className="text-amber-600 mt-0.5 shrink-0" size={20} />
+        <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
+          <AlertCircle className="text-amber-600 dark:text-amber-300 mt-0.5 shrink-0" size={20} />
           <div className="flex-1 min-w-0">
-            <p className="font-medium text-amber-900 text-sm">
+            <p className="font-medium text-amber-900 dark:text-amber-200 text-sm">
               No investment account yet
             </p>
-            <p className="text-amber-700 text-sm mt-0.5">
+            <p className="text-amber-700 dark:text-amber-300 text-sm mt-0.5">
               Create an account of type{" "}
               <span className="font-mono">investment</span> first — it&apos;s
               where the cash side of your buys/sells lives.
             </p>
             <Link
               href="/dashboard/balance"
-              className="inline-block mt-2 text-sm font-medium text-amber-900 hover:underline"
+              className="inline-block mt-2 text-sm font-medium text-amber-900 dark:text-amber-200 hover:underline"
             >
               Go to Balance →
             </Link>
@@ -177,7 +183,7 @@ export default function InvestmentPage() {
             {[...Array(4)].map((_, i) => (
               <div
                 key={i}
-                className="h-28 bg-white rounded-xl border border-gray-100 animate-pulse"
+                className="h-28 bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 animate-pulse"
               />
             ))}
           </>
@@ -185,14 +191,14 @@ export default function InvestmentPage() {
           <>
             <SummaryCard
               tone="blue"
-              icon={<Wallet size={18} className="text-blue-600" />}
+              icon={<Wallet size={18} className="text-blue-600 dark:text-blue-300" />}
               label="Total Invested"
               value={formatCurrency(summary.totalInvested)}
               meta={`${summary.activeHoldingsCount} active`}
             />
             <SummaryCard
               tone="indigo"
-              icon={<TrendingUp size={18} className="text-indigo-600" />}
+              icon={<TrendingUp size={18} className="text-indigo-600 dark:text-indigo-300" />}
               label="Current Value"
               value={formatCurrency(summary.currentValue)}
               meta={`${summary.holdingsCount} total`}
@@ -201,25 +207,25 @@ export default function InvestmentPage() {
               tone={summary.unrealizedPnL >= 0 ? "green" : "red"}
               icon={
                 summary.unrealizedPnL >= 0 ? (
-                  <ArrowUpRight size={18} className="text-green-600" />
+                  <ArrowUpRight size={18} className="text-green-600 dark:text-green-300" />
                 ) : (
-                  <ArrowDownRight size={18} className="text-red-600" />
+                  <ArrowDownRight size={18} className="text-red-600 dark:text-red-300" />
                 )
               }
               label="Unrealized P&L"
               value={`${summary.unrealizedPnL >= 0 ? "+" : "-"}${formatCurrency(Math.abs(summary.unrealizedPnL))}`}
               valueClass={
-                summary.unrealizedPnL >= 0 ? "text-green-600" : "text-red-600"
+                summary.unrealizedPnL >= 0 ? "text-green-600 dark:text-green-300" : "text-red-600 dark:text-red-300"
               }
               meta={`${summary.unrealizedPnLPct >= 0 ? "+" : ""}${summary.unrealizedPnLPct}%`}
             />
             <SummaryCard
               tone="purple"
-              icon={<PiggyBank size={18} className="text-purple-600" />}
+              icon={<PiggyBank size={18} className="text-purple-600 dark:text-purple-300" />}
               label="Realized P&L"
               value={`${summary.realizedPnL >= 0 ? "+" : "-"}${formatCurrency(Math.abs(summary.realizedPnL))}`}
               valueClass={
-                summary.realizedPnL >= 0 ? "text-green-600" : "text-red-600"
+                summary.realizedPnL >= 0 ? "text-green-600 dark:text-green-300" : "text-red-600 dark:text-red-300"
               }
               meta="From sells"
             />
@@ -230,12 +236,12 @@ export default function InvestmentPage() {
       {/* ── Allocation + Holdings (2-col on desktop) ───────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
         {/* Allocation pie */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 md:p-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">
+        <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-4 md:p-6">
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">
             Asset Allocation
           </h2>
           {portfolio.isLoading ? (
-            <div className="h-56 bg-gray-50 rounded-lg animate-pulse" />
+            <div className="h-56 bg-gray-50 dark:bg-gray-800 rounded-lg animate-pulse" />
           ) : allocation.length > 0 ? (
             <>
               <div className="h-56">
@@ -266,9 +272,9 @@ export default function InvestmentPage() {
                         border: "1px solid #e5e7eb",
                         fontSize: 12,
                       }}
-                      formatter={(v: number) => formatCurrency(v)}
-                      labelFormatter={(label: string) =>
-                        holdingTypeLabels[label as HoldingType] || label
+                      formatter={(v) => formatCurrency(Number(v))}
+                      labelFormatter={(label) =>
+                        holdingTypeLabels[label as HoldingType] || String(label)
                       }
                     />
                     <Legend
@@ -296,18 +302,18 @@ export default function InvestmentPage() {
                             TYPE_COLORS[a.type as HoldingType] || "#6b7280",
                         }}
                       />
-                      <span className="text-gray-700 truncate">
+                      <span className="text-gray-700 dark:text-gray-300 truncate">
                         {holdingTypeLabels[a.type as HoldingType] || a.type}
                       </span>
-                      <span className="text-xs text-gray-400">
+                      <span className="text-xs text-gray-400 dark:text-gray-500">
                         ({a.count})
                       </span>
                     </div>
                     <div className="text-right shrink-0">
-                      <p className="font-medium text-gray-900">
+                      <p className="font-medium text-gray-900 dark:text-gray-100">
                         {formatCurrency(a.value)}
                       </p>
-                      <p className="text-xs text-gray-500">{a.percentage}%</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{a.percentage}%</p>
                     </div>
                   </div>
                 ))}
@@ -315,21 +321,21 @@ export default function InvestmentPage() {
             </>
           ) : (
             <EmptyBlock
-              icon={<PieIcon size={32} className="text-gray-400" />}
+              icon={<PieIcon size={32} className="text-gray-400 dark:text-gray-500" />}
               message="No active holdings yet"
             />
           )}
         </div>
 
         {/* Recent activity */}
-        <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-4 md:p-6">
+        <div className="lg:col-span-2 bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-4 md:p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-800">
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
               Recent Investment Activity
             </h2>
             <Link
               href="/dashboard/transactions"
-              className="text-sm font-medium text-indigo-600 hover:text-indigo-800"
+              className="text-sm font-medium text-indigo-600 dark:text-indigo-300 hover:text-indigo-800"
             >
               View All
             </Link>
@@ -337,12 +343,12 @@ export default function InvestmentPage() {
           {portfolio.isLoading ? (
             <div className="space-y-3 animate-pulse">
               {[...Array(4)].map((_, i) => (
-                <div key={i} className="h-12 bg-gray-100 rounded-lg" />
+                <div key={i} className="h-12 bg-gray-100 dark:bg-gray-800 rounded-lg" />
               ))}
             </div>
           ) : recentActivity.length === 0 ? (
             <EmptyBlock
-              icon={<RefreshCw size={32} className="text-gray-400" />}
+              icon={<RefreshCw size={32} className="text-gray-400 dark:text-gray-500" />}
               message="No buys, sells or dividends yet"
             />
           ) : (
@@ -351,10 +357,10 @@ export default function InvestmentPage() {
                 const isBuy = t.category === "Investment Buy";
                 const isSell = t.category === "Investment Sell";
                 const tone = isBuy
-                  ? "text-blue-600 bg-blue-50"
+                  ? "text-blue-600 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/30"
                   : isSell
-                    ? "text-amber-600 bg-amber-50"
-                    : "text-green-600 bg-green-50";
+                    ? "text-amber-600 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/30"
+                    : "text-green-600 dark:text-green-300 bg-green-50 dark:bg-green-950/30";
                 const Icon = isBuy
                   ? ArrowDownRight
                   : isSell
@@ -372,10 +378,10 @@ export default function InvestmentPage() {
                         <Icon size={16} />
                       </div>
                       <div className="min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">
+                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                           {t.description}
                         </p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
                           {new Date(t.date).toLocaleDateString("en-IN", {
                             day: "2-digit",
                             month: "short",
@@ -386,7 +392,7 @@ export default function InvestmentPage() {
                         </p>
                       </div>
                     </div>
-                    <span className="font-semibold text-gray-900 shrink-0">
+                    <span className="font-semibold text-gray-900 dark:text-gray-100 shrink-0">
                       {formatCurrency(t.amount)}
                     </span>
                   </div>
@@ -398,16 +404,16 @@ export default function InvestmentPage() {
       </div>
 
       {/* ── Holdings table ──────────────────────────────────────── */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="border-b border-gray-200 px-4 md:px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold text-gray-800">Holdings</h2>
+      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+        <div className="border-b border-gray-200 dark:border-gray-700 px-4 md:px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Holdings</h2>
           <div className="flex items-center gap-2 flex-wrap">
             <select
               value={typeFilter}
               onChange={(e) =>
                 setTypeFilter(e.target.value as HoldingType | "all")
               }
-              className="text-sm px-3 py-1.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500"
+              className="text-sm px-3 py-1.5 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500"
             >
               <option value="all">All Types</option>
               {holdingTypes.map((t) => (
@@ -416,12 +422,12 @@ export default function InvestmentPage() {
                 </option>
               ))}
             </select>
-            <label className="flex items-center gap-1.5 text-sm text-gray-600">
+            <label className="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400">
               <input
                 type="checkbox"
                 checked={includeInactive}
                 onChange={(e) => setIncludeInactive(e.target.checked)}
-                className="rounded text-indigo-600 focus:ring-indigo-500"
+                className="rounded text-indigo-600 dark:text-indigo-300 focus:ring-indigo-500"
               />
               Show sold
             </label>
@@ -439,7 +445,7 @@ export default function InvestmentPage() {
         ) : filteredHoldings.length === 0 ? (
           <div className="px-6 py-16 text-center">
             <Search className="mx-auto text-gray-300 mb-3" size={40} />
-            <p className="text-gray-600 font-medium">
+            <p className="text-gray-600 dark:text-gray-400 font-medium">
               {typeFilter === "all"
                 ? "No holdings yet"
                 : `No ${holdingTypeLabels[typeFilter]} holdings`}
@@ -449,7 +455,7 @@ export default function InvestmentPage() {
               cashAccounts.length > 0 && (
                 <button
                   onClick={() => setShowAddModal(true)}
-                  className="mt-3 text-sm font-medium text-indigo-600 hover:text-indigo-800"
+                  className="mt-3 text-sm font-medium text-indigo-600 dark:text-indigo-300 hover:text-indigo-800"
                 >
                   + Add your first holding
                 </button>
@@ -460,7 +466,7 @@ export default function InvestmentPage() {
             {/* Desktop table */}
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase">
+                <thead className="bg-gray-50 dark:bg-gray-800 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                   <tr>
                     <th className="px-6 py-3">Holding</th>
                     <th className="px-4 py-3 text-right">Qty</th>
@@ -555,6 +561,7 @@ export default function InvestmentPage() {
         isLoading={deleteHolding.isPending}
       />
     </div>
+    </PullToRefresh>
   );
 }
 
@@ -578,27 +585,27 @@ function SummaryCard({
   valueClass?: string;
 }) {
   const bg = {
-    blue: "bg-blue-100",
-    indigo: "bg-indigo-100",
-    green: "bg-green-100",
-    red: "bg-red-100",
-    purple: "bg-purple-100",
+    blue: "bg-blue-100 dark:bg-blue-900/40",
+    indigo: "bg-indigo-100 dark:bg-indigo-900/40",
+    green: "bg-green-100 dark:bg-green-900/40",
+    red: "bg-red-100 dark:bg-red-900/40",
+    purple: "bg-purple-100 dark:bg-purple-900/40",
   }[tone];
 
   return (
-    <div className="bg-white p-4 md:p-5 rounded-xl shadow-sm border border-gray-100">
+    <div className="bg-white dark:bg-gray-900 p-4 md:p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
       <div className={`${bg} p-2 rounded-lg w-fit mb-3`}>{icon}</div>
-      <p className="text-xs md:text-sm text-gray-500 font-medium mb-1">
+      <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 font-medium mb-1">
         {label}
       </p>
       <p
         className={`text-lg md:text-2xl font-bold truncate ${
-          valueClass ?? "text-gray-900"
+          valueClass ?? "text-gray-900 dark:text-gray-100"
         }`}
       >
         {value}
       </p>
-      {meta && <p className="text-[11px] text-gray-400 mt-1">{meta}</p>}
+      {meta && <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-1">{meta}</p>}
     </div>
   );
 }
@@ -611,9 +618,9 @@ function EmptyBlock({
   message: string;
 }) {
   return (
-    <div className="bg-gray-50 rounded-lg h-44 flex flex-col items-center justify-center">
+    <div className="bg-gray-50 dark:bg-gray-800 rounded-lg h-44 flex flex-col items-center justify-center">
       {icon}
-      <p className="text-gray-500 text-sm mt-2">{message}</p>
+      <p className="text-gray-500 dark:text-gray-400 text-sm mt-2">{message}</p>
     </div>
   );
 }
@@ -634,8 +641,8 @@ function ErrorState({
       }`}
     >
       <AlertCircle size={inline ? 32 : 48} className="text-red-400 mb-3" />
-      <p className="text-gray-700 font-medium mb-1">Something went wrong</p>
-      <p className="text-gray-500 text-sm mb-3">
+      <p className="text-gray-700 dark:text-gray-300 font-medium mb-1">Something went wrong</p>
+      <p className="text-gray-500 dark:text-gray-400 text-sm mb-3">
         {message || "Please try again"}
       </p>
       <button
@@ -653,12 +660,12 @@ function TableSkeleton() {
     <div className="animate-pulse divide-y divide-gray-100">
       {[...Array(5)].map((_, i) => (
         <div key={i} className="px-6 py-4 flex items-center gap-4">
-          <div className="w-10 h-10 bg-gray-200 rounded-lg" />
+          <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-lg" />
           <div className="flex-1 space-y-2">
-            <div className="h-4 bg-gray-200 rounded w-32" />
-            <div className="h-3 bg-gray-100 rounded w-20" />
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-32" />
+            <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded w-20" />
           </div>
-          <div className="h-5 bg-gray-200 rounded w-20" />
+          <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-20" />
         </div>
       ))}
     </div>
@@ -706,14 +713,14 @@ function HoldingRow({
   const positive = pnl >= 0;
 
   return (
-    <tr className="hover:bg-gray-50">
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
       <td className="px-6 py-4">
         <div className="flex items-center gap-3">
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-medium text-gray-900">{holding.name}</span>
+              <span className="font-medium text-gray-900 dark:text-gray-100">{holding.name}</span>
               {!holding.isActive && (
-                <span className="text-[10px] text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">
+                <span className="text-[10px] text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded">
                   sold
                 </span>
               )}
@@ -721,7 +728,7 @@ function HoldingRow({
             <div className="flex items-center gap-2 mt-0.5">
               <TypeBadge type={holding.type} />
               {holding.symbol && (
-                <span className="text-xs text-gray-500 font-mono">
+                <span className="text-xs text-gray-500 dark:text-gray-400 font-mono">
                   {holding.symbol}
                 </span>
               )}
@@ -729,25 +736,25 @@ function HoldingRow({
           </div>
         </div>
       </td>
-      <td className="px-4 py-4 text-right text-gray-700">{holding.quantity}</td>
-      <td className="px-4 py-4 text-right text-gray-700">
+      <td className="px-4 py-4 text-right text-gray-700 dark:text-gray-300">{holding.quantity}</td>
+      <td className="px-4 py-4 text-right text-gray-700 dark:text-gray-300">
         {formatCurrency(holding.avgCostPrice)}
       </td>
       <td className="px-4 py-4 text-right">
         <button
           onClick={onPrice}
-          className="text-gray-700 hover:text-indigo-600 hover:underline cursor-pointer"
+          className="text-gray-700 dark:text-gray-300 hover:text-indigo-600 hover:underline cursor-pointer"
           title="Update price"
         >
           {formatCurrency(holding.currentPrice)}
         </button>
       </td>
-      <td className="px-4 py-4 text-right font-medium text-gray-900">
+      <td className="px-4 py-4 text-right font-medium text-gray-900 dark:text-gray-100">
         {formatCurrency(market)}
       </td>
       <td
         className={`px-4 py-4 text-right font-medium ${
-          positive ? "text-green-600" : "text-red-600"
+          positive ? "text-green-600 dark:text-green-300" : "text-red-600 dark:text-red-300"
         }`}
       >
         {positive ? "+" : "-"}
@@ -762,23 +769,23 @@ function HoldingRow({
           <IconBtn
             title="Buy more"
             onClick={onBuy}
-            icon={<ArrowDownRight size={14} className="text-blue-600" />}
+            icon={<ArrowDownRight size={14} className="text-blue-600 dark:text-blue-300" />}
           />
           <IconBtn
             title="Sell"
             onClick={onSell}
             disabled={holding.quantity === 0}
-            icon={<ArrowUpRight size={14} className="text-amber-600" />}
+            icon={<ArrowUpRight size={14} className="text-amber-600 dark:text-amber-300" />}
           />
           <IconBtn
             title="Edit"
             onClick={onEdit}
-            icon={<Edit size={14} className="text-gray-500" />}
+            icon={<Edit size={14} className="text-gray-500 dark:text-gray-400" />}
           />
           <IconBtn
             title="Delete"
             onClick={onDelete}
-            icon={<Trash2 size={14} className="text-red-500" />}
+            icon={<Trash2 size={14} className="text-red-500 dark:text-red-400" />}
           />
         </div>
       </td>
@@ -809,9 +816,9 @@ function HoldingCard({
       <div className="flex justify-between items-start mb-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <p className="font-medium text-gray-900 truncate">{holding.name}</p>
+            <p className="font-medium text-gray-900 dark:text-gray-100 truncate">{holding.name}</p>
             {!holding.isActive && (
-              <span className="text-[10px] text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">
+              <span className="text-[10px] text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded">
                 sold
               </span>
             )}
@@ -819,19 +826,19 @@ function HoldingCard({
           <div className="flex items-center gap-2 mt-1">
             <TypeBadge type={holding.type} />
             {holding.symbol && (
-              <span className="text-xs text-gray-500 font-mono">
+              <span className="text-xs text-gray-500 dark:text-gray-400 font-mono">
                 {holding.symbol}
               </span>
             )}
           </div>
         </div>
         <div className="text-right shrink-0 ml-3">
-          <p className="font-semibold text-gray-900">
+          <p className="font-semibold text-gray-900 dark:text-gray-100">
             {formatCurrency(market)}
           </p>
           <p
             className={`text-xs font-medium ${
-              positive ? "text-green-600" : "text-red-600"
+              positive ? "text-green-600 dark:text-green-300" : "text-red-600 dark:text-red-300"
             }`}
           >
             {positive ? "+" : "-"}
@@ -840,13 +847,13 @@ function HoldingCard({
           </p>
         </div>
       </div>
-      <div className="grid grid-cols-3 gap-2 text-xs text-gray-600 mb-3">
+      <div className="grid grid-cols-3 gap-2 text-xs text-gray-600 dark:text-gray-400 mb-3">
         <div>
-          <span className="block text-gray-400">Qty</span>
+          <span className="block text-gray-400 dark:text-gray-500">Qty</span>
           {holding.quantity}
         </div>
         <div>
-          <span className="block text-gray-400">Avg Cost</span>
+          <span className="block text-gray-400 dark:text-gray-500">Avg Cost</span>
           {formatCurrency(holding.avgCostPrice)}
         </div>
         <div>
@@ -854,7 +861,7 @@ function HoldingCard({
             onClick={onPrice}
             className="text-left w-full hover:text-indigo-600"
           >
-            <span className="block text-gray-400">Current</span>
+            <span className="block text-gray-400 dark:text-gray-500">Current</span>
             {formatCurrency(holding.currentPrice)}
           </button>
         </div>
@@ -890,7 +897,7 @@ function IconBtn({
       onClick={onClick}
       title={title}
       disabled={disabled}
-      className="p-1.5 rounded-md hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
+      className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed"
     >
       {icon}
     </button>
@@ -909,10 +916,10 @@ function ActionPill({
   disabled?: boolean;
 }) {
   const cls = {
-    blue: "text-blue-700 bg-blue-50 hover:bg-blue-100",
-    amber: "text-amber-700 bg-amber-50 hover:bg-amber-100",
-    gray: "text-gray-700 bg-gray-100 hover:bg-gray-200",
-    red: "text-red-700 bg-red-50 hover:bg-red-100",
+    blue: "text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/30 hover:bg-blue-100",
+    amber: "text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/30 hover:bg-amber-100",
+    gray: "text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700",
+    red: "text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/30 hover:bg-red-100 dark:hover:bg-red-900/40",
   }[tone];
   return (
     <button
@@ -941,13 +948,13 @@ function ModalShell({
   if (typeof document === "undefined") return null;
   return createPortal(
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center z-[200] md:p-4">
-      <div className="bg-white w-full md:max-w-md rounded-t-[2rem] md:rounded-2xl shadow-2xl animate-slide-up md:animate-none flex flex-col max-h-[90vh]">
-        <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mt-4 mb-2 md:hidden" />
-        <div className="flex justify-between items-center px-6 pt-2 md:pt-6 pb-4 border-b border-gray-100">
-          <h2 className="text-lg font-bold text-gray-900">{title}</h2>
+      <div className="bg-white dark:bg-gray-900 w-full md:max-w-md rounded-t-[2rem] md:rounded-2xl shadow-2xl animate-slide-up md:animate-none flex flex-col max-h-[90vh]">
+        <div className="w-12 h-1.5 bg-gray-300 dark:bg-gray-600 rounded-full mx-auto mt-4 mb-2 md:hidden" />
+        <div className="flex justify-between items-center px-6 pt-2 md:pt-6 pb-4 border-b border-gray-100 dark:border-gray-800">
+          <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">{title}</h2>
           <button
             onClick={onClose}
-            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full"
+            className="p-2 text-gray-400 dark:text-gray-500 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full"
           >
             <X size={20} />
           </button>
@@ -963,12 +970,12 @@ function ModalShell({
 
 function FieldErr({ msg }: { msg?: string }) {
   if (!msg) return null;
-  return <p className="mt-1 text-xs text-red-600">{msg}</p>;
+  return <p className="mt-1 text-xs text-red-600 dark:text-red-300">{msg}</p>;
 }
 
 function inputCls(hasError: boolean) {
   return `w-full px-3 py-2.5 border rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
-    hasError ? "border-red-300 bg-red-50" : "border-gray-300"
+    hasError ? "border-red-300 bg-red-50 dark:bg-red-950/30" : "border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
   }`;
 }
 
@@ -1030,7 +1037,7 @@ function AddHoldingModal({
       <form onSubmit={onSubmit} className="p-6 space-y-4">
         {/* Type */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Asset Type
           </label>
           <div className="grid grid-cols-3 gap-1.5">
@@ -1041,8 +1048,8 @@ function AddHoldingModal({
                 onClick={() => setType(t)}
                 className={`py-2 px-2 text-xs font-medium rounded-lg border transition-colors ${
                   type === t
-                    ? "border-indigo-500 bg-indigo-50 text-indigo-700"
-                    : "border-gray-200 text-gray-600 hover:bg-gray-50"
+                    ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300"
+                    : "border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
                 }`}
               >
                 {holdingTypeLabels[t]}
@@ -1052,7 +1059,7 @@ function AddHoldingModal({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Name
           </label>
           <input
@@ -1065,9 +1072,9 @@ function AddHoldingModal({
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Symbol{" "}
-              <span className="text-gray-400 text-xs font-normal">
+              <span className="text-gray-400 dark:text-gray-500 text-xs font-normal">
                 (optional)
               </span>
             </label>
@@ -1078,7 +1085,7 @@ function AddHoldingModal({
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Date
             </label>
             <input
@@ -1092,7 +1099,7 @@ function AddHoldingModal({
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Quantity
             </label>
             <input
@@ -1106,7 +1113,7 @@ function AddHoldingModal({
             <FieldErr msg={errors.quantity} />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Price / Unit (₹)
             </label>
             <input
@@ -1122,9 +1129,9 @@ function AddHoldingModal({
         </div>
 
         {(type === "fd" || type === "ppf") && (
-          <div className="grid grid-cols-2 gap-3 p-3 bg-gray-50 rounded-xl">
+          <div className="grid grid-cols-2 gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">
+              <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
                 Maturity Date
               </label>
               <input
@@ -1134,7 +1141,7 @@ function AddHoldingModal({
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">
+              <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
                 Interest % (annual)
               </label>
               <input
@@ -1151,7 +1158,7 @@ function AddHoldingModal({
         )}
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Investment Account
           </label>
           <select
@@ -1172,7 +1179,7 @@ function AddHoldingModal({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Pay From (cash account)
           </label>
           <select
@@ -1193,9 +1200,9 @@ function AddHoldingModal({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Notes{" "}
-            <span className="text-gray-400 text-xs font-normal">(optional)</span>
+            <span className="text-gray-400 dark:text-gray-500 text-xs font-normal">(optional)</span>
           </label>
           <textarea
             name="notes"
@@ -1209,7 +1216,7 @@ function AddHoldingModal({
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 px-4 py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-50 font-medium"
+            className="flex-1 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 font-medium"
           >
             Cancel
           </button>
@@ -1267,7 +1274,7 @@ function BuyHoldingModal({
       <form onSubmit={onSubmit} className="p-6 space-y-4">
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Quantity
             </label>
             <input
@@ -1281,7 +1288,7 @@ function BuyHoldingModal({
             <FieldErr msg={errors.quantity} />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Price / Unit (₹)
             </label>
             <input
@@ -1297,7 +1304,7 @@ function BuyHoldingModal({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Date
           </label>
           <input
@@ -1309,7 +1316,7 @@ function BuyHoldingModal({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Pay From
           </label>
           <select
@@ -1329,7 +1336,7 @@ function BuyHoldingModal({
           <FieldErr msg={errors.fromAccountId} />
         </div>
 
-        <p className="text-xs text-gray-500 bg-gray-50 rounded-lg p-3">
+        <p className="text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
           Current avg cost: <b>{formatCurrency(holding.avgCostPrice)}</b> ×{" "}
           {holding.quantity} units. Buying more will recompute the weighted
           average.
@@ -1339,7 +1346,7 @@ function BuyHoldingModal({
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 px-4 py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-50 font-medium"
+            className="flex-1 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 font-medium"
           >
             Cancel
           </button>
@@ -1403,9 +1410,9 @@ function SellHoldingModal({
       <form onSubmit={onSubmit} className="p-6 space-y-4">
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Quantity
-              <span className="text-xs text-gray-400 font-normal ml-1">
+              <span className="text-xs text-gray-400 dark:text-gray-500 font-normal ml-1">
                 (max {holding.quantity})
               </span>
             </label>
@@ -1422,7 +1429,7 @@ function SellHoldingModal({
             <FieldErr msg={errors.quantity} />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Sell Price / Unit (₹)
             </label>
             <input
@@ -1438,7 +1445,7 @@ function SellHoldingModal({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Date
           </label>
           <input
@@ -1450,7 +1457,7 @@ function SellHoldingModal({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Credit To
           </label>
           <select
@@ -1473,8 +1480,8 @@ function SellHoldingModal({
         <div
           className={`rounded-lg p-3 text-sm ${
             projectedPnl >= 0
-              ? "bg-green-50 text-green-700"
-              : "bg-red-50 text-red-700"
+              ? "bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-300"
+              : "bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300"
           }`}
         >
           Projected realized P&L:{" "}
@@ -1489,7 +1496,7 @@ function SellHoldingModal({
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 px-4 py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-50 font-medium"
+            className="flex-1 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 font-medium"
           >
             Cancel
           </button>
@@ -1535,7 +1542,7 @@ function UpdatePriceModal({
   return (
     <ModalShell title={`Update Price — ${holding.name}`} onClose={onClose}>
       <form onSubmit={onSubmit} className="p-6 space-y-4">
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-gray-600 dark:text-gray-400">
           Last updated{" "}
           {new Date(holding.priceUpdatedAt).toLocaleDateString("en-IN", {
             day: "2-digit",
@@ -1545,7 +1552,7 @@ function UpdatePriceModal({
         </p>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Current Price / Unit (₹)
           </label>
           <input
@@ -1557,7 +1564,7 @@ function UpdatePriceModal({
             className={inputCls(false)}
             autoFocus
           />
-          <p className="mt-1 text-xs text-gray-500">
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
             Market value will become{" "}
             <b>{formatCurrency(holding.quantity * price)}</b>
           </p>
@@ -1567,7 +1574,7 @@ function UpdatePriceModal({
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 px-4 py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-50 font-medium"
+            className="flex-1 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 font-medium"
           >
             Cancel
           </button>
@@ -1626,7 +1633,7 @@ function EditHoldingModal({
     <ModalShell title={`Edit ${holding.name}`} onClose={onClose}>
       <form onSubmit={onSubmit} className="p-6 space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Name
           </label>
           <input
@@ -1638,7 +1645,7 @@ function EditHoldingModal({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Symbol
           </label>
           <input
@@ -1649,9 +1656,9 @@ function EditHoldingModal({
         </div>
 
         {showFdFields && (
-          <div className="grid grid-cols-2 gap-3 p-3 bg-gray-50 rounded-xl">
+          <div className="grid grid-cols-2 gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">
+              <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
                 Maturity Date
               </label>
               <input
@@ -1666,7 +1673,7 @@ function EditHoldingModal({
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">
+              <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
                 Interest %
               </label>
               <input
@@ -1683,7 +1690,7 @@ function EditHoldingModal({
         )}
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Notes
           </label>
           <textarea
@@ -1694,7 +1701,7 @@ function EditHoldingModal({
           />
         </div>
 
-        <p className="text-xs text-gray-500 bg-gray-50 rounded-lg p-3">
+        <p className="text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
           To change quantity / price, use Buy / Sell / Update Price actions.
         </p>
 
@@ -1702,7 +1709,7 @@ function EditHoldingModal({
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 px-4 py-2.5 text-sm text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-50 font-medium"
+            className="flex-1 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 font-medium"
           >
             Cancel
           </button>

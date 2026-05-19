@@ -29,7 +29,9 @@ export default function ComingSoonPage() {
   const [isLive, setIsLive] = useState(false); // 👈 track if launch date passed
 
   useEffect(() => {
-    let interval: NodeJS.Timeout; // 👈 declare first!
+    // setInterval returns `number` in browsers; using ReturnType keeps this
+    // portable across DOM (number) and Node (Timeout) lib targets.
+    let interval: ReturnType<typeof setInterval>;
 
     const updateCountdown = () => {
       const now = new Date();
@@ -85,7 +87,7 @@ export default function ComingSoonPage() {
   // ✅ Same bubble background for the "live shortly" message
   if (isLive) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-6 text-gray-800 relative overflow-hidden">
+      <div className="min-h-screen flex flex-col items-center justify-center p-6 text-gray-800 dark:text-gray-200 relative overflow-hidden">
         <div className="absolute inset-0 overflow-hidden z-0">
           {bubbleStyles.map((style, i) => (
             <div
@@ -97,11 +99,11 @@ export default function ComingSoonPage() {
         </div>
 
         <div className="z-10 text-center">
-          <Rocket className="w-12 h-12 text-indigo-600 mb-6 mx-auto animate-bounce" />
-          <h1 className="text-3xl font-bold text-gray-900 mb-3">
+          <Rocket className="w-12 h-12 text-indigo-600 dark:text-indigo-300 mb-6 mx-auto animate-bounce" />
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-3">
             The page will be live shortly 🚀
           </h1>
-          <p className="text-gray-600 max-w-md mx-auto">
+          <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto">
             We're just making the final touches. Please check back in a moment!
           </p>
         </div>
@@ -111,7 +113,7 @@ export default function ComingSoonPage() {
 
   // 🕒 Default Coming Soon Layout
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6 text-gray-800 relative overflow-hidden">
+    <div className="min-h-screen flex flex-col items-center justify-center p-6 text-gray-800 dark:text-gray-200 relative overflow-hidden">
       <div className="absolute inset-0 overflow-hidden z-0">
         {bubbleStyles.map((style, i) => (
           <div
@@ -124,16 +126,16 @@ export default function ComingSoonPage() {
 
       <div className="max-w-4xl w-full z-10">
         <div className="text-center mb-16">
-          <div className="inline-flex items-center justify-center bg-indigo-100 text-indigo-700 py-2 px-5 rounded-full mb-8 font-medium">
+          <div className="inline-flex items-center justify-center bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 py-2 px-5 rounded-full mb-8 font-medium">
             <Rocket className="w-4 h-4 mr-2" />
             <span>Coming Soon</span>
           </div>
 
-          <h1 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900 tracking-tight">
+          <h1 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900 dark:text-gray-100 tracking-tight">
             Something Amazing is Coming
           </h1>
 
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed">
             We're crafting an exceptional experience for you. Our team is
             working diligently to bring innovative solutions that will transform
             your workflow.
@@ -143,26 +145,26 @@ export default function ComingSoonPage() {
         <div className="relative flex justify-center mb-16">
           <div className="relative w-64 h-64 flex items-center justify-center">
             <div className="absolute w-full h-full flex items-center justify-center">
-              <div className="bg-indigo-50 rounded-full w-48 h-48 flex items-center justify-center">
-                <div className="bg-indigo-100 rounded-full w-32 h-32 flex items-center justify-center">
+              <div className="bg-indigo-50 dark:bg-indigo-950/40 rounded-full w-48 h-48 flex items-center justify-center">
+                <div className="bg-indigo-100 dark:bg-indigo-900/40 rounded-full w-32 h-32 flex items-center justify-center">
                   <Sparkles className="w-12 h-12 text-indigo-400" />
                 </div>
               </div>
             </div>
 
-            <div className="absolute -top-4 -right-4 bg-white p-3 rounded-full shadow-md border">
-              <Hammer className="w-6 h-6 text-indigo-500" />
+            <div className="absolute -top-4 -right-4 bg-white dark:bg-gray-900 p-3 rounded-full shadow-md border">
+              <Hammer className="w-6 h-6 text-indigo-500 dark:text-indigo-400" />
             </div>
 
-            <div className="absolute -bottom-4 -left-4 bg-white p-3 rounded-full shadow-md border">
-              <Wrench className="w-6 h-6 text-indigo-500" />
+            <div className="absolute -bottom-4 -left-4 bg-white dark:bg-gray-900 p-3 rounded-full shadow-md border">
+              <Wrench className="w-6 h-6 text-indigo-500 dark:text-indigo-400" />
             </div>
           </div>
         </div>
 
         <div className="max-w-2xl mx-auto mb-16">
-          <h2 className="text-xl font-semibold text-center text-gray-800 mb-8 flex items-center justify-center">
-            <CalendarClock className="w-5 h-5 mr-2 text-indigo-500" />
+          <h2 className="text-xl font-semibold text-center text-gray-800 dark:text-gray-200 mb-8 flex items-center justify-center">
+            <CalendarClock className="w-5 h-5 mr-2 text-indigo-500 dark:text-indigo-400" />
             Launching In
           </h2>
 
@@ -175,12 +177,12 @@ export default function ComingSoonPage() {
             ].map((item, i) => (
               <div
                 key={i}
-                className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 text-center"
+                className="bg-white dark:bg-gray-900 rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-800 text-center"
               >
-                <div className="text-3xl font-bold text-indigo-600 mb-1">
+                <div className="text-3xl font-bold text-indigo-600 dark:text-indigo-300 mb-1">
                   {item.value.toString().padStart(2, "0")}
                 </div>
-                <div className="text-sm text-gray-500 font-medium">
+                <div className="text-sm text-gray-500 dark:text-gray-400 font-medium">
                   {item.label}
                 </div>
               </div>
