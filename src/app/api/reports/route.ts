@@ -13,8 +13,7 @@
 //   - byAccount     income + expense per account (transfers excluded)
 //
 // All aggregations are userId-scoped and run in parallel.
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
+import { getUserId } from "@/lib/mobileAuth";
 import { connectToDatabase } from "@/lib/mongodb";
 import Transaction from "@/models/Transaction";
 import Account from "@/models/Account";
@@ -93,8 +92,8 @@ function pctDelta(current: number, previous: number): number | null {
 }
 
 export async function GET(req: Request) {
-  const session = await getServerSession(authOptions);
-  const userId = session?.user?._id;
+  // Accepts NextAuth session cookies (web) and Bearer JWT (mobile).
+  const userId = await getUserId(req);
   if (!userId) {
     return Response.json(
       { message: "Unauthorized", type: "error", success: false },

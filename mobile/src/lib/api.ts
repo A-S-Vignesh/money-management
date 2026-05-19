@@ -9,6 +9,12 @@ const API_BASE_URL =
   (Constants.expoConfig?.extra?.apiBaseUrl as string | undefined) ??
   "https://money-nest.vercel.app";
 
+// Surface the base URL once on module load so it's obvious in Metro which
+// backend the app is talking to. Crucial when chasing "I signed in but the
+// dashboard signed me out" bugs — the JWT-minting backend (the OAuth relay)
+// and the JWT-verifying backend (this base URL) MUST share NEXTAUTH_SECRET.
+console.log(`[api] base URL = ${API_BASE_URL}`);
+
 export class ApiError extends Error {
   status: number;
   fields?: Record<string, string[]>;
@@ -59,15 +65,23 @@ export async function api<T = unknown>(
     if (token) headers.Authorization = `Bearer ${token}`;
   }
 
-  const res = await fetch(buildUrl(path, query), {
+  const fullUrl = buildUrl(path, query);
+  const res = await fetch(fullUrl, {
     method,
     headers,
     body: body !== undefined ? JSON.stringify(body) : undefined,
     signal,
   });
+  console.log(`[api] ${method} ${path} → ${res.status}`);
 
   // 401 → token expired or invalid; clear and let the auth gate re-route.
   if (res.status === 401 && withAuth) {
+    console.warn(
+      `[api] 401 from ${fullUrl} — signing out.\n` +
+        `If you just signed in, the backend at this URL is NOT the same backend that minted the JWT.\n` +
+        `Check that EXPO_PUBLIC_API_BASE_URL and EXPO_PUBLIC_AUTH_BASE_URL share NEXTAUTH_SECRET, ` +
+        `or set them both to the same Vercel deployment.`,
+    );
     await useAuth.getState().signOut();
     throw new ApiError("Session expired", 401);
   }

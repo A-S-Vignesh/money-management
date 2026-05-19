@@ -44,11 +44,11 @@ export default function TabsLayout() {
         />
       </NativeTabs.Trigger>
 
-      <NativeTabs.Trigger name="investments">
-        <NativeTabs.Trigger.Label>Invest</NativeTabs.Trigger.Label>
+      <NativeTabs.Trigger name="reports">
+        <NativeTabs.Trigger.Label>Reports</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
           sf="chart.line.uptrend.xyaxis"
-          drawable="ic_invest"
+          drawable="ic_reports"
         />
       </NativeTabs.Trigger>
 
