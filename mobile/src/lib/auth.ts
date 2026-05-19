@@ -31,16 +31,34 @@ export const useAuth = create<AuthState>((set) => ({
   user: null,
   hydrated: false,
 
+  // State updates land in memory FIRST (sync) so the auth gate sees the
+  // new token immediately on the same render — otherwise the SecureStore
+  // round-trip leaves a 100ms window where consumers still see `token=null`
+  // and bounce back to login. SecureStore writes happen fire-and-forget;
+  // if they fail, the user is still signed in for the current session and
+  // we'll re-attempt on the next sign-in.
   signIn: async ({ token, user }) => {
-    await SecureStore.setItemAsync(TOKEN_KEY, token);
-    await SecureStore.setItemAsync(USER_KEY, JSON.stringify(user));
     set({ token, user });
+    try {
+      await Promise.all([
+        SecureStore.setItemAsync(TOKEN_KEY, token),
+        SecureStore.setItemAsync(USER_KEY, JSON.stringify(user)),
+      ]);
+    } catch (e) {
+      console.warn("[auth] SecureStore write failed", e);
+    }
   },
 
   signOut: async () => {
-    await SecureStore.deleteItemAsync(TOKEN_KEY);
-    await SecureStore.deleteItemAsync(USER_KEY);
     set({ token: null, user: null });
+    try {
+      await Promise.all([
+        SecureStore.deleteItemAsync(TOKEN_KEY),
+        SecureStore.deleteItemAsync(USER_KEY),
+      ]);
+    } catch (e) {
+      console.warn("[auth] SecureStore delete failed", e);
+    }
   },
 
   hydrate: async () => {

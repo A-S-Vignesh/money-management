@@ -157,21 +157,28 @@ export async function GET(req: Request) {
     email: user.email,
   });
 
-  // Step 6: build the deep-link return URL with the JWT + user info as
-  // query params and render the bouncer.
-  const returnUrl = new URL(state.returnTo);
-  returnUrl.searchParams.set("token", token);
-  returnUrl.searchParams.set(
-    "user",
-    encodeURIComponent(
-      JSON.stringify({
-        _id: user._id.toString(),
-        email: user.email,
-        name: user.name,
-        image: user.image,
-      }),
-    ),
-  );
+  // Step 6: build the deep-link return URL by hand.
+  //
+  // We MUST NOT use `new URL(state.returnTo)` here — for non-special schemes
+  // like `exp://` and `moneynest://`, Node's URL parser treats the URL as
+  // opaque and `.toString()` doesn't roundtrip cleanly (port + path get
+  // re-encoded incorrectly). The query params end up mangled by the time
+  // they reach the app, and the deep-link handler can't read `token`.
+  // Manual concatenation avoids the parser entirely.
+  const userPayload = JSON.stringify({
+    _id: user._id.toString(),
+    email: user.email,
+    name: user.name,
+    image: user.image,
+  });
+  const sep = state.returnTo.includes("?") ? "&" : "?";
+  const returnUrl =
+    state.returnTo +
+    sep +
+    "token=" +
+    encodeURIComponent(token) +
+    "&user=" +
+    encodeURIComponent(userPayload);
 
-  return bouncePage(returnUrl.toString());
+  return bouncePage(returnUrl);
 }

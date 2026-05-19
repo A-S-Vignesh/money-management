@@ -50,19 +50,21 @@ interface ReturnPayload {
 }
 
 function parseReturnUrl(returnedUrl: string): ReturnPayload | null {
-  // Custom-scheme URLs (`exp://`, `moneynest://`) parse fine in the URL API
-  // on Hermes — the protocol just needs to be non-empty.
-  let url: URL;
-  try {
-    url = new URL(returnedUrl);
-  } catch {
-    return null;
-  }
-  const token = url.searchParams.get("token");
-  const userRaw = url.searchParams.get("user");
+  // Hand-rolled query parsing — Hermes's URL constructor mangles non-special
+  // schemes (`exp://`, `moneynest://`) and `.searchParams.get()` can return
+  // partially-decoded garbage. Slicing the string ourselves matches what
+  // the backend wrote and what useLocalSearchParams sees on the deep-link
+  // side, so all three paths stay in lockstep.
+  const qIdx = returnedUrl.indexOf("?");
+  if (qIdx < 0) return null;
+  const sp = new URLSearchParams(returnedUrl.slice(qIdx + 1));
+  const token = sp.get("token");
+  const userRaw = sp.get("user");
   if (!token || !userRaw) return null;
   try {
-    const user = JSON.parse(decodeURIComponent(userRaw));
+    // Backend sends `user` URL-encoded ONCE; URLSearchParams.get decodes it
+    // for us — leaving us with raw JSON. No second decodeURIComponent.
+    const user = JSON.parse(userRaw);
     return { token, user };
   } catch {
     return null;
@@ -94,20 +96,36 @@ export default function LoginScreen() {
       const returnUrl = Linking.createURL("auth");
       const start = `${authBaseUrl}/api/auth/mobile/start?returnTo=${encodeURIComponent(returnUrl)}`;
 
+      console.log("[login] opening browser, returnUrl:", returnUrl);
       const result = await WebBrowser.openAuthSessionAsync(start, returnUrl);
-      if (result.type === "cancel" || result.type === "dismiss") return;
+      console.log(
+        "[login] browser result:",
+        result.type,
+        "url" in result ? result.url : "(no url)",
+      );
+
+      if (result.type === "cancel" || result.type === "dismiss") {
+        // The Android in-app browser often returns "dismiss" even when the
+        // OAuth flow technically succeeded — because Custom Tabs handed the
+        // exp:// redirect off to the OS instead of intercepting. In that
+        // case the deep link reached /auth and that route handles sign-in;
+        // we exit quietly here.
+        return;
+      }
       if (result.type !== "success") {
         Alert.alert("Sign-in failed", "The browser closed unexpectedly.");
         return;
       }
       const payload = parseReturnUrl(result.url);
       if (!payload) {
+        console.error("[login] parse failed for url:", result.url);
         Alert.alert(
           "Sign-in failed",
           "The backend didn't return a usable token.",
         );
         return;
       }
+      console.log("[login] signing in, email:", payload.user.email);
       await signIn(payload);
       router.replace("/(tabs)");
     } catch (err) {
