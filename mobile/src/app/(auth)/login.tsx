@@ -49,6 +49,27 @@ interface ReturnPayload {
   user: { _id: string; email: string; name?: string; image?: string };
 }
 
+// Try JSON.parse on a value that might be URL-encoded zero, one, or two
+// times. Older backend deploys double-encoded the user payload; the fixed
+// backend encodes it exactly once. Being tolerant of both keeps the app
+// working through the rollout window without coupling app and server
+// version bumps.
+function tolerantUserParse(raw: string): unknown | null {
+  let s = raw;
+  for (let i = 0; i < 3; i++) {
+    try {
+      return JSON.parse(s);
+    } catch {
+      try {
+        s = decodeURIComponent(s);
+      } catch {
+        return null;
+      }
+    }
+  }
+  return null;
+}
+
 function parseReturnUrl(returnedUrl: string): ReturnPayload | null {
   // Hand-rolled query parsing — Hermes's URL constructor mangles non-special
   // schemes (`exp://`, `moneynest://`) and `.searchParams.get()` can return
@@ -61,14 +82,9 @@ function parseReturnUrl(returnedUrl: string): ReturnPayload | null {
   const token = sp.get("token");
   const userRaw = sp.get("user");
   if (!token || !userRaw) return null;
-  try {
-    // Backend sends `user` URL-encoded ONCE; URLSearchParams.get decodes it
-    // for us — leaving us with raw JSON. No second decodeURIComponent.
-    const user = JSON.parse(userRaw);
-    return { token, user };
-  } catch {
-    return null;
-  }
+  const user = tolerantUserParse(userRaw);
+  if (!user || typeof user !== "object") return null;
+  return { token, user: user as ReturnPayload["user"] };
 }
 
 export default function LoginScreen() {

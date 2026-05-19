@@ -22,6 +22,24 @@ import { ActivityIndicator, View } from "react-native";
 import { Redirect, useLocalSearchParams } from "expo-router";
 import { useAuth } from "@/lib/auth";
 
+// Tolerate single OR double URL-encoding so the app keeps working through
+// the backend rollout window. See login.tsx for the matching helper.
+function tolerantUserParse(raw: string): unknown | null {
+  let s = raw;
+  for (let i = 0; i < 3; i++) {
+    try {
+      return JSON.parse(s);
+    } catch {
+      try {
+        s = decodeURIComponent(s);
+      } catch {
+        return null;
+      }
+    }
+  }
+  return null;
+}
+
 export default function AuthCallback() {
   const params = useLocalSearchParams<{ token?: string; user?: string }>();
   const signIn = useAuth((s) => s.signIn);
@@ -34,24 +52,24 @@ export default function AuthCallback() {
       userType: typeof params.user,
     });
     if (!params.token || typeof params.user !== "string") return;
-    try {
-      // The backend sends `user` already encoded ONCE in the URL — Expo
-      // Router's useLocalSearchParams URL-decodes for us, so what we get
-      // here is the raw JSON string. No second decodeURIComponent.
-      const user = JSON.parse(params.user);
-      console.log("[auth callback] signing in", { email: user.email });
-      // signIn is async, but it sets the in-memory state synchronously
-      // before awaiting SecureStore — so by the next render the auth gate
-      // sees the token and the Redirect below sends us into the tabs.
-      void signIn({ token: params.token, user });
-    } catch (err) {
+    const user = tolerantUserParse(params.user);
+    if (!user || typeof user !== "object") {
       console.error(
-        "[auth callback] failed to parse user payload",
-        err,
-        "raw user param:",
+        "[auth callback] failed to parse user payload, raw:",
         params.user,
       );
+      return;
     }
+    console.log("[auth callback] signing in", {
+      email: (user as { email?: string }).email,
+    });
+    // signIn is async, but it sets the in-memory state synchronously before
+    // awaiting SecureStore — so by the next render the auth gate sees the
+    // token and the Redirect below sends us into the tabs.
+    void signIn({
+      token: params.token,
+      user: user as { _id: string; email: string; name?: string; image?: string },
+    });
   }, [params.token, params.user, signIn]);
 
   // Once the auth store has a token, redirect to the tabs. If the URL
