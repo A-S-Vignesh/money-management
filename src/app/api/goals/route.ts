@@ -28,7 +28,11 @@ export async function GET(req: Request) {
     );
     const skip = (page - 1) * limit;
 
-    const query: Record<string, unknown> = { userId: userId };
+    // Cast userId to ObjectId here: `.aggregate()` does NOT auto-cast
+    // strings the way `.find()` does, so without this $match silently
+    // matches zero rows and the goals list comes back empty.
+    const userObjectId = new mongoose.Types.ObjectId(String(userId));
+    const query: Record<string, unknown> = { userId: userObjectId };
 
     const priorityFilter = searchParams.get("priority");
     if (priorityFilter && priorityFilter !== "all") {
