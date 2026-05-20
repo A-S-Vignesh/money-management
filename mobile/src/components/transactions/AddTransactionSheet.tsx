@@ -10,7 +10,6 @@ import {
   Text,
   TextInput,
   View,
-  useColorScheme,
 } from "react-native";
 import { ArrowRight, Check } from "lucide-react-native";
 import dayjs from "dayjs";
@@ -31,6 +30,7 @@ import { DateStrip } from "./DateStrip";
 import { Keypad } from "./Keypad";
 import { SheetHeader } from "./SheetHeader";
 import { TypeSegment, type TxType } from "./TypeSegment";
+import { useColorScheme } from "@/hooks/useAppColorScheme";
 
 interface Props {
   visible: boolean;

@@ -16,7 +16,6 @@ import {
   ScrollView,
   Text,
   View,
-  useColorScheme,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AlertTriangle, Pencil, Plus, Sparkles } from "lucide-react-native";
@@ -35,6 +34,7 @@ import { Money } from "@/components/ui/Money";
 import { ScreenHead } from "@/components/ui/ScreenHead";
 import { Section } from "@/components/ui/Section";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { useColorScheme } from "@/hooks/useAppColorScheme";
 
 // Bucket the spent / allocated ratio into a status that drives both the
 // progress-bar color and the textual "left" / "over by" descriptor. Same

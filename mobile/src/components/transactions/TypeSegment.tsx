@@ -2,8 +2,13 @@
 // AddTransaction sheet. Mirrors the design's `.bg-elev` track + raised
 // active pill with shadow.
 
-import { Pressable, Text, View, useColorScheme } from "react-native";
+import {
+  Pressable,
+  Text,
+  View,
+} from "react-native";
 import { Tokens } from "@/lib/design";
+import { useColorScheme } from "@/hooks/useAppColorScheme";
 
 export type TxType = "expense" | "income" | "transfer";
 

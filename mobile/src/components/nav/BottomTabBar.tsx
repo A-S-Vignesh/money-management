@@ -5,7 +5,11 @@
 // We deliberately drop NativeTabs here so the bar style matches the mock —
 // the trade-off is losing iOS Liquid Glass / Material 3 native polish.
 
-import { Pressable, Text, View, useColorScheme } from "react-native";
+import {
+  Pressable,
+  Text,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { usePathname, useRouter } from "expo-router";
 import {
@@ -17,6 +21,7 @@ import {
   type LucideIcon,
 } from "lucide-react-native";
 import { Tokens } from "@/lib/design";
+import { useColorScheme } from "@/hooks/useAppColorScheme";
 
 interface Tab {
   href: string;

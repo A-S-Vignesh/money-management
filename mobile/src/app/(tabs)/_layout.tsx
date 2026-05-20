@@ -9,7 +9,9 @@
 // driven by useTransactionSheet store. Per-screen instances were removed.
 
 import { Redirect, Slot } from "expo-router";
-import { View, useColorScheme } from "react-native";
+import {
+  View,
+} from "react-native";
 
 import { useAuth } from "@/lib/auth";
 import { Tokens } from "@/lib/design";
@@ -19,6 +21,7 @@ import { BottomTabBar } from "@/components/nav/BottomTabBar";
 import { Drawer } from "@/components/nav/Drawer";
 import { GlobalFab } from "@/components/nav/GlobalFab";
 import { AddTransactionSheet } from "@/components/transactions/AddTransactionSheet";
+import { useColorScheme } from "@/hooks/useAppColorScheme";
 
 export default function TabsLayout() {
   const token = useAuth((s) => s.token);

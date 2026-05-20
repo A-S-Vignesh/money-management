@@ -16,7 +16,6 @@ import {
   Pressable,
   ScrollView,
   View,
-  useColorScheme,
 } from "react-native";
 import Animated, {
   useAnimatedStyle,
@@ -26,6 +25,7 @@ import Animated, {
   Easing,
 } from "react-native-reanimated";
 import { Tokens } from "@/lib/design";
+import { useColorScheme } from "@/hooks/useAppColorScheme";
 
 interface Props {
   visible: boolean;

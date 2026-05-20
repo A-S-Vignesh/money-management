@@ -2,7 +2,12 @@
 // Active state uses the category's own bg/fg from the shared palette so
 // the selection feels color-coded.
 
-import { ScrollView, Text, View, Pressable, useColorScheme } from "react-native";
+import {
+  ScrollView,
+  Text,
+  View,
+  Pressable,
+} from "react-native";
 import {
   Briefcase,
   Coffee,
@@ -22,6 +27,7 @@ import {
 
 import { getCategoryPalette } from "@money-nest/shared";
 import { Tokens } from "@/lib/design";
+import { useColorScheme } from "@/hooks/useAppColorScheme";
 
 // Map common category names to icons. Falls back to a generic Tag.
 const CATEGORY_ICONS: Record<string, LucideIcon> = {

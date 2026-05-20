@@ -4,13 +4,18 @@
 // color. Returns ISO YYYY-MM-DD.
 
 import { useState } from "react";
-import { Pressable, Text, View, useColorScheme } from "react-native";
+import {
+  Pressable,
+  Text,
+  View,
+} from "react-native";
 import DateTimePicker, {
   type DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
 import { Calendar } from "lucide-react-native";
 import dayjs from "dayjs";
 import { Tokens } from "@/lib/design";
+import { useColorScheme } from "@/hooks/useAppColorScheme";
 
 interface Props {
   value: string; // YYYY-MM-DD

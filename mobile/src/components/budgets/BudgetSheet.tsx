@@ -19,7 +19,6 @@ import {
   Text,
   TextInput,
   View,
-  useColorScheme,
 } from "react-native";
 import dayjs from "dayjs";
 import { Check, Trash2 } from "lucide-react-native";
@@ -37,6 +36,7 @@ import {
 
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { SheetHeader } from "@/components/transactions/SheetHeader";
+import { useColorScheme } from "@/hooks/useAppColorScheme";
 
 interface Props {
   visible: boolean;

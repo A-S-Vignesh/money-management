@@ -4,13 +4,18 @@
 //              {category • date}
 // The amount color is emerald/rose/blue based on income/expense/transfer.
 
-import { Pressable, Text, View, useColorScheme } from "react-native";
+import {
+  Pressable,
+  Text,
+  View,
+} from "react-native";
 import { Repeat } from "lucide-react-native";
 import dayjs from "dayjs";
 
 import { getCategoryPalette } from "@money-nest/shared";
 import { getCategoryIcon } from "@/lib/categoryIcons";
 import { Money } from "./Money";
+import { useColorScheme } from "@/hooks/useAppColorScheme";
 
 interface Tx {
   _id?: string;

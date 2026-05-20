@@ -5,9 +5,14 @@
 // own dark-mode color so callers don't all have to duplicate that logic
 // (which they did before, with Tokens.text hardcoded → invisible in dark).
 
-import { Pressable, Text, View, useColorScheme } from "react-native";
+import {
+  Pressable,
+  Text,
+  View,
+} from "react-native";
 import { Bell, Menu } from "lucide-react-native";
 import { Tokens } from "@/lib/design";
+import { useColorScheme } from "@/hooks/useAppColorScheme";
 
 interface Props {
   title: string;

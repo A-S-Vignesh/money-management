@@ -9,7 +9,6 @@ import {
   Pressable,
   Text,
   View,
-  useColorScheme,
 } from "react-native";
 import dayjs from "dayjs";
 import { Edit, Trash2 } from "lucide-react-native";
@@ -27,6 +26,7 @@ import { Card } from "@/components/ui/Card";
 import { Money } from "@/components/ui/Money";
 
 import { SheetHeader } from "./SheetHeader";
+import { useColorScheme } from "@/hooks/useAppColorScheme";
 
 interface Props {
   visible: boolean;

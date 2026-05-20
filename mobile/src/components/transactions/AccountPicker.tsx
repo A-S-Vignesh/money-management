@@ -2,7 +2,12 @@
 // for single-account selection (income/expense) and inside the transfer
 // "From → To" pair.
 
-import { ScrollView, Text, View, Pressable, useColorScheme } from "react-native";
+import {
+  ScrollView,
+  Text,
+  View,
+  Pressable,
+} from "react-native";
 import {
   Banknote,
   CreditCard,
@@ -13,6 +18,7 @@ import {
 import { formatCurrency } from "@/lib/format";
 import { Tokens } from "@/lib/design";
 import { type AccountDoc } from "@/hooks/useAccounts";
+import { useColorScheme } from "@/hooks/useAppColorScheme";
 
 function iconForType(type: AccountDoc["type"]): LucideIcon {
   if (type === "cash") return Banknote;

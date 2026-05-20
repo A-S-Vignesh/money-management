@@ -5,9 +5,14 @@
 // caller from re-implementing the same Pressable + Tokens.text icon that
 // vanished in dark mode.
 
-import { Pressable, Text, View, useColorScheme } from "react-native";
+import {
+  Pressable,
+  Text,
+  View,
+} from "react-native";
 import { Menu } from "lucide-react-native";
 import { Tokens } from "@/lib/design";
+import { useColorScheme } from "@/hooks/useAppColorScheme";
 
 interface Props {
   title: string;

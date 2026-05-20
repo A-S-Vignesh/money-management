@@ -33,6 +33,7 @@ import {
 } from "@react-navigation/native";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { ThemeTransitionOverlay } from "@/components/ThemeTransitionOverlay";
 import { queryClient } from "@/lib/queryClient";
 import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
@@ -99,6 +100,10 @@ function RootLayoutInner() {
               <Stack.Screen name="(auth)" />
               <Stack.Screen name="(tabs)" />
             </Stack>
+            {/* Mounted at the top of the stack so its fade overlay sits
+                above every screen — hides the synchronous color cascade
+                triggered by the Settings page's Dark mode toggle. */}
+            <ThemeTransitionOverlay />
           </QueryClientProvider>
         </ThemeProvider>
       </SafeAreaProvider>

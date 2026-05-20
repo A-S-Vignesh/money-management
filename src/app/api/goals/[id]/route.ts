@@ -25,7 +25,7 @@ export async function GET(
     const goal = await Goal.findOne({
       _id: id,
       userId: userId,
-    });
+    }).lean();
 
     if (!goal) {
       return Response.json(
@@ -34,10 +34,15 @@ export async function GET(
       );
     }
 
+    // Enrich with `saved` (linked-account balance) so the goal detail
+    // screen can render progress without a second round-trip.
+    const account = await Account.findById(goal.accountId).select("balance").lean();
+    const enriched = { ...goal, saved: account?.balance ?? 0 };
+
     return Response.json({
       message: "Goal fetched successfully",
       type: "success",
-      data: goal,
+      data: enriched,
     });
   } catch (error) {
     console.error("GET goal error:", error);

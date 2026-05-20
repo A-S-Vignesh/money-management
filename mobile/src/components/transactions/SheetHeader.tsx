@@ -1,8 +1,13 @@
 // SheetHeader — title + close X used at the top of every bottom sheet.
 
-import { Pressable, Text, View, useColorScheme } from "react-native";
+import {
+  Pressable,
+  Text,
+  View,
+} from "react-native";
 import { X } from "lucide-react-native";
 import { Tokens } from "@/lib/design";
+import { useColorScheme } from "@/hooks/useAppColorScheme";
 
 interface Props {
   title: string;

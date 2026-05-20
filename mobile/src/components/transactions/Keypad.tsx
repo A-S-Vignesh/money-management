@@ -2,9 +2,14 @@
 // the amount string. Pure RN; no native dep. Matches the Mobile UI mock's
 // behavior: max 8 chars, single decimal, delete on '⌫'.
 
-import { Pressable, Text, View, useColorScheme } from "react-native";
+import {
+  Pressable,
+  Text,
+  View,
+} from "react-native";
 import { Delete } from "lucide-react-native";
 import { Tokens } from "@/lib/design";
+import { useColorScheme } from "@/hooks/useAppColorScheme";
 
 interface Props {
   value: string;

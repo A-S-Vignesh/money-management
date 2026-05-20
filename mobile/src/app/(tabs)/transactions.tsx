@@ -15,7 +15,6 @@ import {
   Text,
   TextInput,
   View,
-  useColorScheme,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import dayjs from "dayjs";
@@ -36,6 +35,7 @@ import { IconTile } from "@/components/ui/IconTile";
 import { ScreenHead } from "@/components/ui/ScreenHead";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { TxRow } from "@/components/ui/TxRow";
+import { useColorScheme } from "@/hooks/useAppColorScheme";
 
 type Filter = "all" | "income" | "expense" | "transfer";
 

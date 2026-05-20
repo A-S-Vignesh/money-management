@@ -35,8 +35,30 @@ export async function GET(req: Request) {
       query.priority = priorityFilter;
     }
 
-    const [goals, total] = await Promise.all([
-      Goal.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit),
+    // Enrich each goal with `saved` — the linked account's balance — so
+    // the mobile/web goals list doesn't have to make N follow-up requests.
+    const [goalsAgg, total] = await Promise.all([
+      Goal.aggregate([
+        { $match: query },
+        { $sort: { createdAt: -1 } },
+        { $skip: skip },
+        { $limit: limit },
+        {
+          $lookup: {
+            from: "accounts",
+            localField: "accountId",
+            foreignField: "_id",
+            as: "_account",
+            pipeline: [{ $project: { balance: 1 } }],
+          },
+        },
+        {
+          $addFields: {
+            saved: { $ifNull: [{ $arrayElemAt: ["$_account.balance", 0] }, 0] },
+          },
+        },
+        { $project: { _account: 0 } },
+      ]),
       Goal.countDocuments(query),
     ]);
 
@@ -44,7 +66,7 @@ export async function GET(req: Request) {
       message: "Goals fetched successfully",
       type: "success",
       success: true,
-      data: goals,
+      data: goalsAgg,
       pagination: {
         page,
         limit,

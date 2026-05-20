@@ -1,29 +1,40 @@
 import { z } from "zod";
 
-// Goal categories
+// Goal categories — match the chip set in the Mobile UI mock so the same
+// labels round-trip between web and mobile. Order matters: the picker
+// renders chips in this order.
 export const goalCategories = [
-  "Emergency Fund",
-  "Vacation",
-  "New Car",
-  "Home Purchase",
+  "Emergency",
+  "Travel",
+  "House",
+  "Vehicle",
+  "Gadget",
+  "Gift",
   "Education",
-  "Wedding",
   "Other",
 ] as const;
 
 // Priority levels
 export const goalPriorities = ["High", "Medium", "Low"] as const;
 
-// Goal colors
+// Goal colors. Hex values shared with the mobile AccountSheet's CARD_COLORS
+// so the same picker palette works across goals and accounts.
 export const goalColors = [
-  "bg-blue-500",
-  "bg-green-500",
-  "bg-amber-500",
-  "bg-purple-500",
-  "bg-red-500",
-  "bg-teal-500",
-  "bg-pink-500",
+  "#6366f1", // indigo
+  "#10b981", // emerald
+  "#f43f5e", // rose
+  "#f59e0b", // amber
+  "#14b8a6", // teal
+  "#a855f7", // purple
+  "#ec4899", // pink
+  "#3b82f6", // blue
 ] as const;
+
+// Accept any well-formed hex string. We don't restrict to the curated
+// palette so older docs with custom colors keep validating.
+const hexColor = z
+  .string()
+  .regex(/^#([0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/, "Invalid color");
 
 // Schema for creating a new goal
 export const createGoalSchema = z.object({
@@ -38,13 +49,11 @@ export const createGoalSchema = z.object({
   category: z.enum(goalCategories, {
     message: "Please select a valid category",
   }),
-  priority: z.enum(goalPriorities, {
-    message: "Please select a valid priority",
-  }),
+  priority: z
+    .enum(goalPriorities, { message: "Please select a valid priority" })
+    .default("Medium"),
   deadline: z.string().min(1, "Deadline is required"),
-  color: z.enum(goalColors, {
-    message: "Please select a color",
-  }),
+  color: hexColor,
 });
 
 // Schema for updating a goal (all fields optional)

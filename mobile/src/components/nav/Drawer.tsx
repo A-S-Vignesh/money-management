@@ -12,7 +12,6 @@ import {
   ScrollView,
   Text,
   View,
-  useColorScheme,
 } from "react-native";
 import Animated, {
   Easing,
@@ -21,6 +20,7 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
+import { Image as ExpoImage } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { usePathname, useRouter } from "expo-router";
 import {
@@ -45,6 +45,7 @@ import { useAuth } from "@/lib/auth";
 import { useDrawer } from "@/lib/stores";
 import { Tokens } from "@/lib/design";
 import { useAccounts } from "@/hooks/useAccounts";
+import { useColorScheme } from "@/hooks/useAppColorScheme";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 // Mock uses 78% width.
@@ -118,7 +119,7 @@ export function Drawer() {
       badge: accountsCount,
     },
     { label: "Investments", Icon: TrendingUp, href: "/(tabs)/profile" },
-    { label: "Goals", Icon: Target, href: "/(tabs)/profile" },
+    { label: "Goals", Icon: Target, href: "/(tabs)/goals" },
   ];
   const activity: NavItem[] = [
     { label: "Transactions", Icon: List, href: "/(tabs)/transactions" },
@@ -128,7 +129,7 @@ export function Drawer() {
   ];
   const account: NavItem[] = [
     { label: "Profile", Icon: User, href: "/(tabs)/profile" },
-    { label: "Settings", Icon: Settings, href: "/(tabs)/profile" },
+    { label: "Settings", Icon: Settings, href: "/(tabs)/settings" },
     { label: "Help & Support", Icon: HelpCircle, href: "/(tabs)/profile" },
   ];
 
@@ -291,28 +292,43 @@ export function Drawer() {
               backgroundColor: "rgba(255,255,255,0.12)",
             }}
           >
-            <View
-              style={{
-                width: 44,
-                height: 44,
-                borderRadius: 99,
-                backgroundColor: "rgba(255,255,255,0.22)",
-                alignItems: "center",
-                justifyContent: "center",
-                marginRight: 12,
-              }}
-            >
-              <Text
+            {/* Google OAuth photo when present, initials chip as fallback. */}
+            {user?.image ? (
+              <ExpoImage
+                source={{ uri: user.image }}
                 style={{
-                  color: "#fff",
-                  fontSize: 14,
-                  fontWeight: "700",
-                  letterSpacing: -0.4,
+                  width: 44,
+                  height: 44,
+                  borderRadius: 99,
+                  marginRight: 12,
+                }}
+                contentFit="cover"
+                transition={120}
+              />
+            ) : (
+              <View
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: 99,
+                  backgroundColor: "rgba(255,255,255,0.22)",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginRight: 12,
                 }}
               >
-                {initials || "U"}
-              </Text>
-            </View>
+                <Text
+                  style={{
+                    color: "#fff",
+                    fontSize: 14,
+                    fontWeight: "700",
+                    letterSpacing: -0.4,
+                  }}
+                >
+                  {initials || "U"}
+                </Text>
+              </View>
+            )}
             <View style={{ flex: 1, minWidth: 0 }}>
               <Text
                 numberOfLines={1}

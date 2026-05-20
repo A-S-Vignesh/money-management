@@ -10,7 +10,6 @@ import {
   ScrollView,
   Text,
   View,
-  useColorScheme,
 } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -32,6 +31,7 @@ import { Progress } from "@/components/ui/Progress";
 import { ScreenHead } from "@/components/ui/ScreenHead";
 import { Section } from "@/components/ui/Section";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { useColorScheme } from "@/hooks/useAppColorScheme";
 
 type Period = "1M" | "3M" | "6M" | "1Y" | "ALL";
 

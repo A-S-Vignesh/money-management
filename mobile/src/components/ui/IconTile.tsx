@@ -3,9 +3,13 @@
 // Passes the resolved foreground hex to the icon component so the SVG stroke
 // picks up the tone automatically.
 
-import { useColorScheme, View, type ViewStyle } from "react-native";
+import {
+  View,
+  type ViewStyle,
+} from "react-native";
 import { type LucideIcon } from "lucide-react-native";
 import { type Tone, tonePalette } from "@/lib/design";
+import { useColorScheme } from "@/hooks/useAppColorScheme";
 
 interface Props {
   Icon: LucideIcon;

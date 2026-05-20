@@ -16,7 +16,6 @@ import {
   Text,
   TextInput,
   View,
-  useColorScheme,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import {
@@ -39,6 +38,7 @@ import {
 
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { SheetHeader } from "@/components/transactions/SheetHeader";
+import { useColorScheme } from "@/hooks/useAppColorScheme";
 
 interface Props {
   visible: boolean;

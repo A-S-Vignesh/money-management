@@ -10,7 +10,6 @@ import {
   ScrollView,
   Text,
   View,
-  useColorScheme,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
@@ -33,6 +32,7 @@ import { Card } from "@/components/ui/Card";
 import { Money } from "@/components/ui/Money";
 import { ScreenHead } from "@/components/ui/ScreenHead";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { useColorScheme } from "@/hooks/useAppColorScheme";
 
 // Deterministic fallback color so an account without a `color` field still
 // gets something recognisable — same color across reloads, but persists to
