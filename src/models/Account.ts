@@ -14,6 +14,10 @@ export interface IAccount extends Omit<Document, "_id"> {
   isDeleted?: boolean;
   deletedAt?: Date | null;
   type: "bank" | "cash" | "credit" | "investment" | "system" | "goal" | "other";
+  /** User-chosen card color for the accounts page. One of the brand-tinted
+   *  hex strings the mobile/web UI offers (see CARD_COLORS in the picker).
+   *  Optional — falls back to a deterministic color picked from accountId. */
+  color?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -51,6 +55,11 @@ const AccountSchema = new Schema<IAccount>(
       type: String,
       enum: ["bank", "cash", "credit", "investment", "system", "goal", "other"],
       required: true,
+    },
+    color: {
+      type: String,
+      // Validated client-side / by Zod — the model just stores whatever
+      // hex the picker emits. Optional; UI falls back when missing.
     },
   },
   {

@@ -11,6 +11,14 @@ export const accountTypes = [
   "other",
 ] as const;
 
+// Accept any 3/4/6/8-digit hex with leading #. The UI picker constrains
+// users to a small palette, but we don't enforce that here — the model is
+// happy to store any valid hex.
+const hexColor = z
+  .string()
+  .regex(/^#([0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/, "Invalid color")
+  .optional();
+
 // Schema for creating a new account
 export const createAccountSchema = z.object({
   name: z
@@ -25,6 +33,7 @@ export const createAccountSchema = z.object({
     .number({ message: "Balance must be a number" })
     .min(0, "Balance cannot be negative")
     .default(0),
+  color: hexColor,
 });
 
 // Schema for updating an account — balance is intentionally excluded.
@@ -39,6 +48,7 @@ export const updateAccountSchema = z.object({
   type: z.enum(accountTypes, {
     message: "Please select a valid account type",
   }).optional(),
+  color: hexColor,
 });
 
 // TypeScript types inferred from schemas

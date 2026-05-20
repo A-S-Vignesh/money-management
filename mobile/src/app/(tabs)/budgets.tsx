@@ -9,7 +9,7 @@
 //      + % + remaining + colored progress bar
 //   4. Smart suggestion card — recommends bumping the worst-overspent budget
 
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   Pressable,
   RefreshControl,
@@ -19,7 +19,8 @@ import {
   useColorScheme,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { AlertTriangle, Plus, Sparkles } from "lucide-react-native";
+import { AlertTriangle, Pencil, Plus, Sparkles } from "lucide-react-native";
+import { LinearGradient } from "expo-linear-gradient";
 
 import { getCategoryPalette } from "@money-nest/shared";
 import { useBudgets, type BudgetDoc } from "@/hooks/useBudgets";
@@ -28,6 +29,7 @@ import { Tokens } from "@/lib/design";
 import { formatCurrency } from "@/lib/format";
 import { getCategoryIcon } from "@/lib/categoryIcons";
 
+import { BudgetSheet } from "@/components/budgets/BudgetSheet";
 import { Card } from "@/components/ui/Card";
 import { Money } from "@/components/ui/Money";
 import { ScreenHead } from "@/components/ui/ScreenHead";
@@ -55,6 +57,18 @@ export default function BudgetsScreen() {
   const dark = useColorScheme() === "dark";
   const openDrawer = useDrawer((s) => s.toggle);
   const { data: budgets = [], isLoading, isRefetching, refetch } = useBudgets();
+
+  // Sheet state — `editing` is null for create, a BudgetDoc for edit.
+  const [sheetVisible, setSheetVisible] = useState(false);
+  const [editing, setEditing] = useState<BudgetDoc | null>(null);
+  const openCreate = () => {
+    setEditing(null);
+    setSheetVisible(true);
+  };
+  const openEdit = (b: BudgetDoc) => {
+    setEditing(b);
+    setSheetVisible(true);
+  };
 
   const onRefresh = useCallback(() => refetch(), [refetch]);
 
@@ -119,6 +133,7 @@ export default function BudgetsScreen() {
           title="Categories"
           trailing={
             <Pressable
+              onPress={openCreate}
               hitSlop={6}
               android_ripple={{ color: dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)" }}
               style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
@@ -158,45 +173,72 @@ export default function BudgetsScreen() {
                   budget={b}
                   dark={dark}
                   last={i === budgets.length - 1}
+                  onEdit={openEdit}
                 />
               ))}
             </Card>
           )}
         </Section>
 
-        {/* Smart suggestion — only when there's an over-budget category */}
+        {/* Smart suggestion — only when there's an over-budget category.
+            Visually mirrors the mock's "Smart suggestion" card: brand-tinted
+            background, sparkles icon, single-paragraph recommendation. */}
         {!isLoading && suggestion ? (
           <View style={{ marginTop: 16 }}>
-            <Card style={{ padding: 14, flexDirection: "row", gap: 12 }} soft>
+            <View
+              style={{
+                padding: 16,
+                borderRadius: 18,
+                flexDirection: "row",
+                gap: 12,
+                backgroundColor: dark ? "#1b2447" : "#eef2ff",
+                borderWidth: 1,
+                borderColor: dark ? "#2a3868" : "#dbe1ff",
+              }}
+            >
               <View
                 style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: 10,
-                  backgroundColor: dark ? "#1e3a8a" : Tokens.brandSoft,
+                  width: 36,
+                  height: 36,
+                  borderRadius: 12,
+                  backgroundColor: dark ? "#2a3868" : "#dbe1ff",
                   alignItems: "center",
                   justifyContent: "center",
                 }}
               >
                 <Sparkles
-                  size={16}
+                  size={17}
                   color={dark ? "#bfdbfe" : Tokens.brand}
                   strokeWidth={2.2}
                 />
               </View>
               <View style={{ flex: 1 }}>
-                <Text className="text-fg dark:text-fg-dark text-[13.5px] font-semibold">
+                <Text className="text-fg dark:text-fg-dark text-[14px] font-bold">
                   Smart suggestion
                 </Text>
-                <Text className="text-fg-muted dark:text-fg-dark-muted text-[12px] mt-1" style={{ lineHeight: 17 }}>
-                  Based on your spending, increase your {suggestion.category} budget to{" "}
-                  {formatCurrency(suggestion.next)} to avoid overshooting next month.
+                <Text
+                  className="text-fg-muted dark:text-fg-dark-muted text-[12.5px] mt-1.5"
+                  style={{ lineHeight: 18 }}
+                >
+                  Based on your spending, increase your {suggestion.category}{" "}
+                  budget to{" "}
+                  <Text style={{ fontWeight: "700", color: Tokens.brand }}>
+                    {formatCurrency(suggestion.next)}
+                  </Text>{" "}
+                  to avoid overshooting next month.
                 </Text>
               </View>
-            </Card>
+            </View>
           </View>
         ) : null}
       </ScrollView>
+
+      {/* Budget sheet — opened by + New (create) or pencil (edit). */}
+      <BudgetSheet
+        visible={sheetVisible}
+        onClose={() => setSheetVisible(false)}
+        editing={editing}
+      />
     </SafeAreaView>
   );
 }
@@ -211,24 +253,26 @@ function HeroCard({
   const { allocated, spent, overCount, pct } = totals;
   const clampedPct = Math.min(100, pct);
   const overallStatus = statusFor(spent, allocated);
-  const barColor = statusColor(overallStatus);
+  // % text follows status (green/amber/rose) — same as the mock — but the
+  // hero progress bar itself is always brand-blue per the mock.
+  const pctColor = statusColor(overallStatus);
 
   return (
-    <Card style={{ padding: 18, marginBottom: 16 }}>
+    <Card style={{ padding: 22, marginBottom: 16 }}>
       <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
         <View style={{ flex: 1 }}>
           <Text
-            className="text-fg-muted dark:text-fg-dark-muted text-[10.5px] font-bold uppercase"
-            style={{ letterSpacing: 0.5 }}
+            className="text-fg-muted dark:text-fg-dark-muted text-[11px] font-bold uppercase"
+            style={{ letterSpacing: 0.8 }}
           >
             Spent this month
           </Text>
           <Money
             value={spent}
-            className="text-fg dark:text-fg-dark text-[28px] font-bold mt-1"
-            style={{ letterSpacing: -0.8 }}
+            className="text-fg dark:text-fg-dark text-[34px] font-bold mt-2"
+            style={{ letterSpacing: -1.2 }}
           />
-          <Text className="text-fg-muted dark:text-fg-dark-muted text-[12px] mt-1">
+          <Text className="text-fg-muted dark:text-fg-dark-muted text-[12.5px] mt-1.5">
             of {formatCurrency(allocated)} budgeted
           </Text>
         </View>
@@ -236,39 +280,42 @@ function HeroCard({
           <View style={{ alignItems: "flex-end" }}>
             <Text
               style={{
-                color: barColor,
-                fontSize: 22,
-                fontWeight: "700",
+                color: pctColor,
+                fontSize: 26,
+                fontWeight: "800",
                 fontVariant: ["tabular-nums"],
                 letterSpacing: -0.4,
               }}
             >
               {pct.toFixed(0)}%
             </Text>
-            <Text className="text-fg-muted dark:text-fg-dark-muted text-[11px] mt-1">
+            <Text className="text-fg-muted dark:text-fg-dark-muted text-[11.5px] mt-1">
               used
             </Text>
           </View>
         ) : null}
       </View>
 
-      {/* Progress bar */}
+      {/* Progress bar — brand-blue regardless of status, matches mock,
+          gradient fill for the same polished finish as the per-row bars. */}
       {allocated > 0 ? (
         <View
           style={{
-            marginTop: 14,
+            marginTop: 18,
             height: 8,
             borderRadius: 99,
             backgroundColor: dark ? Tokens.bgElevDark : Tokens.bgElev,
             overflow: "hidden",
           }}
         >
-          <View
+          <LinearGradient
+            colors={[Tokens.brand3, Tokens.brand]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
             style={{
               width: `${clampedPct}%`,
               height: "100%",
               borderRadius: 99,
-              backgroundColor: barColor,
             }}
           />
         </View>
@@ -310,15 +357,21 @@ function BudgetRow({
   budget,
   dark,
   last,
+  onEdit,
 }: {
   budget: BudgetDoc;
   dark: boolean;
   last: boolean;
+  onEdit: (b: BudgetDoc) => void;
 }) {
   const palette = getCategoryPalette(budget.category);
   const Icon = getCategoryIcon(budget.category);
   const status = statusFor(budget.spent, budget.allocated);
-  const barColor = statusColor(status);
+  // Per the mock, the row's progress bar uses the CATEGORY color, not
+  // status-based green/amber/rose. The percentage text still gets the
+  // status color so over-budget rows still pop visually.
+  const pctColor = statusColor(status);
+  const barColor = palette.accent;
   const pct = budget.allocated > 0 ? (budget.spent / budget.allocated) * 100 : 0;
   const clampedPct = Math.min(100, pct);
   const remaining = budget.allocated - budget.spent;
@@ -327,7 +380,7 @@ function BudgetRow({
     <View
       style={{
         paddingHorizontal: 14,
-        paddingVertical: 14,
+        paddingVertical: 16,
         borderBottomWidth: last ? 0 : 1,
         borderBottomColor: dark ? Tokens.borderDark : Tokens.border,
       }}
@@ -372,7 +425,7 @@ function BudgetRow({
         <View style={{ alignItems: "flex-end" }}>
           <Text
             style={{
-              color: barColor,
+              color: pctColor,
               fontSize: 13,
               fontWeight: "700",
               fontVariant: ["tabular-nums"],
@@ -394,27 +447,71 @@ function BudgetRow({
               : `${formatCurrency(remaining)} left`}
           </Text>
         </View>
+
+        {/* Edit pencil — opens the BudgetSheet pre-filled in edit mode. */}
+        <Pressable
+          onPress={() => onEdit(budget)}
+          hitSlop={6}
+          android_ripple={{
+            color: dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)",
+            borderless: true,
+          }}
+          style={{
+            width: 30,
+            height: 30,
+            borderRadius: 99,
+            alignItems: "center",
+            justifyContent: "center",
+            marginLeft: 4,
+          }}
+        >
+          <Pencil
+            size={14}
+            color={dark ? Tokens.textMutedDark : Tokens.textMuted}
+            strokeWidth={2}
+          />
+        </Pressable>
       </View>
 
-      {/* Progress bar */}
+      {/* Progress bar — taller + linear-gradient fill (slightly darker on
+          the left, lighter at the leading edge) so the bar reads as a
+          polished chip instead of a flat slab, matching the mock. */}
       <View
         style={{
-          marginTop: 10,
-          height: 5,
+          marginTop: 12,
+          height: 7,
           borderRadius: 99,
           backgroundColor: dark ? Tokens.bgElevDark : Tokens.bgElev,
           overflow: "hidden",
         }}
       >
-        <View
+        <LinearGradient
+          colors={[barColor, lightenHex(barColor, 0.18)]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
           style={{
             width: `${clampedPct}%`,
             height: "100%",
             borderRadius: 99,
-            backgroundColor: barColor,
           }}
         />
       </View>
     </View>
   );
+}
+
+// Brighten a #RRGGBB hex toward white by `amount` (0–1). Used to give the
+// progress-bar fill a subtle gradient finish — the bar fades a touch
+// lighter at its leading edge, which reads as polished without needing a
+// real animation or shadow.
+function lightenHex(hex: string, amount: number): string {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex);
+  if (!m) return hex;
+  const n = parseInt(m[1], 16);
+  const r = (n >> 16) & 0xff;
+  const g = (n >> 8) & 0xff;
+  const b = n & 0xff;
+  const mix = (c: number) => Math.round(c + (255 - c) * amount);
+  const toHex = (v: number) => v.toString(16).padStart(2, "0");
+  return `#${toHex(mix(r))}${toHex(mix(g))}${toHex(mix(b))}`;
 }

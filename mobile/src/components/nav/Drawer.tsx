@@ -114,7 +114,7 @@ export function Drawer() {
     {
       label: "Accounts",
       Icon: CreditCard,
-      href: "/(tabs)/profile",
+      href: "/(tabs)/accounts",
       badge: accountsCount,
     },
     { label: "Investments", Icon: TrendingUp, href: "/(tabs)/profile" },

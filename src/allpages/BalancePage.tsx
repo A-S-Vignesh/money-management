@@ -1,7 +1,7 @@
 // allpages/BalancePage.tsx
 "use client";
 
-import { useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -101,17 +101,34 @@ interface FormErrors {
   name?: string[];
   type?: string[];
   balance?: string[];
+  color?: string[];
 }
+
+// Shared palette across web + mobile. Must match `CARD_COLORS` in the
+// mobile `AccountSheet` so colour values are identical no matter where the
+// user creates the account.
+const CARD_COLORS = [
+  "#6366f1", // indigo (default)
+  "#10b981", // emerald
+  "#f43f5e", // rose
+  "#f59e0b", // amber
+  "#14b8a6", // teal
+  "#a855f7", // purple
+];
 
 function validateAccountForm(formData: FormData): {
   success: boolean;
   data?: CreateAccountInput;
   errors?: FormErrors;
 } {
+  const rawColor = (formData.get("color") as string) || "";
   const raw = {
     name: (formData.get("name") as string) || "",
     type: (formData.get("type") as string) || "",
     balance: parseFloat(formData.get("balance") as string) || 0,
+    // Only send a colour if the user picked one — omitted keys pass Zod's
+    // optional check; an empty string would fail the hex regex.
+    ...(rawColor ? { color: rawColor } : {}),
   };
 
   const result = createAccountSchema.safeParse(raw);
@@ -197,6 +214,20 @@ export default function BalancePage() {
   const [editAccount, setEditAccount] = useState<IAccount | null>(null);
   const [formErrors, setFormErrors] = useState<FormErrors>({});
   const [accountToDelete, setAccountToDelete] = useState<string | null>(null);
+  // Selected colour for whichever modal is open — feeds the hidden
+  // `color` input that's read by validateAccountForm.
+  const [selectedColor, setSelectedColor] = useState<string>(CARD_COLORS[0]);
+
+  // Sync the colour picker with the modal that's opening: Add resets to
+  // the default; Edit pre-fills with the account's stored colour.
+  useEffect(() => {
+    if (showAddForm) setSelectedColor(CARD_COLORS[0]);
+  }, [showAddForm]);
+  useEffect(() => {
+    if (showEditForm && editAccount) {
+      setSelectedColor(editAccount.color ?? CARD_COLORS[0]);
+    }
+  }, [showEditForm, editAccount]);
 
   // ── Derived data ───────────────────────────────────
   const { totalAssets, totalLiabilities, netWorth, cashFlow } =
@@ -1163,6 +1194,13 @@ export default function BalancePage() {
                     </p>
                   )}
                 </div>
+
+                {/* Card colour picker — matches the mobile AccountSheet. */}
+                <ColorPickerField
+                  selected={selectedColor}
+                  onSelect={setSelectedColor}
+                />
+
                 <div className="mt-8 flex gap-3">
                   <button
                     type="button"
@@ -1277,6 +1315,13 @@ export default function BalancePage() {
                       Balance is calculated from your transactions and cannot be edited directly.
                     </p>
                   </div>
+
+                {/* Card colour picker — matches the mobile AccountSheet. */}
+                <ColorPickerField
+                  selected={selectedColor}
+                  onSelect={setSelectedColor}
+                />
+
                 <div className="mt-8 flex gap-3">
                   <button
                     type="button"
@@ -1318,4 +1363,66 @@ export default function BalancePage() {
       />
     </div>
   );
+}
+
+// ─── Card colour picker ───────────────────────────────────────────────────
+// Six brand-tinted swatches identical to the mobile `AccountSheet`. Renders
+// the swatches as buttons and a hidden `<input name="color">` so the
+// existing FormData-based submit path picks the value up without any
+// custom plumbing in handleAddAccount / handleEditAccount.
+function ColorPickerField({
+  selected,
+  onSelect,
+}: {
+  selected: string;
+  onSelect: (color: string) => void;
+}) {
+  return (
+    <div className="mt-4">
+      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        Card Colour
+      </label>
+      <div className="flex flex-wrap gap-3">
+        {CARD_COLORS.map((c) => {
+          const active = c === selected;
+          return (
+            <button
+              key={c}
+              type="button"
+              onClick={() => onSelect(c)}
+              aria-label={`Pick ${c}`}
+              className={`w-10 h-10 rounded-xl transition-transform ${
+                active
+                  ? "ring-2 ring-offset-2 ring-offset-white dark:ring-offset-gray-900 ring-gray-900 dark:ring-gray-100 scale-105"
+                  : "hover:scale-105"
+              }`}
+              style={{
+                background: `linear-gradient(135deg, ${c} 0%, ${lighten(c, 0.22)} 100%)`,
+                boxShadow: active
+                  ? `0 6px 18px -6px ${c}`
+                  : "0 1px 2px rgba(0,0,0,0.08)",
+              }}
+            />
+          );
+        })}
+      </div>
+      <input type="hidden" name="color" value={selected} readOnly />
+    </div>
+  );
+}
+
+// Brighten a #RRGGBB hex toward white by `amount` (0–1). Mirrors the
+// `lightenHex` helper used in the mobile `AccountSheet` so the gradient on
+// each swatch matches the colour the mobile preview card uses for the
+// same hex value.
+function lighten(hex: string, amount: number): string {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex);
+  if (!m) return hex;
+  const n = parseInt(m[1], 16);
+  const r = (n >> 16) & 0xff;
+  const g = (n >> 8) & 0xff;
+  const b = n & 0xff;
+  const mix = (c: number) => Math.round(c + (255 - c) * amount);
+  const toHex = (v: number) => v.toString(16).padStart(2, "0");
+  return `#${toHex(mix(r))}${toHex(mix(g))}${toHex(mix(b))}`;
 }

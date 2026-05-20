@@ -9,6 +9,8 @@ export interface IAccount extends Omit<Document, "_id"> {
   balance: number;
   isSystem?: boolean;
   type: "bank" | "cash" | "credit" | "investment" | "system" | "goal" | "other";
+  /** User-chosen card colour (hex). Optional — UI falls back when missing. */
+  color?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -19,6 +21,7 @@ export interface NewAccount {
   balance?: number; // Optional, defaults to 0
   isSystem?: boolean; // Optional, defaults to false
   type: "bank" | "cash" | "credit" | "investment" | "system" | "goal" | "other";
+  color?: string;
 }
 
 // ✅ For updating an account (frontend → backend)

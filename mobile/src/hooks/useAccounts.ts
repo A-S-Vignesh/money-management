@@ -1,10 +1,14 @@
 // hooks/useAccounts.ts
-// Lightweight wrapper around /api/accounts. The account picker on the
-// AddTransaction sheet uses this, so we always fetch with includeGoals=true
-// (which lets users move money into a goal-linked account).
+// Reads /api/accounts and provides create/update/delete mutations for the
+// Accounts page. Mutations invalidate the dashboard so the total-balance
+// hero stays in sync.
 
-import { useQuery } from "@tanstack/react-query";
-import { api } from "@/lib/api";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+import { api, ApiError } from "@/lib/api";
 
 export interface AccountDoc {
   _id: string;
@@ -12,10 +16,28 @@ export interface AccountDoc {
   name: string;
   type: "bank" | "cash" | "credit" | "investment" | "system" | "goal" | "other";
   balance: number;
+  /** Hex card color picked in the AccountSheet. Optional — UI falls back
+   *  to a deterministic color when missing. */
+  color?: string;
   isSystem?: boolean;
   isDeleted?: boolean;
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface CreateAccountInput {
+  name: string;
+  type: AccountDoc["type"];
+  balance: number;
+  color?: string;
+}
+
+// Update doesn't accept balance — balance is derived from transactions and
+// can't be edited directly. Mirrors the backend schema.
+export interface UpdateAccountInput {
+  name?: string;
+  type?: AccountDoc["type"];
+  color?: string;
 }
 
 export function useAccounts(params: { includeGoals?: boolean } = {}) {
@@ -29,5 +51,39 @@ export function useAccounts(params: { includeGoals?: boolean } = {}) {
       });
       return envelope.data;
     },
+  });
+}
+
+// ── Mutations ────────────────────────────────────────────────────────────
+
+function invalidate(qc: ReturnType<typeof useQueryClient>) {
+  qc.invalidateQueries({ queryKey: ["accounts"] });
+  qc.invalidateQueries({ queryKey: ["dashboard"] });
+  qc.invalidateQueries({ queryKey: ["transactions"] });
+}
+
+export function useAddAccount() {
+  const qc = useQueryClient();
+  return useMutation<AccountDoc, ApiError, CreateAccountInput>({
+    mutationFn: (body) =>
+      api<AccountDoc>("/api/accounts", { method: "POST", body }),
+    onSuccess: () => invalidate(qc),
+  });
+}
+
+export function useUpdateAccount(id: string) {
+  const qc = useQueryClient();
+  return useMutation<AccountDoc, ApiError, UpdateAccountInput>({
+    mutationFn: (body) =>
+      api<AccountDoc>(`/api/accounts/${id}`, { method: "PUT", body }),
+    onSuccess: () => invalidate(qc),
+  });
+}
+
+export function useDeleteAccount() {
+  const qc = useQueryClient();
+  return useMutation<unknown, ApiError, string>({
+    mutationFn: (id) => api(`/api/accounts/${id}`, { method: "DELETE" }),
+    onSuccess: () => invalidate(qc),
   });
 }

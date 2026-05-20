@@ -3,8 +3,12 @@
 // budget enriched with its `spent` total computed in a single $facet
 // aggregation. So no client-side joining of transactions is needed.
 
-import { useQuery } from "@tanstack/react-query";
-import { api } from "@/lib/api";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+import { api, ApiError } from "@/lib/api";
 
 export interface BudgetDoc {
   _id: string;
@@ -22,6 +26,17 @@ export interface BudgetDoc {
   updatedAt?: string;
 }
 
+export interface CreateBudgetInput {
+  name: string;
+  category: string;
+  allocated: number;
+  period: "Weekly" | "Monthly" | "Quarterly" | "Yearly";
+  startDate: string; // ISO
+  endDate: string; // ISO
+}
+
+export type UpdateBudgetInput = Partial<CreateBudgetInput>;
+
 export function useBudgets(period: string = "All") {
   return useQuery<BudgetDoc[]>({
     queryKey: ["budgets", { period }],
@@ -32,5 +47,38 @@ export function useBudgets(period: string = "All") {
       });
       return envelope.data;
     },
+  });
+}
+
+// ── Mutations ────────────────────────────────────────────────────────────
+
+function invalidate(qc: ReturnType<typeof useQueryClient>) {
+  qc.invalidateQueries({ queryKey: ["budgets"] });
+  qc.invalidateQueries({ queryKey: ["dashboard"] }); // dashboard shows active budget count
+}
+
+export function useAddBudget() {
+  const qc = useQueryClient();
+  return useMutation<BudgetDoc, ApiError, CreateBudgetInput>({
+    mutationFn: (body) =>
+      api<BudgetDoc>("/api/budgets", { method: "POST", body }),
+    onSuccess: () => invalidate(qc),
+  });
+}
+
+export function useUpdateBudget(id: string) {
+  const qc = useQueryClient();
+  return useMutation<BudgetDoc, ApiError, UpdateBudgetInput>({
+    mutationFn: (body) =>
+      api<BudgetDoc>(`/api/budgets/${id}`, { method: "PUT", body }),
+    onSuccess: () => invalidate(qc),
+  });
+}
+
+export function useDeleteBudget() {
+  const qc = useQueryClient();
+  return useMutation<unknown, ApiError, string>({
+    mutationFn: (id) => api(`/api/budgets/${id}`, { method: "DELETE" }),
+    onSuccess: () => invalidate(qc),
   });
 }
