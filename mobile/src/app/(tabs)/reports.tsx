@@ -1,15 +1,10 @@
 // app/(tabs)/reports.tsx — Reports
-//
-// Mirrors GET /api/reports payload. UI:
-//   1. ScreenHeader + animated PeriodSelector (W/M/Q/Y)
-//   2. Hero block — net for the period, savings rate, delta vs prev period
-//   3. Income vs Expense BarChart
-//   4. Expense donut (top categories with percentages)
-//   5. Top spenders list (top 5 expense transactions)
+// 1:1 port of the Mobile UI mock with blue brand accent. The period chips
+// select an ISO date window which we send to /api/reports.
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
-  ActivityIndicator,
+  Dimensions,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -18,18 +13,28 @@ import {
 } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { BarChart, PieChart } from "react-native-gifted-charts";
+import dayjs from "dayjs";
+import { Download, Menu } from "lucide-react-native";
 
 import { api } from "@/lib/api";
+import { Tokens } from "@/lib/design";
 import { formatCurrency } from "@/lib/format";
 import { getCategoryPalette } from "@money-nest/shared";
-import { SectionCard } from "@/components/ui/SectionCard";
+
+import { Card } from "@/components/ui/Card";
+import { Chip } from "@/components/ui/Chip";
+import { DualBars } from "@/components/ui/DualBars";
+import { LineChart } from "@/components/ui/LineChart";
+import { Money } from "@/components/ui/Money";
+import { Progress } from "@/components/ui/Progress";
+import { ScreenHead } from "@/components/ui/ScreenHead";
+import { Section } from "@/components/ui/Section";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { ScreenHeader } from "@/components/ui/ScreenHeader";
-import { PeriodSelector, type Period } from "@/components/ui/PeriodSelector";
+
+type Period = "1M" | "3M" | "6M" | "1Y" | "ALL";
 
 interface ReportsPayload {
-  window: { startDate: string; endDate: string; bucketUnit: "day" | "week" | "month" };
+  window: { startDate: string; endDate: string; bucketUnit: string };
   summary: {
     income: number;
     expense: number;
@@ -53,399 +58,392 @@ interface ReportsPayload {
     net: number;
   }>;
   byCategory: {
-    expense: Array<{ category: string; amount: number; percentage: number }>;
+    expense: Array<{
+      category: string;
+      amount: number;
+      count: number;
+      percentage: number;
+    }>;
   };
-  topExpenses: Array<{
-    _id: string;
-    description: string;
-    category: string;
-    amount: number;
-    date: string;
-  }>;
 }
 
-function periodWindow(period: Period): { start: string; end: string } {
-  const end = new Date();
-  const start = new Date(end);
-  if (period === "W") start.setDate(end.getDate() - 6);
-  else if (period === "M") start.setDate(end.getDate() - 29);
-  else if (period === "Q") start.setDate(end.getDate() - 89);
-  else start.setDate(end.getDate() - 364);
-  const fmt = (d: Date) => d.toISOString().slice(0, 10);
-  return { start: fmt(start), end: fmt(end) };
+function periodToRange(p: Period): { start: string; end: string } {
+  const today = dayjs();
+  const end = today.format("YYYY-MM-DD");
+  const start = (() => {
+    switch (p) {
+      case "1M":
+        return today.subtract(1, "month").format("YYYY-MM-DD");
+      case "3M":
+        return today.subtract(3, "month").format("YYYY-MM-DD");
+      case "6M":
+        return today.subtract(6, "month").format("YYYY-MM-DD");
+      case "1Y":
+        return today.subtract(1, "year").format("YYYY-MM-DD");
+      case "ALL":
+        return "2000-01-01";
+    }
+  })();
+  return { start, end };
 }
 
 export default function ReportsScreen() {
-  const [period, setPeriod] = useState<Period>("M");
-  const { start, end } = useMemo(() => periodWindow(period), [period]);
+  const [period, setPeriod] = useState<Period>("6M");
+  const screenWidth = Dimensions.get("window").width;
+  const chartWidth = screenWidth - 32 - 36; // page padding + card padding
 
-  const { data, isLoading, isRefetching, refetch, error } = useQuery<ReportsPayload>({
-    queryKey: ["reports", period, start, end],
+  const range = useMemo(() => periodToRange(period), [period]);
+
+  const { data, isLoading, isRefetching, refetch } = useQuery<ReportsPayload>({
+    queryKey: ["reports", period],
     queryFn: () =>
       api<ReportsPayload>("/api/reports", {
-        query: { startDate: start, endDate: end, compare: 1 },
+        query: { startDate: range.start, endDate: range.end, compare: 1 },
       }),
   });
 
-  // Compress timeSeries when there are many buckets so labels stay readable.
-  const barData = useMemo(() => {
-    const rows = data?.timeSeries ?? [];
-    if (rows.length === 0) return [];
-    // For W/M show every bucket; for Q/Y show every other / every third.
-    const stride =
-      period === "Y" ? Math.max(1, Math.floor(rows.length / 6)) :
-      period === "Q" ? Math.max(1, Math.floor(rows.length / 8)) :
-      1;
-    return rows.map((r, i) => {
-      const showLabel = i % stride === 0;
-      // Stacked-bar input: each bucket → two entries (income + expense) with
-      // spacing only between buckets, not within.
-      return [
-        {
-          value: r.income,
-          frontColor: "#10b981",
-          gradientColor: "#34d399",
-          showGradient: true,
-          spacing: 2,
-          label: showLabel ? r.label : undefined,
-          labelTextStyle: {
-            color: "#6b7280",
-            fontSize: 10,
-            fontWeight: "600" as const,
-          },
-        },
-        {
-          value: r.expense,
-          frontColor: "#f43f5e",
-          gradientColor: "#fb7185",
-          showGradient: true,
-          spacing: 18,
-        },
-      ];
-    }).flat();
-  }, [data?.timeSeries, period]);
+  const onRefresh = useCallback(() => refetch(), [refetch]);
+  const summary = data?.summary;
 
-  const maxBar = useMemo(() => {
-    let m = 0;
-    for (const r of data?.timeSeries ?? []) {
-      m = Math.max(m, r.income, r.expense);
+  // ── Build dual-bar series from timeSeries ─────────────────────
+  const barSeries = useMemo(() => {
+    const ts = data?.timeSeries ?? [];
+    if (ts.length === 0) return [];
+    // Cap to 8 bars for legibility — sample evenly from the series.
+    const target = 8;
+    if (ts.length <= target) {
+      return ts.map((r) => ({ label: r.label, inc: r.income, exp: r.expense }));
     }
-    // Round to a clean upper bound.
-    if (m === 0) return 1000;
-    const order = Math.pow(10, Math.floor(Math.log10(m)));
-    return Math.ceil(m / order) * order;
+    const stride = ts.length / target;
+    return Array.from({ length: target }, (_, i) => {
+      const r = ts[Math.floor(i * stride)];
+      return { label: r.label, inc: r.income, exp: r.expense };
+    });
   }, [data?.timeSeries]);
 
-  const donut = useMemo(() => {
-    const rows = (data?.byCategory?.expense ?? []).slice(0, 6);
-    return rows.map((r) => {
-      const palette = getCategoryPalette(r.category);
-      return {
-        value: r.amount,
-        color: palette.accent,
-        label: r.category,
-        percent: r.percentage,
-      };
+  // ── Cumulative net worth trend for the line chart ─────────────
+  const trendValues = useMemo(() => {
+    const ts = data?.timeSeries ?? [];
+    if (ts.length === 0) return [];
+    let net = 0;
+    return ts.map((r) => {
+      net += r.income - r.expense;
+      return net;
     });
-  }, [data?.byCategory]);
+  }, [data?.timeSeries]);
 
-  const summary = data?.summary;
-  const deltas = data?.comparison?.deltas;
+  const trendLabels = useMemo(() => {
+    const ts = data?.timeSeries ?? [];
+    if (ts.length < 2) return undefined;
+    const picks = [0, Math.floor(ts.length * 0.25), Math.floor(ts.length * 0.5), Math.floor(ts.length * 0.75), ts.length - 1];
+    return picks.map((i) => ts[i]?.label ?? "");
+  }, [data?.timeSeries]);
+
+  const breakdown = data?.byCategory?.expense ?? [];
 
   return (
     <SafeAreaView
-      className="flex-1 bg-gray-50 dark:bg-neutral-950"
       edges={["top"]}
+      className="flex-1 bg-surface-muted dark:bg-surface-dark-elev"
     >
       <ScrollView
-        contentContainerStyle={{ padding: 16, paddingBottom: 48 }}
-        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
         refreshControl={
           <RefreshControl
             refreshing={isRefetching}
-            onRefresh={() => refetch()}
-            tintColor="#6366f1"
+            onRefresh={onRefresh}
+            tintColor={Tokens.brand}
           />
         }
+        showsVerticalScrollIndicator={false}
       >
-        <ScreenHeader
+        <ScreenHead
           title="Reports"
-          subtitle="Money in, money out"
+          subtitle="Insights and trends"
+          leading={
+            <Pressable
+              className="bg-surface dark:bg-surface-dark border border-edge dark:border-edge-dark"
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 14,
+                alignItems: "center",
+                justifyContent: "center",
+                marginTop: 2,
+              }}
+            >
+              <Menu size={20} color={Tokens.text} strokeWidth={2} />
+            </Pressable>
+          }
+          trailing={
+            <Pressable
+              className="bg-surface dark:bg-surface-dark border border-edge dark:border-edge-dark"
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 12,
+                alignItems: "center",
+                justifyContent: "center",
+                marginTop: 6,
+              }}
+            >
+              <Download size={17} color={Tokens.text} strokeWidth={2} />
+            </Pressable>
+          }
         />
 
-        <View className="mb-4">
-          <PeriodSelector value={period} onChange={setPeriod} />
+        {/* Period chips */}
+        <View style={{ flexDirection: "row", gap: 8, marginBottom: 14 }}>
+          {(["1M", "3M", "6M", "1Y", "ALL"] as Period[]).map((p) => (
+            <Chip
+              key={p}
+              label={p === "ALL" ? "All" : p}
+              active={period === p}
+              onPress={() => setPeriod(p)}
+            />
+          ))}
         </View>
 
-        {/* Hero summary */}
-        <SectionCard density="spacious" className="mb-4">
-          <Text className="text-[11px] uppercase tracking-wider font-semibold text-gray-500 dark:text-neutral-400 mb-1">
-            Net for period
-          </Text>
-          {isLoading ? (
-            <Skeleton width={180} height={36} />
-          ) : (
-            <Text
-              className={`text-3xl font-bold ${
-                (summary?.net ?? 0) >= 0
-                  ? "text-gray-900 dark:text-neutral-50"
-                  : "text-rose-600 dark:text-rose-300"
-              }`}
-              style={{ letterSpacing: -0.6 }}
-            >
-              {formatCurrency(summary?.net ?? 0)}
-            </Text>
-          )}
-
-          <View className="flex-row mt-4 gap-2">
-            <DeltaPill
-              label="Income"
-              delta={deltas?.income ?? null}
-              positiveIsGood
-            />
-            <DeltaPill
-              label="Expense"
-              delta={deltas?.expense ?? null}
-              positiveIsGood={false}
-            />
-            <View className="flex-1 px-3 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/40">
-              <Text className="text-[10px] uppercase tracking-wider font-semibold text-indigo-700 dark:text-indigo-300 mb-0.5">
-                Saved
-              </Text>
-              <Text className="text-sm font-bold text-indigo-700 dark:text-indigo-300">
-                {summary?.savingsRate != null ? `${summary.savingsRate}%` : "—"}
-              </Text>
-            </View>
-          </View>
-        </SectionCard>
-
         {/* Income vs Expense */}
-        <SectionCard className="mb-4">
-          <View className="flex-row items-center justify-between mb-1">
-            <Text className="text-base font-semibold text-gray-900 dark:text-neutral-100">
-              Income vs Expense
-            </Text>
-          </View>
-          <View className="flex-row items-center mb-4 gap-4">
-            <View className="flex-row items-center">
-              <View className="w-2.5 h-2.5 rounded-full bg-emerald-500 mr-1.5" />
-              <Text className="text-xs text-gray-500 dark:text-neutral-400">Income</Text>
+        <Card style={{ padding: 18, marginBottom: 16 }}>
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              marginBottom: 12,
+            }}
+          >
+            <View>
+              <Text className="text-fg dark:text-fg-dark text-[16px] font-semibold tracking-tight">
+                Income vs Expense
+              </Text>
+              <Text className="text-fg-muted dark:text-fg-dark-muted text-[11.5px] mt-0.5">
+                {period === "ALL" ? "All time" : `Last ${period.toLowerCase()}`}
+              </Text>
             </View>
-            <View className="flex-row items-center">
-              <View className="w-2.5 h-2.5 rounded-full bg-rose-500 mr-1.5" />
-              <Text className="text-xs text-gray-500 dark:text-neutral-400">Expense</Text>
+            <View style={{ flexDirection: "row", gap: 10, marginTop: 2 }}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
+                <View
+                  style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: 99,
+                    backgroundColor: Tokens.emerald,
+                  }}
+                />
+                <Text className="text-fg dark:text-fg-dark text-[11px] font-semibold">
+                  In
+                </Text>
+              </View>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
+                <View
+                  style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: 99,
+                    backgroundColor: Tokens.rose,
+                  }}
+                />
+                <Text className="text-fg dark:text-fg-dark text-[11px] font-semibold">
+                  Out
+                </Text>
+              </View>
             </View>
           </View>
-
           {isLoading ? (
-            <View className="h-44 items-center justify-center">
-              <ActivityIndicator color="#6366f1" />
-            </View>
-          ) : barData.length === 0 ? (
-            <Text className="text-sm text-gray-500 dark:text-neutral-400 text-center py-12">
-              No data for this period.
+            <Skeleton width="100%" height={160} />
+          ) : barSeries.length === 0 ? (
+            <Text className="text-fg-muted dark:text-fg-dark-muted text-[13px] text-center py-12">
+              No activity in this period.
             </Text>
           ) : (
-            <BarChart
-              data={barData}
-              maxValue={maxBar}
-              noOfSections={4}
-              barWidth={10}
-              barBorderRadius={4}
-              yAxisTextStyle={{ color: "#9ca3af", fontSize: 10 }}
-              xAxisLabelTextStyle={{ color: "#6b7280", fontSize: 10 }}
-              hideRules
-              yAxisColor="transparent"
-              xAxisColor="transparent"
-              spacing={2}
-              initialSpacing={8}
-              endSpacing={8}
-              height={160}
-              isAnimated
-              animationDuration={500}
+            <DualBars data={barSeries} height={150} />
+          )}
+          <View
+            className="border-t border-edge dark:border-edge-dark"
+            style={{
+              flexDirection: "row",
+              gap: 10,
+              marginTop: 14,
+              paddingTop: 14,
+            }}
+          >
+            <SummaryStat
+              label="Total in"
+              value={formatCurrency(summary?.income ?? 0, { compact: true })}
+              color="emerald"
+            />
+            <SummaryStat
+              label="Total out"
+              value={formatCurrency(summary?.expense ?? 0, { compact: true })}
+              color="rose"
+            />
+            <SummaryStat
+              label="Avg saved"
+              value={`${summary?.savingsRate ?? 0}%`}
+              color="brand"
+            />
+          </View>
+        </Card>
+
+        {/* Net worth trend (line) */}
+        <Card style={{ padding: 18, marginBottom: 16 }}>
+          <View style={{ marginBottom: 8 }}>
+            <Text className="text-fg dark:text-fg-dark text-[16px] font-semibold tracking-tight">
+              Net worth trend
+            </Text>
+            <Text className="text-fg-muted dark:text-fg-dark-muted text-[11.5px] mt-0.5">
+              Cumulative net flow
+            </Text>
+          </View>
+          {isLoading ? (
+            <Skeleton width="100%" height={140} />
+          ) : trendValues.length < 2 ? (
+            <Text className="text-fg-muted dark:text-fg-dark-muted text-[13px] text-center py-8">
+              Need at least two data points to draw a trend.
+            </Text>
+          ) : (
+            <LineChart
+              values={trendValues}
+              width={chartWidth}
+              height={140}
+              stroke={Tokens.brand}
+              fill={Tokens.brand}
+              labels={trendLabels}
             />
           )}
-        </SectionCard>
+        </Card>
 
-        {/* Category breakdown */}
-        <SectionCard className="mb-4">
-          <Text className="text-base font-semibold text-gray-900 dark:text-neutral-100 mb-1">
-            Where money went
-          </Text>
-          <Text className="text-xs text-gray-500 dark:text-neutral-400 mb-4">
-            Expense by category
-          </Text>
-
-          {isLoading ? (
-            <View className="h-44 items-center justify-center">
-              <ActivityIndicator color="#6366f1" />
-            </View>
-          ) : donut.length === 0 ? (
-            <Text className="text-sm text-gray-500 dark:text-neutral-400 text-center py-8">
-              No expenses recorded.
-            </Text>
-          ) : (
-            <View className="flex-row items-center">
-              <PieChart
-                data={donut}
-                donut
-                radius={70}
-                innerRadius={48}
-                innerCircleColor="#ffffff"
-                innerCircleBorderWidth={0}
-                centerLabelComponent={() => (
-                  <View className="items-center">
-                    <Text className="text-[10px] text-gray-500 dark:text-neutral-400 font-semibold uppercase tracking-wider">
-                      Total
-                    </Text>
-                    <Text
-                      className="text-sm font-bold text-gray-900 dark:text-neutral-100"
-                      style={{ letterSpacing: -0.2 }}
-                    >
-                      {formatCurrency(summary?.expense ?? 0)}
-                    </Text>
-                  </View>
-                )}
-              />
-              <View className="flex-1 ml-5">
-                {donut.slice(0, 5).map((slice) => (
+        {/* Where it goes */}
+        <Section title="Where it goes">
+          <Card style={{ paddingHorizontal: 16, paddingVertical: 6 }}>
+            {isLoading ? (
+              <View style={{ gap: 14, paddingVertical: 12 }}>
+                {[1, 2, 3, 4].map((i) => (
                   <View
-                    key={slice.label}
-                    className="flex-row items-center justify-between mb-2 last:mb-0"
+                    key={i}
+                    style={{ flexDirection: "row", alignItems: "center", gap: 12 }}
                   >
-                    <View className="flex-row items-center flex-1 min-w-0">
-                      <View
-                        className="w-2.5 h-2.5 rounded-full mr-2"
-                        style={{ backgroundColor: slice.color }}
-                      />
-                      <Text
-                        className="text-xs font-medium text-gray-700 dark:text-neutral-300 flex-1"
-                        numberOfLines={1}
-                      >
-                        {slice.label}
-                      </Text>
+                    <Skeleton width={38} height={38} radius={12} />
+                    <View style={{ flex: 1, gap: 6 }}>
+                      <Skeleton width="50%" height={13} />
+                      <Skeleton width="100%" height={4} />
                     </View>
-                    <Text className="text-xs font-semibold text-gray-500 dark:text-neutral-400 ml-2">
-                      {slice.percent}%
-                    </Text>
+                    <Skeleton width={32} height={12} />
                   </View>
                 ))}
               </View>
-            </View>
-          )}
-        </SectionCard>
-
-        {/* Top spenders */}
-        <SectionCard density="compact">
-          <Text className="text-base font-semibold text-gray-900 dark:text-neutral-100 px-2 pt-2 mb-2">
-            Top spends
-          </Text>
-          {isLoading ? (
-            <View className="px-2 py-4">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <View key={i} className="flex-row items-center py-2.5">
-                  <Skeleton width={40} height={40} radius={14} />
-                  <View className="flex-1 ml-3">
-                    <Skeleton width="55%" height={12} />
-                    <Skeleton width="30%" height={10} style={{ marginTop: 6 }} />
-                  </View>
-                  <Skeleton width={60} height={14} />
-                </View>
-              ))}
-            </View>
-          ) : error ? (
-            <Text className="text-sm text-rose-600 dark:text-rose-300 text-center py-6">
-              {(error as Error).message}
-            </Text>
-          ) : (data?.topExpenses ?? []).length === 0 ? (
-            <Text className="text-sm text-gray-500 dark:text-neutral-400 text-center py-8">
-              Nothing notable.
-            </Text>
-          ) : (
-            (data?.topExpenses ?? []).map((tx, i) => {
-              const palette = getCategoryPalette(tx.category);
-              const last = i === (data?.topExpenses?.length ?? 0) - 1;
-              return (
-                <View
-                  key={tx._id}
-                  className={`flex-row items-center px-2 py-2.5 ${
-                    last ? "" : "border-b border-gray-100 dark:border-neutral-800"
-                  }`}
-                >
+            ) : breakdown.length === 0 ? (
+              <Text className="text-fg-muted dark:text-fg-dark-muted text-[13px] text-center py-8">
+                No expenses recorded in this period.
+              </Text>
+            ) : (
+              breakdown.map((b, i) => {
+                const palette = getCategoryPalette(b.category);
+                return (
                   <View
-                    className="w-10 h-10 rounded-2xl items-center justify-center mr-3"
-                    style={{ backgroundColor: palette.bgLight }}
+                    key={b.category}
+                    className="border-t border-edge dark:border-edge-dark"
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 12,
+                      paddingVertical: 12,
+                      borderTopWidth: i === 0 ? 0 : 1,
+                    }}
                   >
-                    <Text
-                      className="text-sm font-bold"
-                      style={{ color: palette.textLight }}
+                    <View
+                      style={{
+                        width: 38,
+                        height: 38,
+                        borderRadius: 12,
+                        backgroundColor: palette.bgLight,
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
                     >
-                      {tx.category.slice(0, 1).toUpperCase()}
+                      <Text
+                        style={{
+                          color: palette.textLight,
+                          fontSize: 14,
+                          fontWeight: "700",
+                        }}
+                      >
+                        {b.category.charAt(0)}
+                      </Text>
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          justifyContent: "space-between",
+                          marginBottom: 6,
+                        }}
+                      >
+                        <Text className="text-fg dark:text-fg-dark text-[13.5px] font-semibold">
+                          {b.category}
+                        </Text>
+                        <Money
+                          value={b.amount}
+                          className="text-fg dark:text-fg-dark text-[13px] font-bold"
+                        />
+                      </View>
+                      <Progress
+                        value={b.percentage}
+                        height={4}
+                        color={palette.accent}
+                      />
+                    </View>
+                    <Text
+                      className="text-fg-muted dark:text-fg-dark-muted text-[11px] font-semibold"
+                      style={{
+                        minWidth: 30,
+                        textAlign: "right",
+                        fontVariant: ["tabular-nums"],
+                      }}
+                    >
+                      {b.percentage}%
                     </Text>
                   </View>
-                  <View className="flex-1 min-w-0 mr-2">
-                    <Text
-                      className="text-sm font-semibold text-gray-900 dark:text-neutral-100"
-                      numberOfLines={1}
-                    >
-                      {tx.description || tx.category}
-                    </Text>
-                    <Text className="text-xs text-gray-500 dark:text-neutral-400 mt-0.5">
-                      {tx.category} ·{" "}
-                      {new Date(tx.date).toLocaleDateString("en-IN", {
-                        day: "numeric",
-                        month: "short",
-                      })}
-                    </Text>
-                  </View>
-                  <Text
-                    className="text-sm font-bold text-rose-600 dark:text-rose-300"
-                    style={{ letterSpacing: -0.2 }}
-                  >
-                    -{formatCurrency(tx.amount)}
-                  </Text>
-                </View>
-              );
-            })
-          )}
-        </SectionCard>
+                );
+              })
+            )}
+          </Card>
+        </Section>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-function DeltaPill({
+function SummaryStat({
   label,
-  delta,
-  positiveIsGood,
+  value,
+  color,
 }: {
   label: string;
-  delta: number | null;
-  positiveIsGood: boolean;
+  value: string;
+  color: "emerald" | "rose" | "brand";
 }) {
-  // For income: positive delta = good (green). For expense: positive = bad.
-  const isGood = delta == null ? null : positiveIsGood ? delta >= 0 : delta <= 0;
-  const bg =
-    isGood == null
-      ? "bg-gray-100 dark:bg-neutral-800"
-      : isGood
-        ? "bg-emerald-50 dark:bg-emerald-950/40"
-        : "bg-rose-50 dark:bg-rose-950/40";
-  const txt =
-    isGood == null
-      ? "text-gray-500 dark:text-neutral-400"
-      : isGood
-        ? "text-emerald-700 dark:text-emerald-300"
-        : "text-rose-700 dark:text-rose-300";
-  const sign = delta == null ? "" : delta > 0 ? "+" : "";
-
+  const colorClass =
+    color === "emerald"
+      ? "text-emerald"
+      : color === "rose"
+        ? "text-rose"
+        : "text-brand";
   return (
-    <View className={`flex-1 px-3 py-2 rounded-xl ${bg}`}>
-      <Text className={`text-[10px] uppercase tracking-wider font-semibold ${txt} mb-0.5`}>
+    <View style={{ flex: 1 }}>
+      <Text
+        className="text-fg-muted dark:text-fg-dark-muted text-[10.5px] font-bold uppercase"
+        style={{ letterSpacing: 0.5 }}
+      >
         {label}
       </Text>
-      <Text className={`text-sm font-bold ${txt}`}>
-        {delta == null ? "—" : `${sign}${delta}%`}
+      <Text
+        className={`${colorClass} text-[16px] font-bold mt-0.5`}
+        style={{ fontVariant: ["tabular-nums"], letterSpacing: -0.2 }}
+      >
+        {value}
       </Text>
     </View>
   );

@@ -1,6 +1,5 @@
 import Transaction from "@/models/Transaction";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
+import { getUserId } from "@/lib/mobileAuth";
 import { connectToDatabase } from "@/lib/mongodb";
 import Account from "@/models/Account";
 import { updateTransactionSchema } from "@/validations/transaction";
@@ -13,8 +12,7 @@ export async function GET(
   req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const session = await getServerSession(authOptions);
-  const userId = session?.user?._id;
+  const userId = await getUserId(req);
   if (!userId) {
     return new Response("Unauthorized", { status: 401 });
   }
@@ -46,8 +44,7 @@ export async function PUT(
   req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const session = await getServerSession(authOptions);
-  const userId = session?.user?._id;
+  const userId = await getUserId(req);
 
   if (!userId) {
     return new Response("Unauthorized", { status: 401 });
@@ -262,8 +259,7 @@ export async function DELETE(
   req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const session = await getServerSession(authOptions);
-  const userId = session?.user?._id;
+  const userId = await getUserId(req);
 
   if (!userId) {
     return new Response("Unauthorized", { status: 401 });

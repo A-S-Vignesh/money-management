@@ -1,91 +1,89 @@
-// components/ui/MetricCard.tsx
-// Compact stat tile used in rows on the Dashboard / Reports. Pairs a
-// labelled value with a colored icon chip and an optional delta indicator.
+// MetricCard — labelled value tile with optional delta badge.
+// Used in pairs/triples below the hero on Dashboard.
+// Layout matches the Mobile UI mock 1:1.
 
 import { Text, View } from "react-native";
-import { type LucideIcon } from "lucide-react-native";
+import { ArrowDown, ArrowUp, type LucideIcon } from "lucide-react-native";
 
-import { SectionCard } from "./SectionCard";
-
-export type Tone = "indigo" | "emerald" | "rose" | "amber" | "blue" | "slate";
-
-const toneBg: Record<Tone, string> = {
-  indigo: "bg-indigo-100 dark:bg-indigo-950/50",
-  emerald: "bg-emerald-100 dark:bg-emerald-950/50",
-  rose: "bg-rose-100 dark:bg-rose-950/50",
-  amber: "bg-amber-100 dark:bg-amber-950/50",
-  blue: "bg-blue-100 dark:bg-blue-950/50",
-  slate: "bg-slate-100 dark:bg-slate-800",
-};
-
-const toneIconColor: Record<Tone, string> = {
-  indigo: "#6366f1",
-  emerald: "#10b981",
-  rose: "#f43f5e",
-  amber: "#f59e0b",
-  blue: "#3b82f6",
-  slate: "#64748b",
-};
+import { Card } from "./Card";
+import { IconTile } from "./IconTile";
+import { type Tone } from "@/lib/design";
 
 interface Props {
   label: string;
   value: string;
-  tone?: Tone;
   Icon?: LucideIcon;
-  delta?: { value: string; positive: boolean } | null;
-  /** Fills the card height — useful inside row containers. */
-  fill?: boolean;
+  tone?: Tone;
+  /** Delta % shown as a small pill. */
+  delta?: number | null;
+  /** Whether the delta direction is "good" (green) or "bad" (red). */
+  deltaUp?: boolean;
 }
 
 export function MetricCard({
   label,
   value,
-  tone = "indigo",
   Icon,
+  tone = "brand",
   delta = null,
-  fill = true,
+  deltaUp = true,
 }: Props) {
   return (
-    <SectionCard density="compact" className={fill ? "flex-1" : ""}>
-      <View className="flex-row items-start justify-between mb-3">
+    <Card style={{ flex: 1, padding: 14, minWidth: 0 }}>
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          marginBottom: 10,
+        }}
+      >
         {Icon ? (
-          <View
-            className={`${toneBg[tone]} w-9 h-9 rounded-xl items-center justify-center`}
-          >
-            <Icon size={18} color={toneIconColor[tone]} />
-          </View>
+          <IconTile Icon={Icon} tone={tone} size="md" />
         ) : (
-          <View className="w-9 h-9" />
+          <View style={{ width: 38, height: 38 }} />
         )}
-        {delta && (
+        {delta != null && (
           <View
-            className={`px-2 py-0.5 rounded-full ${
-              delta.positive
-                ? "bg-emerald-100 dark:bg-emerald-950/50"
-                : "bg-rose-100 dark:bg-rose-950/50"
-            }`}
+            className={
+              deltaUp ? "bg-emerald-bg dark:bg-emerald-bg" : "bg-rose-bg dark:bg-rose-bg"
+            }
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 2,
+              paddingHorizontal: 7,
+              paddingVertical: 3,
+              borderRadius: 99,
+            }}
           >
+            {deltaUp ? (
+              <ArrowUp size={9} color="#059669" strokeWidth={3} />
+            ) : (
+              <ArrowDown size={9} color="#e11d48" strokeWidth={3} />
+            )}
             <Text
-              className={`text-[10px] font-semibold ${
-                delta.positive
-                  ? "text-emerald-700 dark:text-emerald-300"
-                  : "text-rose-700 dark:text-rose-300"
-              }`}
+              className={
+                deltaUp ? "text-emerald text-[10.5px] font-bold" : "text-rose text-[10.5px] font-bold"
+              }
             >
-              {delta.positive ? "▲" : "▼"} {delta.value}
+              {Math.abs(delta)}%
             </Text>
           </View>
         )}
       </View>
-      <Text className="text-[11px] uppercase tracking-wider font-semibold text-gray-500 dark:text-neutral-400 mb-1">
+      <Text
+        className="text-fg-muted dark:text-fg-dark-muted text-[10.5px] font-semibold uppercase"
+        style={{ letterSpacing: 0.5 }}
+      >
         {label}
       </Text>
       <Text
-        className="text-xl font-bold text-gray-900 dark:text-neutral-100"
-        style={{ letterSpacing: -0.4 }}
+        className="text-fg dark:text-fg-dark text-[19px] font-bold mt-1"
+        style={{ letterSpacing: -0.4, fontVariant: ["tabular-nums"] }}
       >
         {value}
       </Text>
-    </SectionCard>
+    </Card>
   );
 }

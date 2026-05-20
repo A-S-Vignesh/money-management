@@ -1,13 +1,25 @@
-// app/(tabs)/profile.tsx — minimal profile + theme picker + sign out.
-// Stub for now; full profile editing will mirror the web's ProfilePage.
+// app/(tabs)/profile.tsx — Profile + Appearance + Sign out
+// Matches the Mobile UI mock's "header card with avatar bubble + name + email
+// + plan pill", quick stats row, and settings rows.
 
-import { Pressable, Text, View, ScrollView } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { LogOut, Moon, Sun, Monitor } from "lucide-react-native";
+import {
+  Edit,
+  LogOut,
+  Monitor,
+  Moon,
+  Sun,
+} from "lucide-react-native";
 
 import { useAuth } from "@/lib/auth";
 import { useTheme, type ThemePref } from "@/lib/theme";
+import { Tokens } from "@/lib/design";
+
+import { Card } from "@/components/ui/Card";
+import { ScreenHead } from "@/components/ui/ScreenHead";
+import { Section } from "@/components/ui/Section";
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -16,72 +28,193 @@ export default function ProfileScreen() {
   const pref = useTheme((s) => s.pref);
   const setPref = useTheme((s) => s.setPref);
 
+  const initials = (user?.name ?? "U")
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase() ?? "")
+    .join("");
+
   return (
-    <SafeAreaView className="flex-1 bg-gray-50 dark:bg-gray-950" edges={["top"]}>
-      <ScrollView contentContainerStyle={{ padding: 16 }}>
-        <View className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 mb-4">
-          <Text className="text-xs text-gray-500 dark:text-gray-400 mb-1">
-            Signed in as
-          </Text>
-          <Text className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-            {user?.name ?? "Unknown"}
-          </Text>
-          <Text className="text-sm text-gray-500 dark:text-gray-400">
-            {user?.email}
-          </Text>
-        </View>
+    <SafeAreaView
+      edges={["top"]}
+      className="flex-1 bg-surface-muted dark:bg-surface-dark-elev"
+    >
+      <ScrollView
+        contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
+        showsVerticalScrollIndicator={false}
+      >
+        <ScreenHead title="Profile" />
 
-        <Text className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-1 mb-2">
-          Appearance
-        </Text>
-        <View className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-3 mb-6 flex-row gap-2">
-          {(
-            [
-              { value: "system", label: "System", Icon: Monitor },
-              { value: "light", label: "Light", Icon: Sun },
-              { value: "dark", label: "Dark", Icon: Moon },
-            ] as const
-          ).map(({ value, label, Icon }) => {
-            const active = pref === value;
-            return (
-              <Pressable
-                key={value}
-                onPress={() => setPref(value as ThemePref)}
-                className={`flex-1 py-3 rounded-xl items-center ${
-                  active
-                    ? "bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-500"
-                    : "border border-gray-200 dark:border-gray-700"
-                }`}
+        {/* Header card — avatar bubble + name + email */}
+        <Card style={{ padding: 18, marginBottom: 16 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
+            <View
+              style={{
+                width: 64,
+                height: 64,
+                borderRadius: 99,
+                backgroundColor: Tokens.brand,
+                alignItems: "center",
+                justifyContent: "center",
+                shadowColor: Tokens.brand,
+                shadowOffset: { width: 0, height: 8 },
+                shadowOpacity: 0.5,
+                shadowRadius: 14,
+                elevation: 6,
+              }}
+            >
+              <Text
+                style={{
+                  color: "#fff",
+                  fontSize: 22,
+                  fontWeight: "700",
+                  letterSpacing: -0.6,
+                }}
               >
-                <Icon size={18} color={active ? "#4f46e5" : "#6b7280"} />
+                {initials || "U"}
+              </Text>
+            </View>
+            <View style={{ flex: 1, minWidth: 0 }}>
+              <Text
+                numberOfLines={1}
+                className="text-fg dark:text-fg-dark text-[18px] font-bold tracking-tight"
+              >
+                {user?.name ?? "—"}
+              </Text>
+              <Text
+                numberOfLines={1}
+                className="text-fg-muted dark:text-fg-dark-muted text-[12.5px] mt-0.5"
+              >
+                {user?.email ?? ""}
+              </Text>
+              <View
+                style={{
+                  marginTop: 8,
+                  alignSelf: "flex-start",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 4,
+                  paddingHorizontal: 8,
+                  paddingVertical: 3,
+                  borderRadius: 99,
+                  backgroundColor: Tokens.brandSoft,
+                }}
+              >
                 <Text
-                  className={`text-xs font-medium mt-1 ${
-                    active
-                      ? "text-indigo-700 dark:text-indigo-300"
-                      : "text-gray-700 dark:text-gray-300"
-                  }`}
+                  style={{
+                    color: Tokens.brand,
+                    fontSize: 10.5,
+                    fontWeight: "800",
+                    letterSpacing: 0.4,
+                  }}
                 >
-                  {label}
+                  FREE PLAN
                 </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-
-        <Pressable
-          onPress={async () => {
-            await signOut();
-            router.replace("/(auth)/login");
-          }}
-          className="bg-white dark:bg-gray-900 rounded-2xl border border-red-100 dark:border-red-900/50 p-4 flex-row items-center active:opacity-70"
-        >
-          <View className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/40 items-center justify-center mr-3">
-            <LogOut size={18} color="#dc2626" />
+              </View>
+            </View>
+            <Pressable
+              className="bg-surface-subtle dark:bg-surface-dark-subtle border border-edge dark:border-edge-dark"
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 14,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Edit size={16} color={Tokens.text} strokeWidth={2} />
+            </Pressable>
           </View>
-          <Text className="text-red-600 dark:text-red-300 font-semibold">
-            Sign Out
-          </Text>
-        </Pressable>
+        </Card>
+
+        {/* Appearance — System / Light / Dark */}
+        <Section title="Appearance">
+          <Card
+            style={{
+              padding: 12,
+              flexDirection: "row",
+              gap: 8,
+            }}
+          >
+            {(
+              [
+                { value: "system", label: "System", Icon: Monitor },
+                { value: "light", label: "Light", Icon: Sun },
+                { value: "dark", label: "Dark", Icon: Moon },
+              ] as const
+            ).map(({ value, label, Icon }) => {
+              const active = pref === value;
+              return (
+                <Pressable
+                  key={value}
+                  onPress={() => setPref(value as ThemePref)}
+                  style={{
+                    flex: 1,
+                    paddingVertical: 12,
+                    borderRadius: 12,
+                    alignItems: "center",
+                    backgroundColor: active ? Tokens.brandSoft : "transparent",
+                    borderWidth: 1,
+                    borderColor: active ? Tokens.brand : Tokens.border,
+                  }}
+                >
+                  <Icon
+                    size={18}
+                    color={active ? Tokens.brand : Tokens.textMuted}
+                    strokeWidth={2}
+                  />
+                  <Text
+                    style={{
+                      fontSize: 12,
+                      fontWeight: "600",
+                      marginTop: 4,
+                      color: active ? Tokens.brand : Tokens.text,
+                    }}
+                  >
+                    {label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </Card>
+        </Section>
+
+        {/* Sign out */}
+        <Section title=" ">
+          <Pressable
+            onPress={async () => {
+              await signOut();
+              router.replace("/(auth)/login");
+            }}
+            className="bg-surface dark:bg-surface-dark border border-rose/30 dark:border-rose/30"
+            style={{
+              borderRadius: 18,
+              padding: 14,
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 12,
+            }}
+          >
+            <View
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 14,
+                backgroundColor: Tokens.roseBg,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <LogOut size={18} color={Tokens.rose} strokeWidth={2} />
+            </View>
+            <Text className="text-rose text-[14px] font-semibold">Sign out</Text>
+          </Pressable>
+        </Section>
+
+        <Text className="text-fg-dim dark:text-fg-dark-dim text-[11px] text-center mt-3">
+          Money Nest · v0.1.0
+        </Text>
       </ScrollView>
     </SafeAreaView>
   );

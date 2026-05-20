@@ -1,14 +1,12 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
+import { getUserId } from "@/lib/mobileAuth";
 import { connectToDatabase } from "@/lib/mongodb";
 import Account from "@/models/Account";
 import { createAccountSchema } from "@/validations/account";
 
 export async function GET(req: Request) {
-  const session = await getServerSession(authOptions);
-  const userId = session?.user?._id;
+  const userId = await getUserId(req);
 
-  if (!session) {
+  if (!userId) {
     return Response.json(
       { message: "Unauthorized", type: "Error", success: false },
       { status: 401 },
@@ -71,8 +69,7 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  const session = await getServerSession(authOptions);
-  const userId = session?.user?._id;
+  const userId = await getUserId(req);
 
   if (!userId) {
     return Response.json(

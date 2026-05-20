@@ -1,7 +1,6 @@
 import { connectToDatabase } from "@/lib/mongodb";
 import Transaction from "@/models/Transaction";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
+import { getUserId } from "@/lib/mobileAuth";
 import Account from "@/models/Account";
 import Budget from "@/models/Budget";
 import { createTransactionSchema } from "@/validations/transaction";
@@ -14,8 +13,7 @@ import {
 import mongoose from "mongoose";
 
 export async function GET(req: Request) {
-  const session = await getServerSession(authOptions);
-  const userId = session?.user?._id;
+  const userId = await getUserId(req);
 
   if (!userId) {
     return new Response("Unauthorized", { status: 401 });
@@ -139,8 +137,7 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  const session = await getServerSession(authOptions);
-  const userId = session?.user?._id;
+  const userId = await getUserId(req);
 
   if (!userId) {
     return new Response("Unauthorized", { status: 401 });

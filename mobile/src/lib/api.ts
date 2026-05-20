@@ -36,6 +36,10 @@ interface Options {
   raw?: boolean;
   // Override the auto-Bearer behaviour — pass `false` for public endpoints.
   withAuth?: boolean;
+  // By default we unwrap `.data` out of the envelope. Set `envelope: true`
+  // to receive the full `{ success, data, pagination, summary, ... }` blob,
+  // e.g. for endpoints that return pagination alongside the data array.
+  envelope?: boolean;
   signal?: AbortSignal;
 }
 
@@ -54,7 +58,15 @@ export async function api<T = unknown>(
   path: string,
   opts: Options = {},
 ): Promise<T> {
-  const { method = "GET", body, query, raw, withAuth = true, signal } = opts;
+  const {
+    method = "GET",
+    body,
+    query,
+    raw,
+    envelope: keepEnvelope = false,
+    withAuth = true,
+    signal,
+  } = opts;
 
   const headers: Record<string, string> = {
     Accept: "application/json",
@@ -113,6 +125,8 @@ export async function api<T = unknown>(
       envelope.errors,
     );
   }
+
+  if (keepEnvelope) return envelope as T;
 
   // Some routes return data at the top level (dashboard, reports), others
   // nest it under `.data`. Prefer `.data` when present.

@@ -1,62 +1,73 @@
 // app/(tabs)/index.tsx — Dashboard
-//
-// Wired to GET /api/dashboard (same payload the web app uses). Visual
-// hierarchy from top to bottom:
-//   1. Greeting header        ← "Good morning, Vignesh"
-//   2. Hero net-worth card    ← big number, this-month delta, brand gradient
-//   3. Income / Expense pair  ← two MetricCards in a row
-//   4. Spending donut         ← top categories with legend
-//   5. Recent activity        ← 5 most recent transactions
+// 1:1 port of the Mobile UI mock with blue brand accent. Composes the
+// primitives in src/components/ui so future screens stay consistent.
 
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
-  ActivityIndicator,
+  Dimensions,
   Pressable,
   RefreshControl,
   ScrollView,
   Text,
   View,
 } from "react-native";
-import { useRouter } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
 import {
   ArrowDownLeft,
   ArrowUpRight,
-  Bell,
   ChevronRight,
   Eye,
   EyeOff,
+  Menu,
+  Plus,
+  Send,
+  Target,
+  TrendingUp,
 } from "lucide-react-native";
-import { PieChart } from "react-native-gifted-charts";
 
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { Tokens } from "@/lib/design";
 import { formatCurrency } from "@/lib/format";
 import { getCategoryPalette } from "@money-nest/shared";
-import { useState } from "react";
+
+import { Card } from "@/components/ui/Card";
+import { Donut } from "@/components/ui/Donut";
+import { IconTile } from "@/components/ui/IconTile";
 import { MetricCard } from "@/components/ui/MetricCard";
-import { SectionCard } from "@/components/ui/SectionCard";
+import { Money } from "@/components/ui/Money";
+import { Section } from "@/components/ui/Section";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { Sparkline } from "@/components/ui/Sparkline";
+import { TopHeader } from "@/components/ui/TopHeader";
+import { TxRow } from "@/components/ui/TxRow";
+import { AddTransactionSheet } from "@/components/transactions/AddTransactionSheet";
+import { TxDetailSheet } from "@/components/transactions/TxDetailSheet";
+import type { TransactionDoc } from "@/hooks/useTransactions";
+import type { TxType } from "@/components/transactions/TypeSegment";
 
 interface DashboardPayload {
   totalBalance?: number;
-  totalIncome?: number;
-  totalExpense?: number;
   monthIncome?: number;
   monthExpense?: number;
   monthNet?: number;
+  incomeChange?: number | string | null;
+  expenseChange?: number | string | null;
+  savingsRate?: string | number | null;
   monthLabel?: string;
-  incomeChange?: string | null;
-  expenseChange?: string | null;
-  savingsRate?: string | null;
-  totalGoals?: number;
-  activeBudgets?: number;
   categoryBreakdown?: Array<{
     category: string;
     amount: number;
     percentage: string | number;
+  }>;
+  monthlyTrend?: Array<{
+    day: number;
+    income: number;
+    expense: number;
+    net: number | null;
   }>;
   recentTransactions?: Array<{
     _id: string;
@@ -66,366 +77,469 @@ interface DashboardPayload {
     type: "income" | "expense" | "transfer";
     date: string;
   }>;
+  totalGoals?: number;
+  activeBudgets?: number;
 }
 
-function greeting(): string {
-  const h = new Date().getHours();
-  if (h < 5) return "Up late";
-  if (h < 12) return "Good morning";
-  if (h < 17) return "Good afternoon";
-  if (h < 21) return "Good evening";
-  return "Good night";
+function greetingFor(hour: number): string {
+  if (hour < 12) return "Good morning";
+  if (hour < 17) return "Good afternoon";
+  return "Good evening";
 }
 
 export default function DashboardScreen() {
   const user = useAuth((s) => s.user);
   const router = useRouter();
   const [hidden, setHidden] = useState(false);
+  const screenWidth = Dimensions.get("window").width;
 
-  const { data, isLoading, isRefetching, refetch, error } =
-    useQuery<DashboardPayload>({
-      queryKey: ["dashboard"],
-      queryFn: () => api<DashboardPayload>("/api/dashboard"),
-    });
+  // ── Sheet state — share the same AddTransactionSheet + TxDetailSheet
+  // components with the Transactions tab. Quick actions seed the type.
+  const [showAdd, setShowAdd] = useState(false);
+  const [addType, setAddType] = useState<TxType>("expense");
+  const [detailTx, setDetailTx] = useState<TransactionDoc | null>(null);
+  const [showDetail, setShowDetail] = useState(false);
+  const [editingTx, setEditingTx] = useState<TransactionDoc | null>(null);
+
+  const openAdd = (t: TxType = "expense") => {
+    setEditingTx(null);
+    setAddType(t);
+    setShowAdd(true);
+  };
+  const closeAdd = () => {
+    setShowAdd(false);
+    setTimeout(() => setEditingTx(null), 280);
+  };
+  const openDetail = (tx: TransactionDoc) => {
+    setDetailTx(tx);
+    setShowDetail(true);
+  };
+  const closeDetail = () => setShowDetail(false);
+  const startEditFromDetail = (tx: TransactionDoc) => {
+    setShowDetail(false);
+    setEditingTx(tx);
+    setTimeout(() => setShowAdd(true), 280);
+  };
+
+  const { data, isLoading, isRefetching, refetch } = useQuery<DashboardPayload>({
+    queryKey: ["dashboard"],
+    queryFn: () => api<DashboardPayload>("/api/dashboard"),
+  });
 
   const onRefresh = useCallback(() => refetch(), [refetch]);
 
+  // ── Donut data: top 5 expense categories from breakdown ─────────
   const donut = useMemo(() => {
-    const rows = (data?.categoryBreakdown ?? []).slice(0, 5);
-    return rows.map((r) => {
-      const palette = getCategoryPalette(r.category);
-      return {
-        value: r.amount,
-        color: palette.accent,
-        label: r.category,
-        percent: typeof r.percentage === "string" ? Number(r.percentage) : r.percentage,
-      };
-    });
+    const breakdown = data?.categoryBreakdown ?? [];
+    return breakdown.slice(0, 5).map((b) => ({
+      value: b.amount,
+      color: getCategoryPalette(b.category).accent,
+      label: b.category,
+      pct: Number(b.percentage),
+    }));
   }, [data?.categoryBreakdown]);
 
+  // ── Sparkline data: cumulative net flow over month ──────────────
+  const sparkValues = useMemo(() => {
+    const trend = data?.monthlyTrend ?? [];
+    const out: number[] = [];
+    let net = 0;
+    for (const row of trend) {
+      if (row.net == null) break;
+      net = row.net;
+      out.push(net);
+    }
+    return out;
+  }, [data?.monthlyTrend]);
+
   const recent = data?.recentTransactions ?? [];
+  const firstName = user?.name?.split(" ")[0] ?? "there";
+  const greet = `${greetingFor(new Date().getHours())}, ${firstName}`;
 
   return (
     <SafeAreaView
-      className="flex-1 bg-gray-50 dark:bg-neutral-950"
       edges={["top"]}
+      className="flex-1 bg-surface-muted dark:bg-surface-dark-elev"
     >
       <ScrollView
-        contentContainerStyle={{ padding: 16, paddingBottom: 48 }}
-        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
         refreshControl={
           <RefreshControl
             refreshing={isRefetching}
             onRefresh={onRefresh}
-            tintColor="#6366f1"
+            tintColor={Tokens.brand}
           />
         }
+        showsVerticalScrollIndicator={false}
       >
-        {/* Greeting */}
-        <View className="flex-row items-center justify-between mb-5">
-          <View className="flex-1 mr-3">
-            <Text className="text-sm text-gray-500 dark:text-neutral-400">
-              {greeting()},
-            </Text>
-            <Text
-              className="text-2xl font-bold text-gray-900 dark:text-neutral-50"
-              style={{ letterSpacing: -0.4 }}
-              numberOfLines={1}
+        {/* Header */}
+        <TopHeader
+          title="Money Nest"
+          subtitle={greet}
+          unread={2}
+          onBell={() => router.push("/(tabs)/profile")}
+          leading={
+            <Pressable
+              className="bg-surface dark:bg-surface-dark border border-edge dark:border-edge-dark"
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 14,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
             >
-              {user?.name?.split(" ")[0] ?? "Friend"}
+              <Menu size={20} color={Tokens.text} strokeWidth={2} />
+            </Pressable>
+          }
+        />
+
+        {/* Hero net-worth card with blue→deep-blue gradient */}
+        <LinearGradient
+          colors={[Tokens.brand, Tokens.brand3]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={{
+            borderRadius: 28,
+            padding: 22,
+            marginBottom: 16,
+            marginTop: 4,
+            shadowColor: Tokens.brand,
+            shadowOffset: { width: 0, height: 16 },
+            shadowOpacity: 0.4,
+            shadowRadius: 28,
+            elevation: 10,
+            overflow: "hidden",
+          }}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <Text
+              className="text-[10.5px] font-bold uppercase"
+              style={{
+                color: "rgba(255,255,255,0.7)",
+                letterSpacing: 1.2,
+              }}
+            >
+              Total balance
             </Text>
+            <Pressable
+              onPress={() => setHidden((v) => !v)}
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: 99,
+                backgroundColor: "rgba(255,255,255,0.12)",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              {hidden ? (
+                <EyeOff size={14} color="#fff" strokeWidth={2} />
+              ) : (
+                <Eye size={14} color="#fff" strokeWidth={2} />
+              )}
+            </Pressable>
           </View>
-          <Pressable
-            onPress={() => router.push("/(tabs)" as never)}
-            className="w-10 h-10 rounded-full bg-white dark:bg-neutral-900 border border-gray-100 dark:border-neutral-800 items-center justify-center active:opacity-70"
-          >
-            <Bell size={18} color="#374151" />
-          </Pressable>
-        </View>
 
-        {/* Hero net worth card */}
-        <View className="mb-4 rounded-3xl overflow-hidden">
-          <LinearGradient
-            colors={["#4f46e5", "#312e81"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={{ padding: 24 }}
-          >
-            <View className="flex-row items-center justify-between mb-3">
-              <Text className="text-indigo-200 text-xs font-semibold uppercase tracking-wider">
-                Net Worth
-              </Text>
-              <Pressable
-                onPress={() => setHidden((v) => !v)}
-                className="w-8 h-8 rounded-full bg-white/10 items-center justify-center active:opacity-70"
-              >
-                {hidden ? (
-                  <EyeOff size={14} color="#e0e7ff" />
-                ) : (
-                  <Eye size={14} color="#e0e7ff" />
-                )}
-              </Pressable>
+          {isLoading ? (
+            <View style={{ marginTop: 8 }}>
+              <Skeleton width={220} height={36} radius={6} />
             </View>
+          ) : hidden ? (
+            <Text
+              className="text-white text-[36px] font-bold mt-2"
+              style={{ letterSpacing: -1.2 }}
+            >
+              •••••••
+            </Text>
+          ) : (
+            <Money
+              value={data?.totalBalance ?? 0}
+              className="text-white text-[36px] font-bold mt-2"
+              style={{ letterSpacing: -1.2 }}
+            />
+          )}
 
-            {isLoading ? (
-              <Skeleton width={200} height={36} radius={8} />
-            ) : (
-              <Text
-                className="text-white text-4xl font-bold"
-                style={{ letterSpacing: -1 }}
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "flex-end",
+              justifyContent: "space-between",
+              marginTop: 14,
+              gap: 12,
+            }}
+          >
+            <View style={{ flexDirection: "column", gap: 6 }}>
+              <View
+                style={{
+                  backgroundColor: "rgba(255,255,255,0.16)",
+                  borderRadius: 99,
+                  paddingHorizontal: 10,
+                  paddingVertical: 4,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 4,
+                  alignSelf: "flex-start",
+                }}
               >
-                {hidden ? "•••••••" : formatCurrency(data?.totalBalance ?? 0)}
-              </Text>
-            )}
-
-            <View className="flex-row items-center mt-4">
-              <View className="bg-white/15 rounded-full px-3 py-1.5">
-                <Text className="text-white text-[11px] font-semibold">
-                  {data?.monthLabel ?? "This month"}
+                <TrendingUp size={11} color="#fff" strokeWidth={2.5} />
+                <Text
+                  className="text-white text-[11px] font-bold"
+                  style={{ fontVariant: ["tabular-nums"] }}
+                >
+                  +{formatCurrency(data?.monthNet ?? 0, { compact: true })} this
+                  month
                 </Text>
               </View>
-              <Text className="text-indigo-100 text-xs ml-2">
-                {data?.savingsRate != null
-                  ? `${data.savingsRate}% saved`
-                  : ""}
+              <Text
+                style={{
+                  color: "rgba(255,255,255,0.75)",
+                  fontSize: 11.5,
+                  fontWeight: "500",
+                }}
+              >
+                {data?.savingsRate != null ? `${data.savingsRate}% saved · ` : ""}
+                {data?.monthLabel ?? ""}
               </Text>
             </View>
-          </LinearGradient>
+            {!isLoading && sparkValues.length > 1 ? (
+              <Sparkline
+                values={sparkValues}
+                width={110}
+                height={38}
+                stroke="#ffffff"
+                gradientId="hero-spark"
+                gradientColor="#ffffff"
+              />
+            ) : null}
+          </View>
+        </LinearGradient>
+
+        {/* Quick actions */}
+        <View style={{ flexDirection: "row", gap: 10, marginBottom: 18 }}>
+          {(
+            [
+              { l: "Add", Icon: Plus, tone: "brand", onPress: () => openAdd("expense") },
+              { l: "Income", Icon: Send, tone: "emerald", onPress: () => openAdd("income") },
+              { l: "Transfer", Icon: TrendingUp, tone: "amber", onPress: () => openAdd("transfer") },
+              { l: "More", Icon: Target, tone: "purple", onPress: () => router.push("/(tabs)/transactions") },
+            ] as const
+          ).map((a, i) => (
+            <Pressable
+              key={i}
+              onPress={a.onPress}
+              style={{
+                flex: 1,
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 6,
+              }}
+            >
+              <IconTile Icon={a.Icon} tone={a.tone} size="lg" />
+              <Text className="text-fg dark:text-fg-dark text-[11.5px] font-semibold">
+                {a.l}
+              </Text>
+            </Pressable>
+          ))}
         </View>
 
         {/* Income / Expense pair */}
-        <View className="flex-row gap-3 mb-4">
-          {isLoading ? (
-            <>
-              <SectionCard density="compact" className="flex-1">
-                <Skeleton width={36} height={36} radius={12} />
-                <Skeleton width="60%" height={10} style={{ marginTop: 12 }} />
-                <Skeleton width="80%" height={20} style={{ marginTop: 8 }} />
-              </SectionCard>
-              <SectionCard density="compact" className="flex-1">
-                <Skeleton width={36} height={36} radius={12} />
-                <Skeleton width="60%" height={10} style={{ marginTop: 12 }} />
-                <Skeleton width="80%" height={20} style={{ marginTop: 8 }} />
-              </SectionCard>
-            </>
-          ) : (
-            <>
-              <MetricCard
-                label="Income"
-                value={formatCurrency(data?.monthIncome ?? 0)}
-                tone="emerald"
-                Icon={ArrowDownLeft}
-                delta={
-                  data?.incomeChange != null && !Number.isNaN(Number(data.incomeChange))
-                    ? {
-                        value: `${Math.abs(Number(data.incomeChange))}%`,
-                        positive: Number(data.incomeChange) >= 0,
-                      }
-                    : null
-                }
-              />
-              <MetricCard
-                label="Expense"
-                value={formatCurrency(data?.monthExpense ?? 0)}
-                tone="rose"
-                Icon={ArrowUpRight}
-                delta={
-                  data?.expenseChange != null && !Number.isNaN(Number(data.expenseChange))
-                    ? {
-                        // For expenses, "positive" delta means going DOWN is good.
-                        value: `${Math.abs(Number(data.expenseChange))}%`,
-                        positive: Number(data.expenseChange) <= 0,
-                      }
-                    : null
-                }
-              />
-            </>
-          )}
+        <View style={{ flexDirection: "row", gap: 10, marginBottom: 16 }}>
+          <MetricCard
+            label="Income"
+            value={formatCurrency(data?.monthIncome ?? 0)}
+            Icon={ArrowDownLeft}
+            tone="emerald"
+            delta={
+              data?.incomeChange != null
+                ? Number(data.incomeChange)
+                : null
+            }
+            deltaUp={Number(data?.incomeChange ?? 0) >= 0}
+          />
+          <MetricCard
+            label="Expense"
+            value={formatCurrency(data?.monthExpense ?? 0)}
+            Icon={ArrowUpRight}
+            tone="rose"
+            delta={
+              data?.expenseChange != null
+                ? Math.abs(Number(data.expenseChange))
+                : null
+            }
+            deltaUp={Number(data?.expenseChange ?? 0) < 0}
+          />
         </View>
 
-        {/* Spending breakdown donut */}
-        <SectionCard className="mb-4">
-          <View className="flex-row items-center justify-between mb-1">
-            <Text className="text-base font-semibold text-gray-900 dark:text-neutral-100">
-              Spending breakdown
-            </Text>
-            <Text className="text-xs text-gray-500 dark:text-neutral-400">
-              {data?.monthLabel ?? ""}
-            </Text>
+        {/* Spending breakdown */}
+        <Card style={{ padding: 16, marginBottom: 16 }}>
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              marginBottom: 4,
+            }}
+          >
+            <View>
+              <Text className="text-fg dark:text-fg-dark text-[16px] font-semibold tracking-tight">
+                Spending breakdown
+              </Text>
+              <Text className="text-fg-muted dark:text-fg-dark-muted text-[11.5px] mt-0.5">
+                Top categories · {data?.monthLabel ?? "this month"}
+              </Text>
+            </View>
+            <Pressable
+              onPress={() => router.push("/(tabs)/reports")}
+              style={{ flexDirection: "row", alignItems: "center", gap: 2 }}
+            >
+              <Text className="text-brand text-[13px] font-semibold">Details</Text>
+              <ChevronRight size={13} color={Tokens.brand} strokeWidth={2.4} />
+            </Pressable>
           </View>
-          <Text className="text-xs text-gray-500 dark:text-neutral-400 mb-4">
-            Top categories this month
-          </Text>
 
           {isLoading ? (
-            <View className="items-center py-8">
-              <ActivityIndicator color="#6366f1" />
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 16,
+                marginTop: 10,
+              }}
+            >
+              <Skeleton width={130} height={130} radius={65} />
+              <View style={{ flex: 1, gap: 8 }}>
+                {[1, 2, 3, 4].map((i) => (
+                  <Skeleton key={i} width="100%" height={14} />
+                ))}
+              </View>
             </View>
           ) : donut.length === 0 ? (
-            <Text className="text-sm text-gray-500 dark:text-neutral-400 text-center py-8">
-              No expenses recorded yet.
+            <Text className="text-fg-muted dark:text-fg-dark-muted text-[13px] text-center py-8">
+              No spending yet — add an expense to see your breakdown.
             </Text>
           ) : (
-            <View className="flex-row items-center mt-2">
-              <PieChart
-                data={donut}
-                donut
-                radius={70}
-                innerRadius={48}
-                innerCircleColor="#ffffff"
-                innerCircleBorderWidth={0}
-                centerLabelComponent={() => (
-                  <View className="items-center">
-                    <Text className="text-[10px] text-gray-500 dark:text-neutral-400 font-semibold uppercase tracking-wider">
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 16,
+                marginTop: 10,
+              }}
+            >
+              <Donut
+                slices={donut}
+                size={130}
+                thickness={20}
+                center={
+                  <>
+                    <Text
+                      className="text-fg-muted dark:text-fg-dark-muted text-[10px] font-semibold uppercase"
+                      style={{ letterSpacing: 0.5 }}
+                    >
                       Total
                     </Text>
-                    <Text
-                      className="text-sm font-bold text-gray-900 dark:text-neutral-100"
-                      style={{ letterSpacing: -0.2 }}
-                    >
-                      {formatCurrency(
-                        donut.reduce((sum, s) => sum + s.value, 0),
-                      )}
-                    </Text>
-                  </View>
-                )}
+                    <Money
+                      value={data?.monthExpense ?? 0}
+                      className="text-fg dark:text-fg-dark text-[14px] font-bold mt-0.5"
+                    />
+                  </>
+                }
               />
-              <View className="flex-1 ml-5">
-                {donut.map((slice) => (
+              <View style={{ flex: 1, gap: 8 }}>
+                {donut.map((s) => (
                   <View
-                    key={slice.label}
-                    className="flex-row items-center justify-between mb-2 last:mb-0"
+                    key={s.label}
+                    style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
                   >
-                    <View className="flex-row items-center flex-1 min-w-0">
-                      <View
-                        className="w-2.5 h-2.5 rounded-full mr-2"
-                        style={{ backgroundColor: slice.color }}
-                      />
-                      <Text
-                        className="text-xs font-medium text-gray-700 dark:text-neutral-300 flex-1"
-                        numberOfLines={1}
-                      >
-                        {slice.label}
-                      </Text>
-                    </View>
-                    <Text className="text-xs font-semibold text-gray-500 dark:text-neutral-400 ml-2">
-                      {slice.percent}%
+                    <View
+                      style={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: 99,
+                        backgroundColor: s.color,
+                      }}
+                    />
+                    <Text
+                      numberOfLines={1}
+                      className="text-fg dark:text-fg-dark text-[12px] font-medium"
+                      style={{ flex: 1 }}
+                    >
+                      {s.label}
+                    </Text>
+                    <Text
+                      className="text-fg-muted dark:text-fg-dark-muted text-[11.5px] font-semibold"
+                      style={{ fontVariant: ["tabular-nums"] }}
+                    >
+                      {s.pct}%
                     </Text>
                   </View>
                 ))}
               </View>
             </View>
           )}
-        </SectionCard>
+        </Card>
 
         {/* Recent activity */}
-        <SectionCard density="compact" className="mb-4">
-          <View className="flex-row items-center justify-between mb-2 px-2 pt-2">
-            <Text className="text-base font-semibold text-gray-900 dark:text-neutral-100">
-              Recent activity
-            </Text>
-            <Pressable
-              onPress={() => router.push("/(tabs)/transactions" as never)}
-              className="flex-row items-center active:opacity-70"
-            >
-              <Text className="text-xs font-semibold text-indigo-600 dark:text-indigo-300 mr-0.5">
-                See all
-              </Text>
-              <ChevronRight size={14} color="#6366f1" />
-            </Pressable>
-          </View>
-
-          {isLoading ? (
-            <View className="px-2 py-4">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <View key={i} className="flex-row items-center py-2.5">
-                  <Skeleton width={40} height={40} radius={14} />
-                  <View className="flex-1 ml-3">
-                    <Skeleton width="55%" height={12} />
-                    <Skeleton
-                      width="30%"
-                      height={10}
-                      style={{ marginTop: 6 }}
-                    />
+        <Section
+          title="Recent activity"
+          action="See all"
+          onAction={() => router.push("/(tabs)/transactions")}
+        >
+          <Card style={{ padding: 0, overflow: "hidden" }}>
+            {isLoading ? (
+              <View style={{ padding: 16, gap: 14 }}>
+                {[1, 2, 3].map((i) => (
+                  <View
+                    key={i}
+                    style={{ flexDirection: "row", alignItems: "center", gap: 12 }}
+                  >
+                    <Skeleton width={38} height={38} radius={12} />
+                    <View style={{ flex: 1, gap: 6 }}>
+                      <Skeleton width="60%" height={14} />
+                      <Skeleton width="40%" height={11} />
+                    </View>
+                    <Skeleton width={70} height={16} />
                   </View>
-                  <Skeleton width={60} height={14} />
-                </View>
-              ))}
-            </View>
-          ) : error ? (
-            <View className="py-6 items-center">
-              <Text className="text-sm text-rose-600 dark:text-rose-300">
-                {(error as Error).message}
+                ))}
+              </View>
+            ) : recent.length === 0 ? (
+              <Text className="text-fg-muted dark:text-fg-dark-muted text-[13px] text-center py-12">
+                Nothing yet. Add your first transaction.
               </Text>
-            </View>
-          ) : recent.length === 0 ? (
-            <Text className="text-sm text-gray-500 dark:text-neutral-400 text-center py-8">
-              No transactions yet. Tap a tab to add your first.
-            </Text>
-          ) : (
-            recent.slice(0, 5).map((tx, i) => <ActivityRow key={tx._id} tx={tx} last={i === Math.min(4, recent.length - 1)} />)
-          )}
-        </SectionCard>
+            ) : (
+              recent.slice(0, 6).map((tx, i) => (
+                <TxRow
+                  key={tx._id}
+                  tx={tx as TransactionDoc}
+                  last={i === Math.min(recent.length, 6) - 1}
+                  onPress={() => openDetail(tx as TransactionDoc)}
+                />
+              ))
+            )}
+          </Card>
+        </Section>
       </ScrollView>
+
+      {/* Shared sheets — same components the Transactions tab uses. */}
+      <AddTransactionSheet
+        visible={showAdd}
+        onClose={closeAdd}
+        editing={editingTx}
+        initialType={addType}
+      />
+      <TxDetailSheet
+        visible={showDetail}
+        onClose={closeDetail}
+        transaction={detailTx}
+        onEdit={startEditFromDetail}
+      />
     </SafeAreaView>
-  );
-}
-
-function ActivityRow({
-  tx,
-  last,
-}: {
-  tx: {
-    _id: string;
-    description: string;
-    category: string;
-    amount: number;
-    type: "income" | "expense" | "transfer";
-    date: string;
-  };
-  last: boolean;
-}) {
-  const palette = getCategoryPalette(tx.category);
-  const sign = tx.type === "expense" ? "-" : tx.type === "income" ? "+" : "";
-  const amountColor =
-    tx.type === "expense"
-      ? "text-rose-600 dark:text-rose-300"
-      : tx.type === "income"
-        ? "text-emerald-600 dark:text-emerald-300"
-        : "text-blue-600 dark:text-blue-300";
-
-  return (
-    <View
-      className={`flex-row items-center px-2 py-2.5 ${
-        last ? "" : "border-b border-gray-100 dark:border-neutral-800"
-      }`}
-    >
-      <View
-        className="w-10 h-10 rounded-2xl items-center justify-center mr-3"
-        style={{ backgroundColor: palette.bgLight }}
-      >
-        <Text
-          className="text-sm font-bold"
-          style={{ color: palette.textLight }}
-        >
-          {tx.category.slice(0, 1).toUpperCase()}
-        </Text>
-      </View>
-      <View className="flex-1 min-w-0 mr-2">
-        <Text
-          className="text-sm font-semibold text-gray-900 dark:text-neutral-100"
-          numberOfLines={1}
-        >
-          {tx.description || tx.category}
-        </Text>
-        <Text className="text-xs text-gray-500 dark:text-neutral-400 mt-0.5">
-          {tx.category} · {new Date(tx.date).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
-        </Text>
-      </View>
-      <Text className={`text-sm font-bold ${amountColor}`} style={{ letterSpacing: -0.2 }}>
-        {sign}
-        {formatCurrency(tx.amount)}
-      </Text>
-    </View>
   );
 }

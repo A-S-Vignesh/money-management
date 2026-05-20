@@ -7,21 +7,24 @@ import { Redirect } from "expo-router";
 import { NativeTabs } from "expo-router/unstable-native-tabs";
 import { useColorScheme } from "react-native";
 
-import { Colors } from "@/constants/theme";
+import { Tokens } from "@/lib/design";
 import { useAuth } from "@/lib/auth";
 
 export default function TabsLayout() {
   const token = useAuth((s) => s.token);
   const scheme = useColorScheme();
-  const colors = Colors[scheme === "dark" ? "dark" : "light"];
+  const isDark = scheme === "dark";
 
   if (!token) return <Redirect href="/(auth)/login" />;
 
   return (
     <NativeTabs
-      backgroundColor={colors.background}
-      indicatorColor={colors.backgroundElement}
-      labelStyle={{ selected: { color: colors.text } }}
+      backgroundColor={isDark ? Tokens.cardDark : Tokens.card}
+      indicatorColor={isDark ? Tokens.bgElevDark : Tokens.bgElev}
+      labelStyle={{
+        selected: { color: Tokens.brand },
+      }}
+      tintColor={Tokens.brand}
     >
       <NativeTabs.Trigger name="index">
         <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
