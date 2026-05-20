@@ -1,18 +1,17 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
 import { connectToDatabase } from "@/lib/mongodb";
 import Goal from "@/models/Goal";
 import Account from "@/models/Account";
 import { updateGoalSchema } from "@/validations/goal";
 import mongoose from "mongoose";
+import { getUserId } from "@/lib/mobileAuth";
 
 // GET: /api/goals/:id
 export async function GET(
   req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const session = await getServerSession(authOptions);
-  if (!session || !session.user?._id) {
+  const userId = await getUserId(req);
+  if (!userId) {
     return Response.json(
       { message: "Unauthorized", type: "error" },
       { status: 401 },
@@ -25,7 +24,7 @@ export async function GET(
   try {
     const goal = await Goal.findOne({
       _id: id,
-      userId: session.user._id,
+      userId: userId,
     });
 
     if (!goal) {
@@ -54,8 +53,8 @@ export async function PUT(
   req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const session = await getServerSession(authOptions);
-  if (!session || !session.user?._id) {
+  const userId = await getUserId(req);
+  if (!userId) {
     return Response.json(
       { message: "Unauthorized", type: "error" },
       { status: 401 },
@@ -98,7 +97,7 @@ export async function PUT(
     }
 
     const updated = await Goal.findOneAndUpdate(
-      { _id: id, userId: session.user._id },
+      { _id: id, userId: userId },
       parsed.data,
       { new: true },
     );
@@ -129,8 +128,8 @@ export async function DELETE(
   req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const session = await getServerSession(authOptions);
-  if (!session || !session.user?._id) {
+  const userId = await getUserId(req);
+  if (!userId) {
     return Response.json(
       { message: "Unauthorized", type: "error" },
       { status: 401 },
@@ -143,7 +142,7 @@ export async function DELETE(
   try {
     const goal = await Goal.findOne({
       _id: id,
-      userId: session.user._id,
+      userId: userId,
     });
 
     if (!goal) {
@@ -156,7 +155,7 @@ export async function DELETE(
     // Get associated goal account
     const account = await Account.findOne({
       _id: goal.accountId,
-      userId: session.user._id,
+      userId: userId,
     });
 
     // Spec: Block deletion if goal account still has money

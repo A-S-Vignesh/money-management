@@ -7,13 +7,16 @@ import { Tokens } from "@/lib/design";
 
 interface Props {
   title?: string;
+  /** Text-only action — renders as `{action} ›`. For custom JSX use `trailing`. */
   action?: string;
   onAction?: () => void;
+  /** Arbitrary JSX rendered on the right of the section title. Overrides `action`. */
+  trailing?: React.ReactNode;
   children?: React.ReactNode;
   style?: ViewStyle;
 }
 
-export function Section({ title, action, onAction, children, style }: Props) {
+export function Section({ title, action, onAction, trailing, children, style }: Props) {
   return (
     <View style={[{ marginBottom: 18 }, style]}>
       {title && (
@@ -29,15 +32,19 @@ export function Section({ title, action, onAction, children, style }: Props) {
           <Text className="text-fg dark:text-fg-dark text-[16px] font-semibold tracking-tight">
             {title}
           </Text>
-          {action && (
-            <Pressable
-              onPress={onAction}
-              style={{ flexDirection: "row", alignItems: "center", gap: 2 }}
-            >
-              <Text className="text-brand text-[13px] font-semibold">{action}</Text>
-              <ChevronRight size={14} color={Tokens.brand} strokeWidth={2.4} />
-            </Pressable>
-          )}
+          {trailing
+            ? trailing
+            : action
+              ? (
+                <Pressable
+                  onPress={onAction}
+                  style={{ flexDirection: "row", alignItems: "center", gap: 2 }}
+                >
+                  <Text className="text-brand text-[13px] font-semibold">{action}</Text>
+                  <ChevronRight size={14} color={Tokens.brand} strokeWidth={2.4} />
+                </Pressable>
+              )
+              : null}
         </View>
       )}
       {children}

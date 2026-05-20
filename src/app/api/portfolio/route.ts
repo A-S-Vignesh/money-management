@@ -5,16 +5,14 @@
 //              realizedPnL, totalPnL, holdingsCount, activeHoldingsCount }
 //   allocationByType: [{ type, value, percentage, count }]
 //   recentActivity: last 10 buy/sell/dividend transactions (linked holdings)
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
 import { connectToDatabase } from "@/lib/mongodb";
 import Holding from "@/models/Holding";
 import Transaction from "@/models/Transaction";
 import mongoose from "mongoose";
+import { getUserId } from "@/lib/mobileAuth";
 
-export async function GET() {
-  const session = await getServerSession(authOptions);
-  const userId = session?.user?._id;
+export async function GET(req: Request) {
+  const userId = await getUserId(req);
   if (!userId) {
     return Response.json(
       { message: "Unauthorized", type: "error", success: false },

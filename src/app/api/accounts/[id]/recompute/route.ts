@@ -2,18 +2,16 @@
 //
 // POST → recompute one account's balance from its transactions.
 // Use when a user notices their balance looks wrong, or after a manual fix.
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
 import { connectToDatabase } from "@/lib/mongodb";
 import Account from "@/models/Account";
 import { recomputeAccountBalance } from "@/lib/recomputeBalance";
+import { getUserId } from "@/lib/mobileAuth";
 
 export async function POST(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const session = await getServerSession(authOptions);
-  const userId = session?.user?._id;
+  const userId = await getUserId(req);
 
   if (!userId) {
     return Response.json(

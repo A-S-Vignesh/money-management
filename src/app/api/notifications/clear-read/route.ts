@@ -3,14 +3,13 @@
 // DELETE → bulk-delete every READ notification for the user. Unread alerts
 // are kept. Complements the TTL on Notification.createdAt (which auto-purges
 // read entries after 30 days) with an immediate user-driven option.
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
 import { connectToDatabase } from "@/lib/mongodb";
 import Notification from "@/models/Notification";
+import { getUserId } from "@/lib/mobileAuth";
 
-export async function DELETE() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?._id) {
+export async function DELETE(req: Request) {
+  const userId = await getUserId(req);
+  if (!userId) {
     return Response.json(
       { message: "Unauthorized", type: "error", success: false },
       { status: 401 },
@@ -20,7 +19,7 @@ export async function DELETE() {
   try {
     await connectToDatabase();
     const result = await Notification.deleteMany({
-      userId: session.user._id,
+      userId: userId,
       isRead: true,
     });
     return Response.json({

@@ -4,11 +4,12 @@
 //              {category • date}
 // The amount color is emerald/rose/blue based on income/expense/transfer.
 
-import { Pressable, Text, View } from "react-native";
+import { Pressable, Text, View, useColorScheme } from "react-native";
 import { Repeat } from "lucide-react-native";
 import dayjs from "dayjs";
 
 import { getCategoryPalette } from "@money-nest/shared";
+import { getCategoryIcon } from "@/lib/categoryIcons";
 import { Money } from "./Money";
 
 interface Tx {
@@ -32,9 +33,12 @@ interface Props {
 }
 
 export function TxRow({ tx, onPress, last }: Props) {
+  const scheme = useColorScheme();
+  const dark = scheme === "dark";
   const desc = tx.description ?? tx.desc ?? "";
   const amt = tx.amount ?? tx.amt ?? 0;
   const palette = getCategoryPalette(tx.category);
+  const Icon = getCategoryIcon(tx.category);
   const sign = tx.type === "income" ? "+" : tx.type === "expense" ? "-" : "";
   const amtColorClass =
     tx.type === "income"
@@ -56,28 +60,23 @@ export function TxRow({ tx, onPress, last }: Props) {
       }}
       className="border-edge dark:border-edge-dark active:opacity-70"
     >
-      {/* Inlined IconTile — we use a hex bg directly so the category palette
-          maps 1:1 without a tone lookup. */}
+      {/* Category icon tile — Lucide icon on a category-colored bg.
+          Matches the Mobile UI mock 1:1. */}
       <View
         style={{
           width: 38,
           height: 38,
           borderRadius: 12,
-          backgroundColor: palette.bgLight,
+          backgroundColor: dark ? palette.bgDark : palette.bgLight,
           alignItems: "center",
           justifyContent: "center",
         }}
       >
-        <Text
-          style={{
-            color: palette.textLight,
-            fontSize: 14,
-            fontWeight: "700",
-            letterSpacing: -0.2,
-          }}
-        >
-          {tx.category.charAt(0).toUpperCase()}
-        </Text>
+        <Icon
+          size={18}
+          color={dark ? palette.textDark : palette.textLight}
+          strokeWidth={2}
+        />
       </View>
 
       <View style={{ flex: 1, minWidth: 0 }}>

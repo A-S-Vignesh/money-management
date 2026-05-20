@@ -6,8 +6,6 @@
 // Requires the user to send { confirmation: "DELETE" } in the body so a
 // stray request can't nuke an account. The mutation is wrapped in a Mongo
 // session in production for atomicity (best-effort in dev).
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
 import { connectToDatabase } from "@/lib/mongodb";
 import User from "@/models/User";
 import Account from "@/models/Account";
@@ -18,12 +16,12 @@ import Holding from "@/models/Holding";
 import Notification from "@/models/Notification";
 import PushSubscription from "@/models/PushSubscription";
 import mongoose from "mongoose";
+import { getUserId } from "@/lib/mobileAuth";
 
 const isProd = process.env.NODE_ENV === "production";
 
 export async function DELETE(req: Request) {
-  const session = await getServerSession(authOptions);
-  const userId = session?.user?._id;
+  const userId = await getUserId(req);
   if (!userId) {
     return Response.json(
       { message: "Unauthorized", type: "error", success: false },

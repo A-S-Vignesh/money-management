@@ -242,32 +242,25 @@ export function AddTransactionSheet({
 
       {/* Accounts */}
       {type === "transfer" ? (
-        <View style={{ marginBottom: 16 }}>
-          <Text
-            className="text-fg-muted dark:text-fg-dark-muted text-[10.5px] font-bold uppercase mb-2"
-            style={{ letterSpacing: 0.5 }}
-          >
-            Transfer between accounts
-          </Text>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-            <View style={{ flex: 1 }}>
-              <AccountPicker
-                label="From"
-                value={fromAccountId}
-                onChange={setFromAccountId}
-                accounts={accounts}
-                excludeId={toAccountId}
-              />
-            </View>
+        <View style={{ marginBottom: 16, gap: 12 }}>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Text
+              className="text-fg-muted dark:text-fg-dark-muted text-[10.5px] font-bold uppercase"
+              style={{ letterSpacing: 0.5, flex: 1 }}
+            >
+              Transfer between accounts
+            </Text>
             <Pressable
               onPress={() => {
                 const a = fromAccountId;
                 setFromAccountId(toAccountId);
                 setToAccountId(a);
               }}
+              hitSlop={8}
+              android_ripple={{ color: dark ? Tokens.borderDark : Tokens.bgElev, borderless: true }}
               style={{
-                width: 36,
-                height: 36,
+                width: 30,
+                height: 30,
                 borderRadius: 99,
                 backgroundColor: dark ? Tokens.bgElevDark : Tokens.bgElev,
                 alignItems: "center",
@@ -275,21 +268,30 @@ export function AddTransactionSheet({
               }}
             >
               <ArrowRight
-                size={18}
+                size={14}
                 color={dark ? Tokens.textMutedDark : Tokens.textMuted}
-                strokeWidth={2.2}
+                strokeWidth={2.4}
               />
             </Pressable>
-            <View style={{ flex: 1 }}>
-              <AccountPicker
-                label="To"
-                value={toAccountId}
-                onChange={setToAccountId}
-                accounts={accounts}
-                excludeId={fromAccountId}
-              />
-            </View>
           </View>
+          {/* From + To stacked vertically — each is a full-width horizontal
+              account rail so the user can scroll through all accounts.
+              The old side-by-side layout cramped both pickers and made the
+              horizontal scroll feel jammed against the swap button. */}
+          <AccountPicker
+            label="From"
+            value={fromAccountId}
+            onChange={setFromAccountId}
+            accounts={accounts}
+            excludeId={toAccountId}
+          />
+          <AccountPicker
+            label="To"
+            value={toAccountId}
+            onChange={setToAccountId}
+            accounts={accounts}
+            excludeId={fromAccountId}
+          />
         </View>
       ) : (
         <View style={{ marginBottom: 16 }}>
@@ -307,11 +309,14 @@ export function AddTransactionSheet({
         <DateStrip value={date} onChange={setDate} />
       </View>
 
-      {/* Save */}
+      {/* Save — flat style only. NativeWind's Pressable wrapper drops
+          function-style props (the entire button shape vanished and just
+          left bare text). Use android_ripple for press feedback instead. */}
       <Pressable
         onPress={submit}
         disabled={!canSubmit || submitting}
-        style={({ pressed }) => ({
+        android_ripple={{ color: "rgba(255,255,255,0.18)" }}
+        style={{
           height: 52,
           borderRadius: 16,
           backgroundColor: Tokens.brand,
@@ -319,13 +324,14 @@ export function AddTransactionSheet({
           justifyContent: "center",
           flexDirection: "row",
           gap: 8,
-          opacity: !canSubmit || submitting ? 0.5 : pressed ? 0.92 : 1,
+          opacity: !canSubmit || submitting ? 0.5 : 1,
           shadowColor: Tokens.brand,
           shadowOpacity: 0.4,
           shadowRadius: 14,
           shadowOffset: { width: 0, height: 8 },
           elevation: 6,
-        })}
+          overflow: "hidden",
+        }}
       >
         {submitting ? (
           <ActivityIndicator color="#fff" />

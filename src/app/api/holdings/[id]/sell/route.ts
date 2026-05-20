@@ -4,14 +4,13 @@
 //        Linked transfer transaction: investment account → cash account.
 //        Holding stays in DB (isActive=false when fully sold) so realized P&L
 //        is preserved for reporting.
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
 import { connectToDatabase } from "@/lib/mongodb";
 import Holding from "@/models/Holding";
 import Account from "@/models/Account";
 import Transaction from "@/models/Transaction";
 import { sellHoldingSchema } from "@/validations/holding";
 import mongoose from "mongoose";
+import { getUserId } from "@/lib/mobileAuth";
 
 const isProd = process.env.NODE_ENV === "production";
 
@@ -19,8 +18,7 @@ export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const session = await getServerSession(authOptions);
-  const userId = session?.user?._id;
+  const userId = await getUserId(req);
   if (!userId) {
     return Response.json(
       { message: "Unauthorized", type: "error", success: false },

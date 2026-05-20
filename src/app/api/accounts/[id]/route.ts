@@ -1,19 +1,17 @@
 // app/api/accounts/[id]/route.ts
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
 import { connectToDatabase } from "@/lib/mongodb";
 import Account from "@/models/Account";
 import Transaction from "@/models/Transaction";
 import { updateAccountSchema } from "@/validations/account";
 import mongoose from "mongoose";
+import { getUserId } from "@/lib/mobileAuth";
 
 // ------------------ GET ------------------
 export async function GET(
   req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const session = await getServerSession(authOptions);
-  const userId = session?.user?._id;
+  const userId = await getUserId(req);
 
   if (!userId) {
     return Response.json(
@@ -56,8 +54,7 @@ export async function PUT(
   req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const session = await getServerSession(authOptions);
-  const userId = session?.user?._id;
+  const userId = await getUserId(req);
 
   if (!userId) {
     return Response.json(
@@ -144,8 +141,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const session = await getServerSession(authOptions);
-  const userId = session?.user?._id;
+  const userId = await getUserId(req);
 
   if (!userId) {
     return Response.json(

@@ -21,7 +21,6 @@ import {
   ChevronRight,
   Eye,
   EyeOff,
-  Menu,
   Plus,
   Send,
   Target,
@@ -32,6 +31,7 @@ import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { Tokens } from "@/lib/design";
 import { formatCurrency } from "@/lib/format";
+import { useDrawer, useTransactionSheet } from "@/lib/stores";
 import { getCategoryPalette } from "@money-nest/shared";
 
 import { Card } from "@/components/ui/Card";
@@ -44,10 +44,8 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { Sparkline } from "@/components/ui/Sparkline";
 import { TopHeader } from "@/components/ui/TopHeader";
 import { TxRow } from "@/components/ui/TxRow";
-import { AddTransactionSheet } from "@/components/transactions/AddTransactionSheet";
 import { TxDetailSheet } from "@/components/transactions/TxDetailSheet";
 import type { TransactionDoc } from "@/hooks/useTransactions";
-import type { TxType } from "@/components/transactions/TypeSegment";
 
 interface DashboardPayload {
   totalBalance?: number;
@@ -93,23 +91,15 @@ export default function DashboardScreen() {
   const [hidden, setHidden] = useState(false);
   const screenWidth = Dimensions.get("window").width;
 
-  // ── Sheet state — share the same AddTransactionSheet + TxDetailSheet
-  // components with the Transactions tab. Quick actions seed the type.
-  const [showAdd, setShowAdd] = useState(false);
-  const [addType, setAddType] = useState<TxType>("expense");
+  // AddTransactionSheet is mounted globally in (tabs)/_layout — we just
+  // open it via the store. TxDetailSheet stays local because it carries a
+  // specific transaction (per-screen state is fine here).
+  const openAdd = useTransactionSheet((s) => s.openAdd);
+  const openEdit = useTransactionSheet((s) => s.openEdit);
+  const openDrawer = useDrawer((s) => s.toggle);
+
   const [detailTx, setDetailTx] = useState<TransactionDoc | null>(null);
   const [showDetail, setShowDetail] = useState(false);
-  const [editingTx, setEditingTx] = useState<TransactionDoc | null>(null);
-
-  const openAdd = (t: TxType = "expense") => {
-    setEditingTx(null);
-    setAddType(t);
-    setShowAdd(true);
-  };
-  const closeAdd = () => {
-    setShowAdd(false);
-    setTimeout(() => setEditingTx(null), 280);
-  };
   const openDetail = (tx: TransactionDoc) => {
     setDetailTx(tx);
     setShowDetail(true);
@@ -117,8 +107,7 @@ export default function DashboardScreen() {
   const closeDetail = () => setShowDetail(false);
   const startEditFromDetail = (tx: TransactionDoc) => {
     setShowDetail(false);
-    setEditingTx(tx);
-    setTimeout(() => setShowAdd(true), 280);
+    setTimeout(() => openEdit(tx), 280);
   };
 
   const { data, isLoading, isRefetching, refetch } = useQuery<DashboardPayload>({
@@ -161,8 +150,20 @@ export default function DashboardScreen() {
       edges={["top"]}
       className="flex-1 bg-surface-muted dark:bg-surface-dark-elev"
     >
+      {/* Fixed top bar — stays put as the page below scrolls so the
+          hamburger is always one tap away. */}
+      <View style={{ paddingHorizontal: 16 }}>
+        <TopHeader
+          title="Money Nest"
+          subtitle={greet}
+          unread={2}
+          onBell={() => router.push("/(tabs)/profile")}
+          onMenu={openDrawer}
+        />
+      </View>
+
       <ScrollView
-        contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 140, paddingTop: 4 }}
         refreshControl={
           <RefreshControl
             refreshing={isRefetching}
@@ -172,28 +173,6 @@ export default function DashboardScreen() {
         }
         showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
-        <TopHeader
-          title="Money Nest"
-          subtitle={greet}
-          unread={2}
-          onBell={() => router.push("/(tabs)/profile")}
-          leading={
-            <Pressable
-              className="bg-surface dark:bg-surface-dark border border-edge dark:border-edge-dark"
-              style={{
-                width: 40,
-                height: 40,
-                borderRadius: 14,
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Menu size={20} color={Tokens.text} strokeWidth={2} />
-            </Pressable>
-          }
-        />
-
         {/* Hero net-worth card with blue→deep-blue gradient */}
         <LinearGradient
           colors={[Tokens.brand, Tokens.brand3]}
@@ -527,13 +506,9 @@ export default function DashboardScreen() {
         </Section>
       </ScrollView>
 
-      {/* Shared sheets — same components the Transactions tab uses. */}
-      <AddTransactionSheet
-        visible={showAdd}
-        onClose={closeAdd}
-        editing={editingTx}
-        initialType={addType}
-      />
+      {/* TxDetailSheet stays local — it carries a transaction selected
+          from this screen's recent activity list. AddTransactionSheet is
+          mounted globally in (tabs)/_layout. */}
       <TxDetailSheet
         visible={showDetail}
         onClose={closeDetail}

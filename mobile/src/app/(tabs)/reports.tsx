@@ -10,15 +10,17 @@ import {
   ScrollView,
   Text,
   View,
+  useColorScheme,
 } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import { SafeAreaView } from "react-native-safe-area-context";
 import dayjs from "dayjs";
-import { Download, Menu } from "lucide-react-native";
+import { Download } from "lucide-react-native";
 
 import { api } from "@/lib/api";
 import { Tokens } from "@/lib/design";
 import { formatCurrency } from "@/lib/format";
+import { useDrawer } from "@/lib/stores";
 import { getCategoryPalette } from "@money-nest/shared";
 
 import { Card } from "@/components/ui/Card";
@@ -146,8 +148,18 @@ export default function ReportsScreen() {
       edges={["top"]}
       className="flex-1 bg-surface-muted dark:bg-surface-dark-elev"
     >
+      {/* Fixed top bar — see Dashboard for rationale. */}
+      <View style={{ paddingHorizontal: 16 }}>
+        <ScreenHead
+          title="Reports"
+          subtitle="Insights and trends"
+          onMenu={useDrawer.getState().toggle}
+          trailing={<DownloadButton />}
+        />
+      </View>
+
       <ScrollView
-        contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 140, paddingTop: 4 }}
         refreshControl={
           <RefreshControl
             refreshing={isRefetching}
@@ -157,41 +169,6 @@ export default function ReportsScreen() {
         }
         showsVerticalScrollIndicator={false}
       >
-        <ScreenHead
-          title="Reports"
-          subtitle="Insights and trends"
-          leading={
-            <Pressable
-              className="bg-surface dark:bg-surface-dark border border-edge dark:border-edge-dark"
-              style={{
-                width: 40,
-                height: 40,
-                borderRadius: 14,
-                alignItems: "center",
-                justifyContent: "center",
-                marginTop: 2,
-              }}
-            >
-              <Menu size={20} color={Tokens.text} strokeWidth={2} />
-            </Pressable>
-          }
-          trailing={
-            <Pressable
-              className="bg-surface dark:bg-surface-dark border border-edge dark:border-edge-dark"
-              style={{
-                width: 40,
-                height: 40,
-                borderRadius: 12,
-                alignItems: "center",
-                justifyContent: "center",
-                marginTop: 6,
-              }}
-            >
-              <Download size={17} color={Tokens.text} strokeWidth={2} />
-            </Pressable>
-          }
-        />
-
         {/* Period chips */}
         <View style={{ flexDirection: "row", gap: 8, marginBottom: 14 }}>
           {(["1M", "3M", "6M", "1Y", "ALL"] as Period[]).map((p) => (
@@ -446,5 +423,29 @@ function SummaryStat({
         {value}
       </Text>
     </View>
+  );
+}
+
+// Download button — extracted so the icon color tracks dark mode via the
+// hook (we can't call useColorScheme inline inside ScreenHead trailing).
+function DownloadButton() {
+  const dark = useColorScheme() === "dark";
+  return (
+    <Pressable
+      android_ripple={{ color: dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)", borderless: true }}
+      style={{
+        width: 40,
+        height: 40,
+        borderRadius: 12,
+        alignItems: "center",
+        justifyContent: "center",
+        marginTop: 6,
+        backgroundColor: dark ? Tokens.cardDark : Tokens.card,
+        borderWidth: 1,
+        borderColor: dark ? Tokens.borderDark : Tokens.border,
+      }}
+    >
+      <Download size={17} color={dark ? Tokens.textDarkPrimary : Tokens.text} strokeWidth={2} />
+    </Pressable>
   );
 }

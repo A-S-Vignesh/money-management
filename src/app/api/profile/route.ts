@@ -1,12 +1,13 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
+
+
 import { connectToDatabase } from "@/lib/mongodb";
 import User from "@/models/User";
 import { updateProfileSchema } from "@/validations/profile";
+import { getUserId } from "@/lib/mobileAuth";
 
-export async function GET() {
-  const session = await getServerSession(authOptions);
-  if (!session || !session.user?._id) {
+export async function GET(req: Request) {
+  const userId = await getUserId(req);
+  if (!userId) {
     return Response.json(
       { message: "Unauthorized", type: "error", success: false },
       { status: 401 },
@@ -16,7 +17,7 @@ export async function GET() {
   await connectToDatabase();
 
   try {
-    const user = await User.findById(session.user._id)
+    const user = await User.findById(userId)
       .select("-password -googleId -__v")
       .lean();
 
@@ -43,8 +44,8 @@ export async function GET() {
 }
 
 export async function PUT(req: Request) {
-  const session = await getServerSession(authOptions);
-  if (!session || !session.user?._id) {
+  const userId = await getUserId(req);
+  if (!userId) {
     return Response.json(
       { message: "Unauthorized", type: "error", success: false },
       { status: 401 },
@@ -86,7 +87,7 @@ export async function PUT(req: Request) {
       updates.twoFactorAuth = result.data.twoFactorAuth;
 
     const updatedUser = await User.findByIdAndUpdate(
-      session.user._id,
+      userId,
       { $set: updates },
       { new: true },
     )

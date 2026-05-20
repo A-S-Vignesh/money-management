@@ -41,7 +41,7 @@ export default function ProfileScreen() {
       className="flex-1 bg-surface-muted dark:bg-surface-dark-elev"
     >
       <ScrollView
-        contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
+        contentContainerStyle={{ padding: 16, paddingBottom: 140 }}
         showsVerticalScrollIndicator={false}
       >
         <ScreenHead title="Profile" />

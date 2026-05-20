@@ -29,7 +29,7 @@ export function Placeholder({
       edges={["top"]}
       className="flex-1 bg-surface-muted dark:bg-surface-dark-elev"
     >
-      <View style={{ paddingHorizontal: 16, flex: 1 }}>
+      <View style={{ paddingHorizontal: 16, flex: 1, paddingBottom: 140 }}>
         <ScreenHead title={title} subtitle="In progress" />
         <View
           style={{

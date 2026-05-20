@@ -2,14 +2,13 @@
 //
 // POST → add quantity to an existing holding. Recomputes weighted average
 //        cost basis and creates a linked transfer transaction.
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
 import { connectToDatabase } from "@/lib/mongodb";
 import Holding from "@/models/Holding";
 import Account from "@/models/Account";
 import Transaction from "@/models/Transaction";
 import { buyHoldingSchema } from "@/validations/holding";
 import mongoose from "mongoose";
+import { getUserId } from "@/lib/mobileAuth";
 
 const isProd = process.env.NODE_ENV === "production";
 
@@ -17,8 +16,7 @@ export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const session = await getServerSession(authOptions);
-  const userId = session?.user?._id;
+  const userId = await getUserId(req);
   if (!userId) {
     return Response.json(
       { message: "Unauthorized", type: "error", success: false },

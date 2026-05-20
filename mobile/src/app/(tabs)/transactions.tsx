@@ -19,16 +19,16 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import dayjs from "dayjs";
-import { Inbox, Menu, Plus, Search } from "lucide-react-native";
+import { Inbox, Search } from "lucide-react-native";
 
 import { Tokens } from "@/lib/design";
 import { formatCurrency } from "@/lib/format";
+import { useDrawer, useTransactionSheet } from "@/lib/stores";
 import {
   useTransactions,
   type TransactionDoc,
 } from "@/hooks/useTransactions";
 
-import { AddTransactionSheet } from "@/components/transactions/AddTransactionSheet";
 import { TxDetailSheet } from "@/components/transactions/TxDetailSheet";
 import { Card } from "@/components/ui/Card";
 import { Chip } from "@/components/ui/Chip";
@@ -53,11 +53,12 @@ export default function TransactionsScreen() {
     return () => clearTimeout(t);
   }, [q]);
 
-  // Sheet visibility + selected transaction.
+  // Detail sheet stays local (carries a transaction). Add/Edit sheet lives
+  // globally in (tabs)/_layout — we just dispatch via the store.
+  const openEditSheet = useTransactionSheet((s) => s.openEdit);
+  const openDrawer = useDrawer((s) => s.toggle);
   const [detailTx, setDetailTx] = useState<TransactionDoc | null>(null);
   const [showDetail, setShowDetail] = useState(false);
-  const [showAdd, setShowAdd] = useState(false);
-  const [editingTx, setEditingTx] = useState<TransactionDoc | null>(null);
 
   const { data, isLoading, isRefetching, refetch } = useTransactions({
     page: 1,
@@ -97,21 +98,11 @@ export default function TransactionsScreen() {
     setShowDetail(true);
   };
   const closeDetail = () => setShowDetail(false);
-
   const startEditFromDetail = (tx: TransactionDoc) => {
     setShowDetail(false);
-    setEditingTx(tx);
-    // Allow the detail sheet to finish its slide-out before opening add sheet.
-    setTimeout(() => setShowAdd(true), 280);
-  };
-
-  const openAdd = () => {
-    setEditingTx(null);
-    setShowAdd(true);
-  };
-  const closeAdd = () => {
-    setShowAdd(false);
-    setTimeout(() => setEditingTx(null), 280);
+    // Slight delay so the detail sheet finishes its slide-out before the
+    // add/edit sheet slides in.
+    setTimeout(() => openEditSheet(tx), 280);
   };
 
   return (
@@ -119,8 +110,17 @@ export default function TransactionsScreen() {
       edges={["top"]}
       className="flex-1 bg-surface-muted dark:bg-surface-dark-elev"
     >
+      {/* Fixed top bar — see Dashboard for rationale. */}
+      <View style={{ paddingHorizontal: 16 }}>
+        <ScreenHead
+          title="Transactions"
+          subtitle={`${list.length} entries · net ${netFlow >= 0 ? "+" : "−"}${formatCurrency(Math.abs(netFlow))}`}
+          onMenu={openDrawer}
+        />
+      </View>
+
       <ScrollView
-        contentContainerStyle={{ padding: 16, paddingBottom: 110 }}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 140, paddingTop: 4 }}
         refreshControl={
           <RefreshControl
             refreshing={isRefetching}
@@ -130,26 +130,6 @@ export default function TransactionsScreen() {
         }
         showsVerticalScrollIndicator={false}
       >
-        <ScreenHead
-          title="Transactions"
-          subtitle={`${list.length} entries · net ${netFlow >= 0 ? "+" : "−"}${formatCurrency(Math.abs(netFlow))}`}
-          leading={
-            <Pressable
-              className="bg-surface dark:bg-surface-dark border border-edge dark:border-edge-dark"
-              style={{
-                width: 40,
-                height: 40,
-                borderRadius: 14,
-                alignItems: "center",
-                justifyContent: "center",
-                marginTop: 4,
-              }}
-            >
-              <Menu size={20} color={Tokens.text} strokeWidth={2} />
-            </Pressable>
-          }
-        />
-
         {/* Search */}
         <View style={{ position: "relative", marginBottom: 12 }}>
           <Search
@@ -302,36 +282,8 @@ export default function TransactionsScreen() {
         )}
       </ScrollView>
 
-      {/* FAB */}
-      <Pressable
-        onPress={openAdd}
-        style={({ pressed }) => ({
-          position: "absolute",
-          right: 18,
-          bottom: 84, // clear of the native tab bar
-          width: 56,
-          height: 56,
-          borderRadius: 18,
-          backgroundColor: Tokens.brand,
-          alignItems: "center",
-          justifyContent: "center",
-          shadowColor: Tokens.brand,
-          shadowOffset: { width: 0, height: 12 },
-          shadowOpacity: 0.55,
-          shadowRadius: 18,
-          elevation: 10,
-          transform: [{ scale: pressed ? 0.94 : 1 }],
-        })}
-      >
-        <Plus size={26} color="#fff" strokeWidth={2.4} />
-      </Pressable>
-
-      {/* Sheets */}
-      <AddTransactionSheet
-        visible={showAdd}
-        onClose={closeAdd}
-        editing={editingTx}
-      />
+      {/* FAB + AddTransactionSheet are both mounted globally in
+          (tabs)/_layout — we don't render them here. */}
       <TxDetailSheet
         visible={showDetail}
         onClose={closeDetail}

@@ -1,12 +1,12 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
+
+
 import { connectToDatabase } from "@/lib/mongodb";
 import Notification from "@/models/Notification";
+import { getUserId } from "@/lib/mobileAuth";
 
 // GET: Fetch notifications with pagination + unread count
 export async function GET(req: Request) {
-  const session = await getServerSession(authOptions);
-  const userId = session?.user?._id;
+  const userId = await getUserId(req);
 
   if (!userId) {
     return Response.json(

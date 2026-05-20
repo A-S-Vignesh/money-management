@@ -1,8 +1,9 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
+
+
 import { connectToDatabase } from "@/lib/mongodb";
 import PushSubscription from "@/models/PushSubscription";
 import webpush from "web-push";
+import { getUserId } from "@/lib/mobileAuth";
 
 // Lazy VAPID init — ensures env vars are loaded
 function initVapid() {
@@ -21,8 +22,8 @@ function initVapid() {
 
 // POST: Send push notification to current user
 export async function POST(req: Request) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?._id) {
+  const userId = await getUserId(req);
+  if (!userId) {
     return Response.json(
       { message: "Unauthorized", type: "error", success: false },
       { status: 401 },
@@ -49,7 +50,7 @@ export async function POST(req: Request) {
 
     // Find all subscriptions for this user
     const subscriptions = await PushSubscription.find({
-      userId: session.user._id,
+      userId: userId,
     }).lean();
 
     if (subscriptions.length === 0) {

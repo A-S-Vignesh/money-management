@@ -9,6 +9,7 @@ import {
   Pressable,
   Text,
   View,
+  useColorScheme,
 } from "react-native";
 import dayjs from "dayjs";
 import { Edit, Trash2 } from "lucide-react-native";
@@ -19,6 +20,7 @@ import {
   type TransactionDoc,
 } from "@/hooks/useTransactions";
 import { useAccounts } from "@/hooks/useAccounts";
+import { getCategoryIcon } from "@/lib/categoryIcons";
 import { Tokens } from "@/lib/design";
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { Card } from "@/components/ui/Card";
@@ -44,12 +46,14 @@ export function TxDetailSheet({
   const deleteMut = useDeleteTransaction();
   const [confirming, setConfirming] = useState(false);
   const { data: accounts = [] } = useAccounts();
+  const dark = useColorScheme() === "dark";
 
   if (!transaction) {
     return <BottomSheet visible={visible} onClose={onClose}>{null}</BottomSheet>;
   }
 
   const palette = getCategoryPalette(transaction.category);
+  const CategoryIcon = getCategoryIcon(transaction.category);
   const sign =
     transaction.type === "income" ? "+" : transaction.type === "expense" ? "-" : "";
   const amtColorClass =
@@ -120,21 +124,17 @@ export function TxDetailSheet({
             width: 64,
             height: 64,
             borderRadius: 20,
-            backgroundColor: palette.bgLight,
+            backgroundColor: dark ? palette.bgDark : palette.bgLight,
             alignItems: "center",
             justifyContent: "center",
             marginBottom: 14,
           }}
         >
-          <Text
-            style={{
-              color: palette.textLight,
-              fontSize: 22,
-              fontWeight: "700",
-            }}
-          >
-            {transaction.category.charAt(0).toUpperCase()}
-          </Text>
+          <CategoryIcon
+            size={28}
+            color={dark ? palette.textDark : palette.textLight}
+            strokeWidth={2}
+          />
         </View>
         <Money
           value={transaction.amount}
@@ -194,7 +194,11 @@ export function TxDetailSheet({
             gap: 8,
           }}
         >
-          <Edit size={15} color={Tokens.text} strokeWidth={2} />
+          <Edit
+            size={15}
+            color={dark ? Tokens.textDarkPrimary : Tokens.text}
+            strokeWidth={2}
+          />
           <Text className="text-fg dark:text-fg-dark text-[14px] font-semibold">
             Edit
           </Text>

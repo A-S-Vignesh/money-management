@@ -2,8 +2,6 @@
 //
 // GET → return all of the logged-in user's data as a single JSON file.
 // GDPR right-of-access compliance.
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
 import { connectToDatabase } from "@/lib/mongodb";
 import User from "@/models/User";
 import Account from "@/models/Account";
@@ -13,10 +11,10 @@ import Goal from "@/models/Goal";
 import Holding from "@/models/Holding";
 import Notification from "@/models/Notification";
 import mongoose from "mongoose";
+import { getUserId } from "@/lib/mobileAuth";
 
-export async function GET() {
-  const session = await getServerSession(authOptions);
-  const userId = session?.user?._id;
+export async function GET(req: Request) {
+  const userId = await getUserId(req);
   if (!userId) {
     return Response.json(
       { message: "Unauthorized", type: "error", success: false },

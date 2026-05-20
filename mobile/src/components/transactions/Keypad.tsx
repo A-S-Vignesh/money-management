@@ -59,21 +59,22 @@ export function Keypad({ value, onChange, maxLength = 8 }: Props) {
         >
           <Pressable
             onPress={() => press(k)}
-            style={({ pressed }) => ({
+            android_ripple={{
+              color: dark ? Tokens.borderDark : Tokens.bgElev,
+            }}
+            // Flat style — function-style is dropped by NativeWind's
+            // Pressable wrapper, leaving keys as bare numbers with no
+            // button shape. Press feedback via android_ripple.
+            style={{
               height: 56,
               borderRadius: 16,
               alignItems: "center",
               justifyContent: "center",
-              backgroundColor: pressed
-                ? dark
-                  ? Tokens.borderDark
-                  : Tokens.bgElev
-                : dark
-                  ? Tokens.cardSoftDark
-                  : Tokens.cardSoft,
+              backgroundColor: dark ? Tokens.cardSoftDark : Tokens.cardSoft,
               borderWidth: 1,
               borderColor: dark ? Tokens.borderDark : Tokens.border,
-            })}
+              overflow: "hidden",
+            }}
           >
             {k === "del" ? (
               <Delete

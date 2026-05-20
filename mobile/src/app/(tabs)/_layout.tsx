@@ -1,67 +1,59 @@
 // src/app/(tabs)/_layout.tsx
-// Uses Expo Router's NativeTabs (the same primitive the SDK 55 starter used
-// in `app-tabs.tsx`) — true iOS Liquid Glass + Android Material 3 styling,
-// not a JS-rendered tab bar. Auth-gated: bounces unauthed users to /login.
+//
+// Was: NativeTabs (iOS Liquid Glass / Android Material 3).
+// Now: Slot + custom JS-rendered tab bar so we match the Mobile UI mock's
+// rounded blue-accented pill across both platforms.
+//
+// Bonus: this layout also hosts globals that should appear on every tab —
+// the side Drawer, the GlobalFab, and the AddTransaction bottom sheet
+// driven by useTransactionSheet store. Per-screen instances were removed.
 
-import { Redirect } from "expo-router";
-import { NativeTabs } from "expo-router/unstable-native-tabs";
-import { useColorScheme } from "react-native";
+import { Redirect, Slot } from "expo-router";
+import { View, useColorScheme } from "react-native";
 
-import { Tokens } from "@/lib/design";
 import { useAuth } from "@/lib/auth";
+import { Tokens } from "@/lib/design";
+import { useTransactionSheet } from "@/lib/stores";
+
+import { BottomTabBar } from "@/components/nav/BottomTabBar";
+import { Drawer } from "@/components/nav/Drawer";
+import { GlobalFab } from "@/components/nav/GlobalFab";
+import { AddTransactionSheet } from "@/components/transactions/AddTransactionSheet";
 
 export default function TabsLayout() {
   const token = useAuth((s) => s.token);
   const scheme = useColorScheme();
-  const isDark = scheme === "dark";
+  const dark = scheme === "dark";
+
+  const sheetOpen = useTransactionSheet((s) => s.open);
+  const sheetEditing = useTransactionSheet((s) => s.editing);
+  const sheetInitialType = useTransactionSheet((s) => s.initialType);
+  const closeSheet = useTransactionSheet((s) => s.close);
 
   if (!token) return <Redirect href="/(auth)/login" />;
 
   return (
-    <NativeTabs
-      backgroundColor={isDark ? Tokens.cardDark : Tokens.card}
-      indicatorColor={isDark ? Tokens.bgElevDark : Tokens.bgElev}
-      labelStyle={{
-        selected: { color: Tokens.brand },
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: dark ? Tokens.bgDark : Tokens.bg,
       }}
-      tintColor={Tokens.brand}
     >
-      <NativeTabs.Trigger name="index">
-        <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon sf="house.fill" drawable="ic_dashboard" />
-      </NativeTabs.Trigger>
+      {/* Active screen */}
+      <Slot />
 
-      <NativeTabs.Trigger name="transactions">
-        <NativeTabs.Trigger.Label>Activity</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon
-          sf="list.bullet.rectangle"
-          drawable="ic_transactions"
-        />
-      </NativeTabs.Trigger>
+      {/* Persistent UI on every tab */}
+      <GlobalFab />
+      <BottomTabBar />
+      <Drawer />
 
-      <NativeTabs.Trigger name="budgets">
-        <NativeTabs.Trigger.Label>Budgets</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon
-          sf="chart.pie.fill"
-          drawable="ic_budgets"
-        />
-      </NativeTabs.Trigger>
-
-      <NativeTabs.Trigger name="reports">
-        <NativeTabs.Trigger.Label>Reports</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon
-          sf="chart.line.uptrend.xyaxis"
-          drawable="ic_reports"
-        />
-      </NativeTabs.Trigger>
-
-      <NativeTabs.Trigger name="profile">
-        <NativeTabs.Trigger.Label>You</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon
-          sf="person.crop.circle.fill"
-          drawable="ic_profile"
-        />
-      </NativeTabs.Trigger>
-    </NativeTabs>
+      {/* Global Add/Edit Transaction sheet — opened via useTransactionSheet */}
+      <AddTransactionSheet
+        visible={sheetOpen}
+        onClose={closeSheet}
+        editing={sheetEditing}
+        initialType={sheetInitialType}
+      />
+    </View>
   );
 }

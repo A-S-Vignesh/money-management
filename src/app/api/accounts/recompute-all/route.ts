@@ -8,8 +8,6 @@
 //      to recompute every account for every user. Run nightly to catch any drift.
 //
 // Set CRON_SECRET in .env to enable the cron path.
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
 import { connectToDatabase } from "@/lib/mongodb";
 import Account from "@/models/Account";
 import {
@@ -17,6 +15,7 @@ import {
   recomputeAllBalancesForUser,
   type RecomputeResult,
 } from "@/lib/recomputeBalance";
+import { getUserId } from "@/lib/mobileAuth";
 
 export async function POST(req: Request) {
   try {
@@ -47,8 +46,7 @@ export async function POST(req: Request) {
     }
 
     // ── Path B: logged-in user, only their accounts ──
-    const session = await getServerSession(authOptions);
-    const userId = session?.user?._id;
+  const userId = await getUserId(req);
     if (!userId) {
       return Response.json(
         { message: "Unauthorized", type: "error", success: false },

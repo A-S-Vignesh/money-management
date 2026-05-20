@@ -103,7 +103,15 @@ export async function proxy(req: NextRequest) {
   if (pathname.startsWith("/api/auth/")) return NextResponse.next();
 
   // ── CSRF: Origin/Referer check on state-changing requests ──
-  if (STATE_CHANGING.has(method) && !isSameOrigin(req)) {
+  // Bearer-token requests are exempt from the same-origin check. CSRF
+  // works because browsers auto-attach NextAuth's session cookie to
+  // cross-site requests; Authorization headers are NEVER auto-attached
+  // by the browser, so a malicious page cannot forge a Bearer request
+  // on the user's behalf. The mobile app legitimately calls these
+  // endpoints cross-origin (Expo Web on localhost, Android/iOS native
+  // builds with their own origin), and would be blocked otherwise.
+  const hasBearer = req.headers.get("authorization")?.startsWith("Bearer ");
+  if (STATE_CHANGING.has(method) && !hasBearer && !isSameOrigin(req)) {
     return new NextResponse(
       JSON.stringify({
         message: "Cross-origin request blocked",

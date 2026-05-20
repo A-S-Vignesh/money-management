@@ -1,12 +1,13 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
+
+
 import { connectToDatabase } from "@/lib/mongodb";
 import PushSubscription from "@/models/PushSubscription";
+import { getUserId } from "@/lib/mobileAuth";
 
 // POST: Subscribe to push notifications
 export async function POST(req: Request) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?._id) {
+  const userId = await getUserId(req);
+  if (!userId) {
     return Response.json(
       { message: "Unauthorized", type: "error", success: false },
       { status: 401 },
@@ -28,7 +29,7 @@ export async function POST(req: Request) {
     await PushSubscription.findOneAndUpdate(
       { endpoint: subscription.endpoint },
       {
-        userId: session.user._id,
+        userId: userId,
         endpoint: subscription.endpoint,
         keys: subscription.keys,
       },
@@ -51,8 +52,8 @@ export async function POST(req: Request) {
 
 // DELETE: Unsubscribe from push notifications
 export async function DELETE(req: Request) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?._id) {
+  const userId = await getUserId(req);
+  if (!userId) {
     return Response.json(
       { message: "Unauthorized", type: "error", success: false },
       { status: 401 },
@@ -64,7 +65,7 @@ export async function DELETE(req: Request) {
     const { endpoint } = await req.json();
 
     await PushSubscription.deleteOne({
-      userId: session.user._id,
+      userId: userId,
       endpoint,
     });
 

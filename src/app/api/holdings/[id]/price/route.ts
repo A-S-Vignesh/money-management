@@ -2,18 +2,16 @@
 //
 // POST → just update currentPrice + priceUpdatedAt. No transaction is created
 //        and no balances change — this is purely a market-value refresh.
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
 import { connectToDatabase } from "@/lib/mongodb";
 import Holding from "@/models/Holding";
 import { updatePriceSchema } from "@/validations/holding";
+import { getUserId } from "@/lib/mobileAuth";
 
 export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const session = await getServerSession(authOptions);
-  const userId = session?.user?._id;
+  const userId = await getUserId(req);
   if (!userId) {
     return Response.json(
       { message: "Unauthorized", type: "error", success: false },

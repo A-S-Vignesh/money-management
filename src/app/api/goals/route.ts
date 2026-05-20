@@ -1,17 +1,16 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
 import { connectToDatabase } from "@/lib/mongodb";
 import Goal from "@/models/Goal";
 import Account from "@/models/Account";
 import { createGoalSchema } from "@/validations/goal";
 import { createNotification } from "@/lib/notifications";
 import mongoose from "mongoose";
+import { getUserId } from "@/lib/mobileAuth";
 
 // GET: /api/goals — with pagination + priority filter
 export async function GET(req: Request) {
-  const session = await getServerSession(authOptions);
+  const userId = await getUserId(req);
 
-  if (!session || !session.user?._id) {
+  if (!userId) {
     return Response.json(
       { message: "Unauthorized", type: "error", success: false },
       { status: 401 },
@@ -29,7 +28,7 @@ export async function GET(req: Request) {
     );
     const skip = (page - 1) * limit;
 
-    const query: Record<string, unknown> = { userId: session.user._id };
+    const query: Record<string, unknown> = { userId: userId };
 
     const priorityFilter = searchParams.get("priority");
     if (priorityFilter && priorityFilter !== "all") {
@@ -64,9 +63,9 @@ export async function GET(req: Request) {
 
 // POST: /api/goals — atomic: create account + goal in one session
 export async function POST(req: Request) {
-  const session = await getServerSession(authOptions);
+  const userId = await getUserId(req);
 
-  if (!session || !session.user?._id) {
+  if (!userId) {
     return Response.json(
       { message: "Unauthorized", type: "error", success: false },
       { status: 401 },
@@ -120,7 +119,7 @@ export async function POST(req: Request) {
       const [newAccount] = await Account.create(
         [
           {
-            userId: session.user._id,
+            userId: userId,
             name: parsed.data.name,
             type: "goal",
             balance: 0,
@@ -134,7 +133,7 @@ export async function POST(req: Request) {
         [
           {
             ...parsed.data,
-            userId: session.user._id,
+            userId: userId,
             accountId: newAccount._id,
           },
         ],
@@ -160,7 +159,7 @@ export async function POST(req: Request) {
       year: "numeric",
     });
     createNotification({
-      userId: session.user._id,
+      userId: userId,
       type: "goal",
       title: `New Goal: ${parsed.data.name}`,
       message: `Target ₹${parsed.data.target.toLocaleString("en-IN")} by ${deadlineStr}`,

@@ -1,16 +1,15 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
 import { connectToDatabase } from "@/lib/mongodb";
 import Budget from "@/models/Budget";
 import { updateBudgetSchema } from "@/validations/budget";
+import { getUserId } from "@/lib/mobileAuth";
 
 // ✅ GET: Fetch single budget by ID
 export async function GET(
   req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const session = await getServerSession(authOptions);
-  if (!session || !session.user?._id) {
+  const userId = await getUserId(req);
+  if (!userId) {
     return Response.json(
       { message: "Unauthorized", type: "error", success: false },
       { status: 401 },
@@ -21,7 +20,7 @@ export async function GET(
   await connectToDatabase();
 
   try {
-    const budget = await Budget.findOne({ _id: id, userId: session.user._id });
+    const budget = await Budget.findOne({ _id: id, userId: userId });
 
     if (!budget) {
       return Response.json(
@@ -53,8 +52,8 @@ export async function PUT(
   req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const session = await getServerSession(authOptions);
-  if (!session || !session.user?._id) {
+  const userId = await getUserId(req);
+  if (!userId) {
     return Response.json(
       { message: "Unauthorized", type: "error", success: false },
       { status: 401 },
@@ -86,7 +85,7 @@ export async function PUT(
 
     const existing = await Budget.findOne({
       _id: id,
-      userId: session.user._id,
+      userId: userId,
     });
     if (!existing) {
       return Response.json(
@@ -96,7 +95,7 @@ export async function PUT(
     }
 
     const updated = await Budget.findOneAndUpdate(
-      { _id: id, userId: session.user._id },
+      { _id: id, userId: userId },
       updates,
       { new: true },
     );
@@ -131,8 +130,8 @@ export async function DELETE(
   req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const session = await getServerSession(authOptions);
-  if (!session || !session.user?._id) {
+  const userId = await getUserId(req);
+  if (!userId) {
     return Response.json(
       { message: "Unauthorized", type: "error", success: false },
       { status: 401 },
@@ -145,7 +144,7 @@ export async function DELETE(
   try {
     const existing = await Budget.findOne({
       _id: id,
-      userId: session.user._id,
+      userId: userId,
     });
     if (!existing) {
       return Response.json(
@@ -154,7 +153,7 @@ export async function DELETE(
       );
     }
 
-    await Budget.deleteOne({ _id: id, userId: session.user._id });
+    await Budget.deleteOne({ _id: id, userId: userId });
 
     return Response.json(
       {

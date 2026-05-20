@@ -1,12 +1,13 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
+
+
 import { connectToDatabase } from "@/lib/mongodb";
 import Notification from "@/models/Notification";
+import { getUserId } from "@/lib/mobileAuth";
 
 // PATCH: Mark all notifications as read
-export async function PATCH() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?._id) {
+export async function PATCH(req: Request) {
+  const userId = await getUserId(req);
+  if (!userId) {
     return Response.json(
       { message: "Unauthorized", type: "error", success: false },
       { status: 401 },
@@ -17,7 +18,7 @@ export async function PATCH() {
     await connectToDatabase();
 
     const result = await Notification.updateMany(
-      { userId: session.user._id, isRead: false },
+      { userId: userId, isRead: false },
       { isRead: true },
     );
 

@@ -3,20 +3,18 @@
 // GET  → list user's holdings (active by default; pass ?includeInactive=1 to include sold)
 // POST → create a new holding AND record the initial buy as a linked transaction.
 //        Money flows: fromAccountId (cash) → accountId (investment account).
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
 import { connectToDatabase } from "@/lib/mongodb";
 import Holding from "@/models/Holding";
 import Account from "@/models/Account";
 import Transaction from "@/models/Transaction";
 import { createHoldingSchema } from "@/validations/holding";
 import mongoose from "mongoose";
+import { getUserId } from "@/lib/mobileAuth";
 
 const isProd = process.env.NODE_ENV === "production";
 
 export async function GET(req: Request) {
-  const session = await getServerSession(authOptions);
-  const userId = session?.user?._id;
+  const userId = await getUserId(req);
   if (!userId) {
     return Response.json(
       { message: "Unauthorized", type: "error", success: false },
@@ -54,8 +52,7 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  const session = await getServerSession(authOptions);
-  const userId = session?.user?._id;
+  const userId = await getUserId(req);
   if (!userId) {
     return Response.json(
       { message: "Unauthorized", type: "error", success: false },

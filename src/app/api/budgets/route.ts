@@ -1,14 +1,17 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
 import Budget from "@/models/Budget";
+import Transaction from "@/models/Transaction";
 import { connectToDatabase } from "@/lib/mongodb";
 import { createBudgetSchema } from "@/validations/budget";
 import { createNotification } from "@/lib/notifications";
+import { getUserId } from "@/lib/mobileAuth";
+import mongoose, { type PipelineStage } from "mongoose";
 
 // ✅ GET: Fetch budgets with pagination + period filter
+// Now also returns `spent` per budget (sum of expense transactions in the
+// budget's category within [startDate, endDate]) so the mobile + web budget
+// pages don't have to make a second round-trip per row.
 export async function GET(req: Request) {
-  const session = await getServerSession(authOptions);
-  const userId = session?.user?._id;
+  const userId = await getUserId(req);
 
   if (!userId) {
     return Response.json(
@@ -41,12 +44,47 @@ export async function GET(req: Request) {
       Budget.countDocuments(query),
     ]);
 
+    // Batch-compute spent for every budget in a single aggregation. Each
+    // budget defines its own [startDate, endDate] window, so we $facet by
+    // budget id — gives O(1) round-trips instead of N+1.
+    const userObjectId = new mongoose.Types.ObjectId(String(userId));
+    let spentByBudgetId = new Map<string, number>();
+    if (budgets.length) {
+      const facet: Record<string, PipelineStage.FacetPipelineStage[]> = {};
+      for (const b of budgets) {
+        facet[String(b._id)] = [
+          {
+            $match: {
+              userId: userObjectId,
+              type: "expense",
+              category: b.category,
+              date: { $gte: b.startDate, $lte: b.endDate },
+            },
+          },
+          { $group: { _id: null, total: { $sum: "$amount" } } },
+        ];
+      }
+      const [agg] = await Transaction.aggregate([{ $facet: facet }]);
+      if (agg) {
+        for (const [bid, rows] of Object.entries(agg) as Array<
+          [string, Array<{ total: number }>]
+        >) {
+          spentByBudgetId.set(bid, rows[0]?.total ?? 0);
+        }
+      }
+    }
+
+    const enriched = budgets.map((b) => {
+      const obj = b.toObject ? b.toObject() : b;
+      return { ...obj, spent: spentByBudgetId.get(String(b._id)) ?? 0 };
+    });
+
     return Response.json(
       {
         message: "Budgets fetched successfully",
         type: "success",
         success: true,
-        data: budgets,
+        data: enriched,
         pagination: {
           page,
           limit,
@@ -67,8 +105,7 @@ export async function GET(req: Request) {
 
 // ✅ POST: Create a new budget with Zod validation
 export async function POST(req: Request) {
-  const session = await getServerSession(authOptions);
-  const userId = session?.user?._id;
+  const userId = await getUserId(req);
 
   if (!userId) {
     return Response.json(

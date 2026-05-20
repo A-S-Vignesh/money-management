@@ -21,6 +21,7 @@ import { useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Platform,
   Pressable,
   Text,
   View,
@@ -98,6 +99,15 @@ export default function LoginScreen() {
         "Setup required",
         "Set EXPO_PUBLIC_AUTH_BASE_URL in mobile/.env (e.g. https://moneynestapp.vercel.app), then restart Metro with `pnpm start --clear`.",
       );
+      return;
+    }
+
+    // Expo Web has no `exp://` deep link to bounce back to, so the mobile
+    // OAuth relay (which requires one) rejects the returnTo. The Next.js
+    // web app at the same backend already handles Google sign-in via
+    // NextAuth cookies — hand the browser off to it.
+    if (Platform.OS === "web") {
+      window.location.href = `${authBaseUrl}/login`;
       return;
     }
 
