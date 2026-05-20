@@ -50,3 +50,6 @@ yarn-error.log*
 next-env.d.ts
 
 certificates
+
+# Claude Code — local agent settings (per-machine permissions, not for VCS)
+.claude/
