@@ -24,9 +24,12 @@ export async function GET(
   const { id } = await params;
   try {
     await connectToDatabase();
-    const holding = await Holding.findOne({ _id: id, userId })
-      .populate("accountId", "name type")
-      .lean();
+    // Don't populate `accountId` — clients (mobile detail screen, web)
+    // need it as a plain string so filters like
+    //   tx.fromAccountId === holding.accountId
+    // work. Populating turns it into { _id, name, type } and the filter
+    // silently matches nothing.
+    const holding = await Holding.findOne({ _id: id, userId }).lean();
     if (!holding) {
       return Response.json(
         { message: "Holding not found", type: "error", success: false },
