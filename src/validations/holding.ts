@@ -31,8 +31,12 @@ const ymd = z
   .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format");
 
 // ── Create initial holding (also records the first buy as a transaction) ──
+// `accountId` is optional: when missing, the API auto-finds or auto-creates
+// a default "Brokerage" investment account for the user (Goals-style
+// dedicated-account pattern), so a first-time user can add an investment
+// without having to create a broker account up front.
 export const createHoldingSchema = z.object({
-  accountId: z.string().min(1, "Investment account is required"),
+  accountId: z.string().min(1).optional(),
   fromAccountId: z.string().min(1, "Source account (cash) is required"),
   name: z.string().min(1, "Name is required").max(120).trim(),
   type: z.enum(holdingTypes),

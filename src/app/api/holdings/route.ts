@@ -93,32 +93,52 @@ export async function POST(req: Request) {
   try {
     await connectToDatabase();
 
-    // Validate accounts: investment account must be type "investment", cash account must exist.
-    const [investAccount, cashAccount] = await Promise.all([
-      Account.findOne({
+    // ── Resolve investment account ──
+    // If the client passed an `accountId`, require it to be a valid
+    // investment-type account for this user. If not, auto-find any
+    // existing investment account; if there isn't one, auto-create a
+    // default "Brokerage" account. This mirrors how /api/goals creates
+    // a dedicated account for each new goal — a first-time user can
+    // add an investment without manually setting up a broker first.
+    let investAccount = null;
+    if (accountId) {
+      investAccount = await Account.findOne({
         _id: accountId,
         userId,
         type: "investment",
         isDeleted: { $ne: true },
-      }),
-      Account.findOne({
-        _id: fromAccountId,
+      });
+      if (!investAccount) {
+        return Response.json(
+          {
+            message: "Investment account not found.",
+            type: "error",
+            success: false,
+          },
+          { status: 400 },
+        );
+      }
+    } else {
+      investAccount = await Account.findOne({
         userId,
+        type: "investment",
         isDeleted: { $ne: true },
-      }),
-    ]);
-
-    if (!investAccount) {
-      return Response.json(
-        {
-          message:
-            "Investment account not found. Create an account of type 'investment' first.",
-          type: "error",
-          success: false,
-        },
-        { status: 400 },
-      );
+      });
+      if (!investAccount) {
+        investAccount = await Account.create({
+          userId,
+          name: "Brokerage",
+          type: "investment",
+          balance: 0,
+        });
+      }
     }
+
+    const cashAccount = await Account.findOne({
+      _id: fromAccountId,
+      userId,
+      isDeleted: { $ne: true },
+    });
     if (!cashAccount) {
       return Response.json(
         { message: "Source account not found", type: "error", success: false },
@@ -133,12 +153,17 @@ export async function POST(req: Request) {
     }
 
     try {
+      // Use the RESOLVED investment account id from here on. The client's
+      // `accountId` may have been undefined (auto-create path), so the
+      // local `investAccount` is the source of truth.
+      const resolvedInvestmentAccountId = investAccount._id;
+
       // 1. Create the holding
       const [holding] = await Holding.create(
         [
           {
             userId,
-            accountId,
+            accountId: resolvedInvestmentAccountId,
             name,
             type,
             symbol: symbol || null,
@@ -167,7 +192,7 @@ export async function POST(req: Request) {
             amount: totalCost,
             date: date ? new Date(date) : new Date(),
             fromAccountId,
-            toAccountId: accountId,
+            toAccountId: resolvedInvestmentAccountId,
             holdingId: holding._id,
           },
         ],
@@ -181,7 +206,7 @@ export async function POST(req: Request) {
         isProd ? { session: dbSession } : undefined,
       );
       await Account.findByIdAndUpdate(
-        accountId,
+        resolvedInvestmentAccountId,
         { $inc: { balance: totalCost } },
         isProd ? { session: dbSession } : undefined,
       );

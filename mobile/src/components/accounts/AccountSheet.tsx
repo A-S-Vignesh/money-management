@@ -12,7 +12,6 @@ import {
   ActivityIndicator,
   Alert,
   Pressable,
-  ScrollView,
   Text,
   TextInput,
   View,
@@ -22,6 +21,7 @@ import {
   Banknote,
   Check,
   CreditCard,
+  LineChart,
   Trash2,
   Wallet,
   type LucideIcon,
@@ -47,25 +47,29 @@ interface Props {
   editing?: AccountDoc | null;
 }
 
-// The mock's four "Bank / Card / Wallet / Cash" UI types map to backend
-// account types like so. "credit" is what the backend stores for a card.
-type UiType = "bank" | "card" | "wallet" | "cash";
+// UI account types — extends the mock's four (Bank/Card/Wallet/Cash)
+// with "Broker" so users can create named investment accounts
+// (Zerodha, Groww, Coinbase, PPF, FD, etc.) without going to the web.
+type UiType = "bank" | "card" | "wallet" | "cash" | "broker";
 const UI_TYPES: Array<{ id: UiType; label: string; Icon: LucideIcon }> = [
   { id: "bank", label: "Bank", Icon: CreditCard },
   { id: "card", label: "Card", Icon: CreditCard },
   { id: "wallet", label: "Wallet", Icon: Wallet },
   { id: "cash", label: "Cash", Icon: Banknote },
+  { id: "broker", label: "Broker", Icon: LineChart },
 ];
 
 function backendType(ui: UiType): AccountDoc["type"] {
   if (ui === "card") return "credit";
   if (ui === "wallet") return "other";
+  if (ui === "broker") return "investment";
   return ui; // bank, cash
 }
 function uiType(backend: AccountDoc["type"]): UiType {
   if (backend === "credit") return "card";
   if (backend === "other") return "wallet";
   if (backend === "cash") return "cash";
+  if (backend === "investment") return "broker";
   return "bank";
 }
 
@@ -272,9 +276,10 @@ export function AccountSheet({ visible, onClose, editing }: Props) {
         </View>
       </LinearGradient>
 
-      {/* Account type chips */}
+      {/* Account type chips — flexWrap so the 5th chip ("Broker") drops
+          to a second row instead of crushing all five horizontally. */}
       <Label dark={dark}>Account type</Label>
-      <View style={{ flexDirection: "row", gap: 8, marginBottom: 18 }}>
+      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 18 }}>
         {UI_TYPES.map((t) => {
           const active = type === t.id;
           return (
@@ -283,7 +288,8 @@ export function AccountSheet({ visible, onClose, editing }: Props) {
               onPress={() => setType(t.id)}
               android_ripple={{ color: dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)" }}
               style={{
-                flex: 1,
+                // 4-per-row layout: each chip is ~ (100% - 3*gap) / 4.
+                width: "23%",
                 paddingVertical: 12,
                 borderRadius: 14,
                 alignItems: "center",
@@ -388,16 +394,23 @@ export function AccountSheet({ visible, onClose, editing }: Props) {
         </>
       ) : null}
 
-      {/* Card colour swatches */}
+      {/* Card colour swatches — case-insensitive match so older saved
+          hex strings (uppercase) still highlight, plus an explicit Check
+          overlay on the active swatch so the focused colour is obvious.
+          Switched from horizontal ScrollView to flexWrap because the
+          scroll gesture was stealing the tap on some Android devices,
+          so taps appeared to do nothing. */}
       <Label dark={dark}>Card colour</Label>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ gap: 10, paddingRight: 12 }}
-        style={{ marginBottom: 22 }}
+      <View
+        style={{
+          flexDirection: "row",
+          flexWrap: "wrap",
+          gap: 10,
+          marginBottom: 22,
+        }}
       >
         {CARD_COLORS.map((c) => {
-          const active = c === color;
+          const active = c.toLowerCase() === (color ?? "").toLowerCase();
           return (
             <Pressable
               key={c}
@@ -419,12 +432,22 @@ export function AccountSheet({ visible, onClose, editing }: Props) {
                 colors={gradientFor(c)}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
-                style={{ width: "100%", height: "100%", borderRadius: 10 }}
-              />
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  borderRadius: 10,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {active ? (
+                  <Check size={16} color="#ffffff" strokeWidth={3} />
+                ) : null}
+              </LinearGradient>
             </Pressable>
           );
         })}
-      </ScrollView>
+      </View>
 
       {/* Action row */}
       <View style={{ flexDirection: "row", gap: 10 }}>
@@ -447,38 +470,48 @@ export function AccountSheet({ visible, onClose, editing }: Props) {
             <Trash2 size={16} color={Tokens.rose} strokeWidth={2.2} />
           </Pressable>
         ) : null}
+        {/* Save button — colored surface lives on a child View so the
+            dynamic `backgroundColor: color` actually repaints when the
+            user taps a new swatch. NativeWind's Pressable wrapper
+            memoises its own style prop, which was eating the update. */}
         <Pressable
           onPress={submit}
           disabled={!canSubmit || submitting}
           android_ripple={{ color: "rgba(255,255,255,0.18)" }}
           style={{
             flex: 1,
-            height: 52,
             borderRadius: 14,
-            backgroundColor: color,
-            alignItems: "center",
-            justifyContent: "center",
-            flexDirection: "row",
-            gap: 8,
+            overflow: "hidden",
             opacity: !canSubmit || submitting ? 0.5 : 1,
             shadowColor: color,
             shadowOpacity: 0.4,
             shadowRadius: 14,
             shadowOffset: { width: 0, height: 8 },
             elevation: 6,
-            overflow: "hidden",
           }}
         >
-          {submitting ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <>
-              <Text style={{ color: "#fff", fontSize: 15, fontWeight: "600" }}>
-                {editing ? "Save changes" : "Add account"}
-              </Text>
-              <Check size={16} color="#fff" strokeWidth={2.5} />
-            </>
-          )}
+          <View
+            style={{
+              height: 52,
+              borderRadius: 14,
+              backgroundColor: color,
+              alignItems: "center",
+              justifyContent: "center",
+              flexDirection: "row",
+              gap: 8,
+            }}
+          >
+            {submitting ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <>
+                <Text style={{ color: "#fff", fontSize: 15, fontWeight: "600" }}>
+                  {editing ? "Save changes" : "Add account"}
+                </Text>
+                <Check size={16} color="#fff" strokeWidth={2.5} />
+              </>
+            )}
+          </View>
         </Pressable>
       </View>
     </BottomSheet>

@@ -118,7 +118,7 @@ export function Drawer() {
       href: "/(tabs)/accounts",
       badge: accountsCount,
     },
-    { label: "Investments", Icon: TrendingUp, href: "/(tabs)/profile" },
+    { label: "Investments", Icon: TrendingUp, href: "/(tabs)/investments" },
     { label: "Goals", Icon: Target, href: "/(tabs)/goals" },
   ];
   const activity: NavItem[] = [

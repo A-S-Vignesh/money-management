@@ -138,13 +138,9 @@ export default function InvestmentPage() {
         </div>
         <button
           onClick={() => setShowAddModal(true)}
-          disabled={investmentAccounts.length === 0 || cashAccounts.length === 0}
+          disabled={cashAccounts.length === 0}
           title={
-            investmentAccounts.length === 0
-              ? "Create an investment account first"
-              : cashAccounts.length === 0
-                ? "Create a cash/bank account first"
-                : ""
+            cashAccounts.length === 0 ? "Create a cash/bank account first" : ""
           }
           className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
         >
@@ -153,18 +149,19 @@ export default function InvestmentPage() {
         </button>
       </div>
 
-      {/* ── Pre-flight: need an investment account ──────────────── */}
-      {!portfolio.isLoading && investmentAccounts.length === 0 && (
+      {/* No investment-account preflight banner anymore. The backend
+          auto-creates a default "Brokerage" account on first holding,
+          so the only remaining prerequisite is a cash/bank source. */}
+      {!portfolio.isLoading && cashAccounts.length === 0 && (
         <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
           <AlertCircle className="text-amber-600 dark:text-amber-300 mt-0.5 shrink-0" size={20} />
           <div className="flex-1 min-w-0">
             <p className="font-medium text-amber-900 dark:text-amber-200 text-sm">
-              No investment account yet
+              No cash account yet
             </p>
             <p className="text-amber-700 dark:text-amber-300 text-sm mt-0.5">
-              Create an account of type{" "}
-              <span className="font-mono">investment</span> first — it&apos;s
-              where the cash side of your buys/sells lives.
+              Add a Bank / Cash / Wallet account first — the cash side of
+              your buys has to come from somewhere.
             </p>
             <Link
               href="/dashboard/balance"
@@ -997,8 +994,11 @@ function AddHoldingModal({
     e.preventDefault();
     setErrors({});
     const fd = new FormData(e.currentTarget);
+    const rawAccountId = (fd.get("accountId") as string | null) ?? "";
     const payload = {
-      accountId: fd.get("accountId") as string,
+      // accountId is optional: omit when empty so the backend auto-
+      // creates a default "Brokerage" investment account on first use.
+      ...(rawAccountId ? { accountId: rawAccountId } : {}),
       fromAccountId: fd.get("fromAccountId") as string,
       name: (fd.get("name") as string)?.trim(),
       type,
@@ -1016,7 +1016,6 @@ function AddHoldingModal({
           : undefined,
       notes: ((fd.get("notes") as string) || "").trim() || undefined,
     };
-    if (!payload.accountId) return setErrors({ accountId: "Required" });
     if (!payload.fromAccountId) return setErrors({ fromAccountId: "Required" });
     if (!payload.name) return setErrors({ name: "Required" });
     if (payload.quantity <= 0)
@@ -1157,26 +1156,31 @@ function AddHoldingModal({
           </div>
         )}
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Investment Account
-          </label>
-          <select
-            name="accountId"
-            className={inputCls(!!errors.accountId)}
-            defaultValue=""
-          >
-            <option value="" disabled>
-              Select investment account
-            </option>
-            {investmentAccounts.map((a) => (
-              <option key={a._id} value={a._id}>
-                {a.name}
-              </option>
-            ))}
-          </select>
-          <FieldErr msg={errors.accountId} />
-        </div>
+        {/* Broker / investment-account picker — only shown when the user
+            already has one or more. If they have zero, the backend
+            auto-creates a default "Brokerage" account on POST, so we
+            don't render this field at all and the form submits without
+            an accountId. Power users with multiple brokers (Zerodha,
+            Groww, etc.) still pick which one this holding belongs to. */}
+        {investmentAccounts.length > 0 ? (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Investment Account
+            </label>
+            <select
+              name="accountId"
+              className={inputCls(!!errors.accountId)}
+              defaultValue={investmentAccounts[0]?._id ?? ""}
+            >
+              {investmentAccounts.map((a) => (
+                <option key={a._id} value={a._id}>
+                  {a.name}
+                </option>
+              ))}
+            </select>
+            <FieldErr msg={errors.accountId} />
+          </div>
+        ) : null}
 
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">

@@ -1162,8 +1162,13 @@ export default function BalancePage() {
                       <option value="cash">Cash</option>
                       <option value="bank">Bank</option>
                       <option value="credit">Credit Card</option>
-                      <option value="investment">Investment</option>
+                      <option value="investment">Broker / Investment</option>
                       <option value="other">Other</option>
+                      {/* "Broker / Investment" is for users who want to
+                          name their broker accounts explicitly (Zerodha,
+                          Groww, Coinbase, HDFC FD, PPF, etc.). A user who
+                          doesn't add one gets a default "Brokerage"
+                          account auto-created on first investment. */}
                     </select>
                     {formErrors.type && (
                       <p className="mt-1 text-sm text-red-600 dark:text-red-300">
@@ -1292,7 +1297,7 @@ export default function BalancePage() {
                       <option value="cash">Cash</option>
                       <option value="bank">Bank</option>
                       <option value="credit">Credit Card</option>
-                      <option value="investment">Investment</option>
+                      <option value="investment">Broker / Investment</option>
                       <option value="other">Other</option>
                     </select>
                     {formErrors.type && (

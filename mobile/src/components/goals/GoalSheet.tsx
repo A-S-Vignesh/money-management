@@ -497,11 +497,13 @@ export function GoalSheet({ visible, onClose, editing }: Props) {
         </Pressable>
       </View>
 
-      {/* Colour swatches */}
+      {/* Colour swatches — case-insensitive comparison so older goals
+          with uppercase hex (e.g. "#3B82F6", the old Goal model default)
+          still match a palette entry and show as active. */}
       <Label dark={dark}>Colour</Label>
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10, marginBottom: 22 }}>
         {COLORS.map((c) => {
-          const active = c === color;
+          const active = c.toLowerCase() === (color ?? "").toLowerCase();
           return (
             <Pressable
               key={c}
@@ -509,8 +511,8 @@ export function GoalSheet({ visible, onClose, editing }: Props) {
               hitSlop={4}
               android_ripple={{ color: "rgba(255,255,255,0.18)" }}
               style={{
-                width: 40,
-                height: 40,
+                width: 44,
+                height: 44,
                 borderRadius: 14,
                 alignItems: "center",
                 justifyContent: "center",
@@ -523,8 +525,18 @@ export function GoalSheet({ visible, onClose, editing }: Props) {
                 colors={[c, lighten(c, 0.22)]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
-                style={{ width: "100%", height: "100%", borderRadius: 10 }}
-              />
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  borderRadius: 10,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {active ? (
+                  <Check size={16} color="#ffffff" strokeWidth={3} />
+                ) : null}
+              </LinearGradient>
             </Pressable>
           );
         })}
@@ -551,38 +563,50 @@ export function GoalSheet({ visible, onClose, editing }: Props) {
             <Trash2 size={16} color={Tokens.rose} strokeWidth={2.2} />
           </Pressable>
         ) : null}
+        {/* Save button — color shifts to the picked swatch in real time.
+            The colored surface lives on an inner View instead of the
+            Pressable directly, because NativeWind's css-interop wraps
+            Pressable in a way that memoises its style and doesn't always
+            repaint when an inline `backgroundColor` field changes.
+            A plain View has no such wrapper and re-renders cleanly. */}
         <Pressable
           onPress={submit}
           disabled={!canSubmit || submitting}
           android_ripple={{ color: "rgba(255,255,255,0.18)" }}
           style={{
             flex: 1,
-            height: 52,
             borderRadius: 14,
-            backgroundColor: color,
-            alignItems: "center",
-            justifyContent: "center",
-            flexDirection: "row",
-            gap: 8,
+            overflow: "hidden",
             opacity: !canSubmit || submitting ? 0.5 : 1,
             shadowColor: color,
             shadowOpacity: 0.4,
             shadowRadius: 14,
             shadowOffset: { width: 0, height: 8 },
             elevation: 6,
-            overflow: "hidden",
           }}
         >
-          {submitting ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <>
-              <Text style={{ color: "#fff", fontSize: 15, fontWeight: "600" }}>
-                {editing ? "Save changes" : "Create goal"}
-              </Text>
-              <Check size={16} color="#fff" strokeWidth={2.5} />
-            </>
-          )}
+          <View
+            style={{
+              height: 52,
+              borderRadius: 14,
+              backgroundColor: color,
+              alignItems: "center",
+              justifyContent: "center",
+              flexDirection: "row",
+              gap: 8,
+            }}
+          >
+            {submitting ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <>
+                <Text style={{ color: "#fff", fontSize: 15, fontWeight: "600" }}>
+                  {editing ? "Save changes" : "Create goal"}
+                </Text>
+                <Check size={16} color="#fff" strokeWidth={2.5} />
+              </>
+            )}
+          </View>
         </Pressable>
       </View>
 
