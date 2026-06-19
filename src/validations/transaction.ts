@@ -1,7 +1,17 @@
 import { z } from "zod";
 
-// Transaction types
-export const transactionTypes = ["income", "expense", "transfer"] as const;
+// Transaction types.
+// "opening" / "adjustment" are system-booked (account creation and the
+// balance-adjust endpoint) — never created through createTransactionSchema —
+// but they must be accepted by the update schema and type filter since they
+// are real, editable rows in a user's history.
+export const transactionTypes = [
+  "income",
+  "expense",
+  "transfer",
+  "opening",
+  "adjustment",
+] as const;
 
 // Category names (matching the app's category list)
 export const categoryNames = [

@@ -9,6 +9,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { api, ApiError } from "@/lib/api";
+import { useToast } from "@/lib/toast";
 
 export interface GoalDoc {
   _id: string;
@@ -73,7 +74,11 @@ export function useAddGoal() {
   const qc = useQueryClient();
   return useMutation<GoalDoc, ApiError, CreateGoalInput>({
     mutationFn: (body) => api<GoalDoc>("/api/goals", { method: "POST", body }),
-    onSuccess: () => invalidate(qc),
+    onSuccess: () => {
+      invalidate(qc);
+      useToast.getState().success("Goal created");
+    },
+    onError: (err) => useToast.getState().error("Couldn't create goal", err.message),
   });
 }
 
@@ -82,7 +87,11 @@ export function useUpdateGoal(id: string) {
   return useMutation<GoalDoc, ApiError, UpdateGoalInput>({
     mutationFn: (body) =>
       api<GoalDoc>(`/api/goals/${id}`, { method: "PUT", body }),
-    onSuccess: () => invalidate(qc, id),
+    onSuccess: () => {
+      invalidate(qc, id);
+      useToast.getState().success("Goal updated");
+    },
+    onError: (err) => useToast.getState().error("Couldn't update goal", err.message),
   });
 }
 
@@ -90,6 +99,10 @@ export function useDeleteGoal() {
   const qc = useQueryClient();
   return useMutation<unknown, ApiError, string>({
     mutationFn: (id) => api(`/api/goals/${id}`, { method: "DELETE" }),
-    onSuccess: () => invalidate(qc),
+    onSuccess: () => {
+      invalidate(qc);
+      useToast.getState().success("Goal deleted");
+    },
+    onError: (err) => useToast.getState().error("Couldn't delete goal", err.message),
   });
 }

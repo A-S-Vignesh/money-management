@@ -10,6 +10,7 @@ import { useToastStore } from "@/store/useToastStore";
 import { useAccounts } from "@/hooks/accounts/useAccounts";
 import { useAddAccount } from "@/hooks/accounts/useAddAccount";
 import { useUpdateAccount } from "@/hooks/accounts/useUpdateAccount";
+import { useAdjustBalance } from "@/hooks/accounts/useAdjustBalance";
 import { useDeleteAccount } from "@/hooks/accounts/useDeleteAccount";
 import { useTransactions } from "@/hooks/transactions/useTransactions";
 import { IAccount } from "@/types/account";
@@ -206,6 +207,7 @@ export default function BalancePage() {
   // ── Mutations ──────────────────────────────────────
   const addAccountMutation = useAddAccount();
   const updateAccountMutation = useUpdateAccount();
+  const adjustBalanceMutation = useAdjustBalance();
   const deleteAccountMutation = useDeleteAccount();
 
   // ── Modal + form state ─────────────────────────────
@@ -354,6 +356,22 @@ export default function BalancePage() {
           id: editAccount._id,
           data: validation.data!,
         });
+
+        // Balance can't be PUT directly — if the user changed it, book the
+        // difference as an adjustment transaction. Skipped for broker/
+        // investment accounts, whose balance is driven by holdings.
+        const target = validation.data!.balance ?? 0;
+        const canAdjust =
+          editAccount.type !== "investment" &&
+          editAccount.type !== "goal" &&
+          editAccount.type !== "system";
+        if (canAdjust && target !== editAccount.balance) {
+          await adjustBalanceMutation.mutateAsync({
+            id: editAccount._id,
+            data: { balance: target },
+          });
+        }
+
         setShowEditForm(false);
         setEditAccount(null);
         setFormErrors({});
@@ -1307,19 +1325,52 @@ export default function BalancePage() {
                     )}
                   </div>
                 </div>
-                  {/* Balance — read-only, derived from transactions */}
-                  <div className="mt-4 p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Current Balance</p>
-                    <p className="text-xl font-semibold text-gray-800 dark:text-gray-200">
-                      {new Intl.NumberFormat("en-IN", {
-                        style: "currency",
-                        currency: "INR",
-                      }).format(editAccount?.balance ?? 0)}
-                    </p>
-                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
-                      Balance is calculated from your transactions and cannot be edited directly.
-                    </p>
-                  </div>
+                  {/* Balance — editable. Changing it books an `adjustment`
+                      transaction for the difference (it doesn't overwrite the
+                      stored value), so the balance stays derivable and you get
+                      an audit trail. Broker/investment balances come from
+                      holdings and are shown read-only. */}
+                  {editAccount?.type === "investment" ? (
+                    <div className="mt-4 p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Current Balance</p>
+                      <p className="text-xl font-semibold text-gray-800 dark:text-gray-200">
+                        {new Intl.NumberFormat("en-IN", {
+                          style: "currency",
+                          currency: "INR",
+                        }).format(editAccount?.balance ?? 0)}
+                      </p>
+                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
+                        This balance is driven by your holdings and can&apos;t be edited here.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="mt-4">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Current Balance
+                      </label>
+                      <input
+                        type="number"
+                        name="balance"
+                        step="0.01"
+                        min="0"
+                        defaultValue={editAccount?.balance ?? 0}
+                        className={`w-full px-4 py-2 border rounded-xl text-base md:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+                          formErrors.balance
+                            ? "border-red-300 bg-red-50 dark:bg-red-950/30"
+                            : "border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                        }`}
+                      />
+                      {formErrors.balance && (
+                        <p className="mt-1 text-sm text-red-600 dark:text-red-300">
+                          {formErrors.balance[0]}
+                        </p>
+                      )}
+                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
+                        Correcting a mistyped amount? We&apos;ll record the difference
+                        as a balance adjustment — it won&apos;t count as income or expense.
+                      </p>
+                    </div>
+                  )}
 
                 {/* Card colour picker — matches the mobile AccountSheet. */}
                 <ColorPickerField
@@ -1341,10 +1392,14 @@ export default function BalancePage() {
                   </button>
                   <button
                     type="submit"
-                    disabled={updateAccountMutation.isPending}
+                    disabled={
+                      updateAccountMutation.isPending ||
+                      adjustBalanceMutation.isPending
+                    }
                     className="flex-1 px-4 py-3 md:py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 disabled:opacity-50 flex items-center justify-center gap-2 font-medium"
                   >
-                    {updateAccountMutation.isPending && (
+                    {(updateAccountMutation.isPending ||
+                      adjustBalanceMutation.isPending) && (
                       <Loader2 size={16} className="animate-spin" />
                     )}
                     Update Account

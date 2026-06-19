@@ -9,6 +9,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { api, ApiError } from "@/lib/api";
+import { useToast } from "@/lib/toast";
 
 export interface BudgetDoc {
   _id: string;
@@ -62,7 +63,11 @@ export function useAddBudget() {
   return useMutation<BudgetDoc, ApiError, CreateBudgetInput>({
     mutationFn: (body) =>
       api<BudgetDoc>("/api/budgets", { method: "POST", body }),
-    onSuccess: () => invalidate(qc),
+    onSuccess: () => {
+      invalidate(qc);
+      useToast.getState().success("Budget created");
+    },
+    onError: (err) => useToast.getState().error("Couldn't create budget", err.message),
   });
 }
 
@@ -71,7 +76,11 @@ export function useUpdateBudget(id: string) {
   return useMutation<BudgetDoc, ApiError, UpdateBudgetInput>({
     mutationFn: (body) =>
       api<BudgetDoc>(`/api/budgets/${id}`, { method: "PUT", body }),
-    onSuccess: () => invalidate(qc),
+    onSuccess: () => {
+      invalidate(qc);
+      useToast.getState().success("Budget updated");
+    },
+    onError: (err) => useToast.getState().error("Couldn't update budget", err.message),
   });
 }
 
@@ -79,6 +88,10 @@ export function useDeleteBudget() {
   const qc = useQueryClient();
   return useMutation<unknown, ApiError, string>({
     mutationFn: (id) => api(`/api/budgets/${id}`, { method: "DELETE" }),
-    onSuccess: () => invalidate(qc),
+    onSuccess: () => {
+      invalidate(qc);
+      useToast.getState().success("Budget deleted");
+    },
+    onError: (err) => useToast.getState().error("Couldn't delete budget", err.message),
   });
 }

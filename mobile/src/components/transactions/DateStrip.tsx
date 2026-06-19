@@ -15,6 +15,7 @@ import DateTimePicker, {
 import { Calendar } from "lucide-react-native";
 import dayjs from "dayjs";
 import { Tokens } from "@/lib/design";
+import { formatDate } from "@/lib/format";
 import { useColorScheme } from "@/hooks/useAppColorScheme";
 
 interface Props {
@@ -52,12 +53,12 @@ export function DateStrip({ value, onChange }: Props) {
     stripEnd.subtract(6 - i, "day"),
   );
 
-  // Display the picked date in the calendar pill — for Today/Yesterday show
-  // those words; otherwise show "DD MMM YYYY" so the user can confirm what's
-  // selected without scrolling the day strip.
-  const calendarLabel = isQuickPick
-    ? dayjs(value).format("DD MMM YYYY")
-    : dayjs(value).format("DD MMM YYYY");
+  // Display the picked date in the calendar pill in the user's chosen
+  // format. We always show the formatted date (rather than the word
+  // "Today"/"Yesterday") so the user can confirm what's selected
+  // without scrolling the day strip — the quick-pick chips above
+  // already cover the relative semantics.
+  const calendarLabel = formatDate(value, "full");
 
   const onPickerChange = (event: DateTimePickerEvent, picked?: Date) => {
     // On Android the picker dismisses on its own — close our flag either way.

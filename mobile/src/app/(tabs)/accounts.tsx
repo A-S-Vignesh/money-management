@@ -3,6 +3,8 @@
 // inherits the bottom tab bar + side drawer chrome, but it isn't IN the
 // bottom tabs — users reach it via the side drawer's "Accounts" item.
 
+import { tint, lightenHex } from "@/lib/colors";
+
 import { useCallback, useMemo, useState } from "react";
 import {
   Pressable,
@@ -29,6 +31,7 @@ import { formatCurrency } from "@/lib/format";
 
 import { AccountSheet } from "@/components/accounts/AccountSheet";
 import { Card } from "@/components/ui/Card";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { Money } from "@/components/ui/Money";
 import { ScreenHead } from "@/components/ui/ScreenHead";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -103,6 +106,8 @@ export default function AccountsScreen() {
           trailing={
             <Pressable
               onPress={openCreate}
+              accessibilityRole="button"
+              accessibilityLabel="Add account"
               hitSlop={6}
               android_ripple={{ color: "rgba(255,255,255,0.18)", borderless: true }}
               style={{
@@ -179,13 +184,15 @@ export default function AccountsScreen() {
             ))}
           </View>
         ) : accounts.length === 0 ? (
-          <Card style={{ padding: 24, alignItems: "center" }}>
-            <Text className="text-fg dark:text-fg-dark text-[15px] font-semibold">
-              No accounts yet
-            </Text>
-            <Text className="text-fg-muted dark:text-fg-dark-muted text-[12.5px] text-center mt-1">
-              Tap + to add your first account.
-            </Text>
+          <Card>
+            <EmptyState
+              Icon={Wallet}
+              title="No accounts yet"
+              subtitle="Add your cash, cards, and bank accounts so we can track balances and transfers."
+              tone="indigo"
+              actionLabel="Add account"
+              onAction={openCreate}
+            />
           </Card>
         ) : (
           <View style={{ gap: 12 }}>
@@ -322,28 +329,3 @@ function AccountCard({
   );
 }
 
-// ── color helpers ────────────────────────────────────────────────────────
-
-function lightenHex(hex: string, amount: number): string {
-  const m = /^#?([0-9a-f]{6})$/i.exec(hex);
-  if (!m) return hex;
-  const n = parseInt(m[1], 16);
-  const r = (n >> 16) & 0xff;
-  const g = (n >> 8) & 0xff;
-  const b = n & 0xff;
-  const mix = (c: number) => Math.round(c + (255 - c) * amount);
-  const toHex = (v: number) => v.toString(16).padStart(2, "0");
-  return `#${toHex(mix(r))}${toHex(mix(g))}${toHex(mix(b))}`;
-}
-
-// Return the icon-tile background — a translucent tint of the brand color
-// so the colored icon still pops. Uses rgba so dark mode auto-adapts.
-function tint(hex: string, alpha: number): string {
-  const m = /^#?([0-9a-f]{6})$/i.exec(hex);
-  if (!m) return hex;
-  const n = parseInt(m[1], 16);
-  const r = (n >> 16) & 0xff;
-  const g = (n >> 8) & 0xff;
-  const b = n & 0xff;
-  return `rgba(${r},${g},${b},${alpha})`;
-}

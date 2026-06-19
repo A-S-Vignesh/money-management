@@ -1,11 +1,15 @@
-// EditProfileSheet — edit name, phone, currency. Email is locked (Google
+// EditProfileSheet — edit name and phone. Email is locked (Google
 // OAuth identity), shown disabled with a lock icon.
 //
-// 1:1 with the Mobile UI mock:
+// Currency lives in Settings → Currency (CurrencySheet) — single source
+// of truth. We deliberately do NOT expose a currency control here to
+// avoid two divergent surfaces; the Settings sheet uses flags + the
+// full INR/USD/EUR/GBP/JPY/AUD/CAD/SGD/AED/CHF list.
+//
+// Layout:
 //   - Big gradient avatar + camera overlay (TODO: image picker)
 //   - "Tap to change photo" caption
 //   - Full name, Email (locked), Phone — labeled, icon-prefixed inputs
-//   - Currency chip row
 //   - "Save changes ✓" button
 
 import { useEffect, useState } from "react";
@@ -32,6 +36,7 @@ import {
 import { useAuth } from "@/lib/auth";
 import { useUpdateProfile, type ProfileDoc } from "@/hooks/useProfile";
 import { Tokens } from "@/lib/design";
+import { hapticMedium } from "@/lib/haptics";
 
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { SheetHeader } from "@/components/transactions/SheetHeader";
@@ -44,22 +49,12 @@ interface Props {
   profile?: ProfileDoc | null;
 }
 
-type Currency = "INR" | "USD" | "EUR" | "GBP";
-
-const CURRENCIES: Array<{ id: Currency; label: string }> = [
-  { id: "INR", label: "₹ INR" },
-  { id: "USD", label: "$ USD" },
-  { id: "EUR", label: "€ EUR" },
-  { id: "GBP", label: "£ GBP" },
-];
-
 export function EditProfileSheet({ visible, onClose, profile }: Props) {
   const dark = useColorScheme() === "dark";
   const authUser = useAuth((s) => s.user);
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [currency, setCurrency] = useState<Currency>("INR");
   const [submitting, setSubmitting] = useState(false);
 
   // Prime form when the sheet opens. Prefer the fresh /api/profile data,
@@ -69,8 +64,6 @@ export function EditProfileSheet({ visible, onClose, profile }: Props) {
     const src = profile ?? authUser ?? {};
     setName((src as ProfileDoc).name ?? "");
     setPhone((src as ProfileDoc).phoneNo ?? "");
-    const c = ((src as ProfileDoc).currency ?? "INR") as Currency;
-    setCurrency(CURRENCIES.some((x) => x.id === c) ? c : "INR");
   }, [visible, profile, authUser]);
 
   const email = profile?.email ?? authUser?.email ?? "";
@@ -88,12 +81,12 @@ export function EditProfileSheet({ visible, onClose, profile }: Props) {
 
   const submit = async () => {
     if (!canSubmit || submitting) return;
+    hapticMedium();
     setSubmitting(true);
     try {
       await updateMut.mutateAsync({
         name: name.trim(),
         phoneNo: phone.trim(),
-        currency,
       });
       onClose();
     } catch (err) {
@@ -251,54 +244,7 @@ export function EditProfileSheet({ visible, onClose, profile }: Props) {
         />
       </InputBox>
 
-      {/* Currency chips */}
-      <Label dark={dark}>Currency</Label>
-      <View style={{ flexDirection: "row", gap: 8, marginBottom: 22 }}>
-        {CURRENCIES.map((c) => {
-          const active = c.id === currency;
-          return (
-            <Pressable
-              key={c.id}
-              onPress={() => setCurrency(c.id)}
-              android_ripple={{ color: dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)" }}
-              style={{
-                flex: 1,
-                paddingVertical: 12,
-                borderRadius: 12,
-                alignItems: "center",
-                backgroundColor: active
-                  ? dark
-                    ? "#1e3a8a55"
-                    : Tokens.brandSoft
-                  : dark
-                    ? Tokens.cardSoftDark
-                    : Tokens.card,
-                borderWidth: 1.5,
-                borderColor: active
-                  ? Tokens.brand
-                  : dark
-                    ? Tokens.borderDark
-                    : Tokens.border,
-                overflow: "hidden",
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 12.5,
-                  fontWeight: active ? "700" : "600",
-                  color: active
-                    ? Tokens.brand
-                    : dark
-                      ? Tokens.textDarkPrimary
-                      : Tokens.text,
-                }}
-              >
-                {c.label}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
+      <View style={{ height: 8 }} />
 
       {/* Save */}
       <Pressable

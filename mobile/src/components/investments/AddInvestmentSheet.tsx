@@ -45,6 +45,7 @@ import { useAccounts } from "@/hooks/useAccounts";
 import { useAddHolding, type HoldingType } from "@/hooks/useHoldings";
 import { Tokens } from "@/lib/design";
 import { formatCurrency } from "@/lib/format";
+import { hapticMedium } from "@/lib/haptics";
 
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { SheetHeader } from "@/components/transactions/SheetHeader";
@@ -165,6 +166,7 @@ export function AddInvestmentSheet({ visible, onClose }: Props) {
 
   const submit = async () => {
     if (!canSubmit || submitting) return;
+    hapticMedium();
     setSubmitting(true);
     try {
       // Send accountId when the user picked a broker; omit it otherwise

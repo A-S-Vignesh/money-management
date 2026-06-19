@@ -15,6 +15,11 @@ import { ArrowRight, Check } from "lucide-react-native";
 import dayjs from "dayjs";
 
 import { Tokens } from "@/lib/design";
+import { hapticMedium } from "@/lib/haptics";
+import {
+  EXPENSE_CATEGORIES,
+  INCOME_CATEGORIES,
+} from "@/lib/transactionCategories";
 import { useAccounts } from "@/hooks/useAccounts";
 import {
   useAddTransaction,
@@ -40,19 +45,6 @@ interface Props {
   /** Initial type when adding (e.g. Dashboard "Send" → "expense"). */
   initialType?: TxType;
 }
-
-const EXPENSE_CATEGORIES = [
-  "Food",
-  "Housing",
-  "Transport",
-  "Lifestyle",
-  "Shopping",
-  "Learning",
-  "Personal",
-  "Other",
-];
-
-const INCOME_CATEGORIES = ["Salary", "Other"];
 
 export function AddTransactionSheet({
   visible,
@@ -141,6 +133,10 @@ export function AddTransactionSheet({
 
   const submit = async () => {
     if (!canSubmit || submitting) return;
+    // Fire a medium-impact haptic on tap so the user gets feedback
+    // immediately, before the network request resolves. Success/error
+    // haptics are fired separately by the toast pipeline.
+    hapticMedium();
     setSubmitting(true);
     try {
       const baseBody = {

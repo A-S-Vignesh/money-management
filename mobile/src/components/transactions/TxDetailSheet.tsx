@@ -10,10 +10,9 @@ import {
   Text,
   View,
 } from "react-native";
-import dayjs from "dayjs";
 import { Edit, Trash2 } from "lucide-react-native";
 
-import { getCategoryPalette } from "@money-nest/shared";
+import { getCategoryPalette } from "@/_shared";
 import {
   useDeleteTransaction,
   type TransactionDoc,
@@ -21,6 +20,7 @@ import {
 import { useAccounts } from "@/hooks/useAccounts";
 import { getCategoryIcon } from "@/lib/categoryIcons";
 import { Tokens } from "@/lib/design";
+import { formatDate } from "@/lib/format";
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { Card } from "@/components/ui/Card";
 import { Money } from "@/components/ui/Money";
@@ -98,7 +98,7 @@ export function TxDetailSheet({
 
   const rows: Array<[string, string]> = [
     ["Category", transaction.category],
-    ["Date", dayjs(transaction.date).format("ddd, D MMM YYYY")],
+    ["Date", formatDate(transaction.date, "weekday")],
     [
       "Type",
       transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1),

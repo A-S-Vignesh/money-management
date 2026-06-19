@@ -15,7 +15,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
-import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   ArrowLeft,
   ArrowDownLeft,
@@ -38,8 +38,11 @@ import { useColorScheme } from "@/hooks/useAppColorScheme";
 import { useGoal } from "@/hooks/useGoals";
 import { useTransactions } from "@/hooks/useTransactions";
 import { useTransactionSheet } from "@/lib/stores";
+import { lightenHex } from "@/lib/colors";
+import { useCurrency } from "@/lib/currency";
+import { useDateFormat } from "@/lib/dateFormat";
 import { Tokens } from "@/lib/design";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, formatDate } from "@/lib/format";
 
 import { GoalSheet } from "@/components/goals/GoalSheet";
 import { Card } from "@/components/ui/Card";
@@ -66,6 +69,10 @@ export default function GoalDetailScreen() {
   const { data: goal, isLoading, isRefetching, refetch } = useGoal(id);
   const [editOpen, setEditOpen] = useState(false);
   const openAddTransfer = useTransactionSheet((s) => s.openAdd);
+  // Re-render on currency / date-format change — see (tabs)/_layout
+  // for the same pattern.
+  useCurrency((s) => s.code);
+  useDateFormat((s) => s.code);
 
   // Pull recent contributions = transactions where the goal's linked
   // account is the destination. We over-fetch slightly so the
@@ -104,10 +111,14 @@ export default function GoalDetailScreen() {
     ? Math.min(100, (goal.saved / goal.target) * 100)
     : 0;
 
+  const bg = dark ? "#0a0b0e" : "#f5f6fa";
+
   return (
-    <SafeAreaView edges={["top"]} className="flex-1 bg-surface-muted dark:bg-surface-dark-elev">
-      {/* Hide expo-router's default header — we draw our own. */}
-      <Stack.Screen options={{ headerShown: false }} />
+    <View
+      collapsable={false}
+      style={{ flex: 1, backgroundColor: bg }}
+    >
+      <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: bg }}>
 
       {/* Custom back/title row */}
       <View style={{ paddingHorizontal: 16, paddingTop: 8, paddingBottom: 4 }}>
@@ -160,7 +171,7 @@ export default function GoalDetailScreen() {
           </Card>
         ) : (
           <LinearGradient
-            colors={[color, lighten(color, 0.22)]}
+            colors={[color, lightenHex(color, 0.22)]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={{
@@ -417,7 +428,7 @@ export default function GoalDetailScreen() {
                     {tx.description || "Deposit"}
                   </Text>
                   <Text className="text-fg-muted dark:text-fg-dark-muted text-[11.5px] mt-0.5">
-                    {dayjs(tx.date).format("D MMM, YYYY")}
+                    {formatDate(tx.date, "full")}
                   </Text>
                 </View>
                 <Money
@@ -436,18 +447,8 @@ export default function GoalDetailScreen() {
         onClose={() => setEditOpen(false)}
         editing={goal}
       />
-    </SafeAreaView>
+      </SafeAreaView>
+    </View>
   );
 }
 
-function lighten(hex: string, amount: number): string {
-  const m = /^#?([0-9a-f]{6})$/i.exec(hex);
-  if (!m) return hex;
-  const n = parseInt(m[1], 16);
-  const r = (n >> 16) & 0xff;
-  const g = (n >> 8) & 0xff;
-  const b = n & 0xff;
-  const mix = (c: number) => Math.round(c + (255 - c) * amount);
-  const toHex = (v: number) => v.toString(16).padStart(2, "0");
-  return `#${toHex(mix(r))}${toHex(mix(g))}${toHex(mix(b))}`;
-}

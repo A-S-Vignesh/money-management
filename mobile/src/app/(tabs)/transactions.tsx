@@ -2,16 +2,19 @@
 // Full UI port from Mobile UI/screens.jsx with live API data.
 //
 // Flow:
-//   - List groups by date (Today / Yesterday / "Sun, 12 May").
+//   - SectionList groups by date (Today / Yesterday / "Sun, 12 May").
+//   - Infinite scroll loads 20 items at a time.
 //   - Tap a row → TxDetailSheet (view + delete + edit handoff).
 //   - Tap Edit on the detail sheet → swap to AddTransactionSheet (edit mode).
 //   - FAB bottom-right → AddTransactionSheet (new transaction).
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  ActivityIndicator,
   Pressable,
   RefreshControl,
   ScrollView,
+  SectionList,
   Text,
   TextInput,
   View,
@@ -24,20 +27,27 @@ import { Tokens } from "@/lib/design";
 import { formatCurrency } from "@/lib/format";
 import { useDrawer, useTransactionSheet } from "@/lib/stores";
 import {
-  useTransactions,
+  useInfiniteTransactions,
   type TransactionDoc,
 } from "@/hooks/useTransactions";
 
 import { TxDetailSheet } from "@/components/transactions/TxDetailSheet";
 import { Card } from "@/components/ui/Card";
 import { Chip } from "@/components/ui/Chip";
-import { IconTile } from "@/components/ui/IconTile";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { ScreenHead } from "@/components/ui/ScreenHead";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { TxRow } from "@/components/ui/TxRow";
+import { SwipeableTxRow } from "@/components/ui/SwipeableTxRow";
 import { useColorScheme } from "@/hooks/useAppColorScheme";
 
 type Filter = "all" | "income" | "expense" | "transfer";
+
+interface DateSection {
+  date: string;
+  label: string;
+  dayTotal: number;
+  data: TransactionDoc[];
+}
 
 export default function TransactionsScreen() {
   const scheme = useColorScheme();
@@ -60,16 +70,30 @@ export default function TransactionsScreen() {
   const [detailTx, setDetailTx] = useState<TransactionDoc | null>(null);
   const [showDetail, setShowDetail] = useState(false);
 
-  const { data, isLoading, isRefetching, refetch } = useTransactions({
-    page: 1,
-    limit: 100,
+  const {
+    data,
+    isLoading,
+    isRefetching,
+    refetch,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteTransactions({
     type: filter,
     search: debouncedQ,
   });
 
   const onRefresh = useCallback(() => refetch(), [refetch]);
 
-  const list = data?.data ?? [];
+  // Flatten all pages into a single list
+  const list = useMemo(
+    () => data?.pages.flatMap((p) => p.data) ?? [],
+    [data],
+  );
+
+  // Total count from the first page's pagination
+  const totalCount = data?.pages[0]?.pagination.total ?? 0;
+
   const netFlow = useMemo(
     () =>
       list.reduce(
@@ -80,8 +104,8 @@ export default function TransactionsScreen() {
     [list],
   );
 
-  // Group by ISO date (descending).
-  const grouped = useMemo(() => {
+  // Group by ISO date (descending) → SectionList sections
+  const sections: DateSection[] = useMemo(() => {
     const map = new Map<string, TransactionDoc[]>();
     for (const tx of list) {
       const key = dayjs(tx.date).format("YYYY-MM-DD");
@@ -89,14 +113,31 @@ export default function TransactionsScreen() {
       arr.push(tx);
       map.set(key, arr);
     }
-    return [...map.entries()].sort((a, b) => b[0].localeCompare(a[0]));
+    return [...map.entries()]
+      .sort((a, b) => b[0].localeCompare(a[0]))
+      .map(([date, items]) => {
+        const d = dayjs(date);
+        const diff = dayjs().startOf("day").diff(d, "day");
+        const label =
+          diff === 0
+            ? "Today"
+            : diff === 1
+              ? "Yesterday"
+              : d.format("ddd, D MMM");
+        const dayTotal = items.reduce(
+          (s, t) =>
+            s + (t.type === "expense" ? -t.amount : t.type === "income" ? t.amount : 0),
+          0,
+        );
+        return { date, label, dayTotal, data: items };
+      });
   }, [list]);
 
   // ── Sheet handlers ──────────────────────────────────────────────
-  const openDetail = (tx: TransactionDoc) => {
+  const openDetail = useCallback((tx: TransactionDoc) => {
     setDetailTx(tx);
     setShowDetail(true);
-  };
+  }, []);
   const closeDetail = () => setShowDetail(false);
   const startEditFromDetail = (tx: TransactionDoc) => {
     setShowDetail(false);
@@ -105,31 +146,82 @@ export default function TransactionsScreen() {
     setTimeout(() => openEditSheet(tx), 280);
   };
 
+  // ── Infinite scroll trigger ─────────────────────────────────────
+  const loadMore = useCallback(() => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  // ── Render items ────────────────────────────────────────────────
+  const renderItem = useCallback(
+    ({ item, index, section }: { item: TransactionDoc; index: number; section: DateSection }) => (
+      <SwipeableTxRow
+        tx={item}
+        last={index === section.data.length - 1}
+        onPress={() => openDetail(item)}
+      />
+    ),
+    [openDetail],
+  );
+
+  const renderSectionHeader = useCallback(
+    ({ section }: { section: DateSection }) => (
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+          paddingHorizontal: 4,
+          paddingBottom: 6,
+          paddingTop: 4,
+        }}
+      >
+        <Text
+          className="text-fg-muted dark:text-fg-dark-muted text-[11.5px] font-bold uppercase"
+          style={{ letterSpacing: 0.3 }}
+        >
+          {section.label}
+        </Text>
+        <Text
+          className={
+            section.dayTotal >= 0
+              ? "text-emerald text-[11.5px] font-semibold"
+              : "text-fg-muted dark:text-fg-dark-muted text-[11.5px] font-semibold"
+          }
+          style={{ fontVariant: ["tabular-nums"] }}
+        >
+          {section.dayTotal >= 0 ? "+" : "−"}
+          {formatCurrency(Math.abs(section.dayTotal))}
+        </Text>
+      </View>
+    ),
+    [],
+  );
+
+  const renderSectionFooter = useCallback(
+    () => <View style={{ height: 14 }} />,
+    [],
+  );
+
+  const keyExtractor = useCallback((item: TransactionDoc) => item._id, []);
+
   return (
     <SafeAreaView
       edges={["top"]}
       className="flex-1 bg-surface-muted dark:bg-surface-dark-elev"
     >
-      {/* Fixed top bar — see Dashboard for rationale. */}
+      {/* Fixed top bar */}
       <View style={{ paddingHorizontal: 16 }}>
         <ScreenHead
           title="Transactions"
-          subtitle={`${list.length} entries · net ${netFlow >= 0 ? "+" : "−"}${formatCurrency(Math.abs(netFlow))}`}
+          subtitle={`${totalCount} entries · net ${netFlow >= 0 ? "+" : "−"}${formatCurrency(Math.abs(netFlow))}`}
           onMenu={openDrawer}
         />
       </View>
 
-      <ScrollView
-        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 140, paddingTop: 4 }}
-        refreshControl={
-          <RefreshControl
-            refreshing={isRefetching}
-            onRefresh={onRefresh}
-            tintColor={Tokens.brand}
-          />
-        }
-        showsVerticalScrollIndicator={false}
-      >
+      {/* Search + Filters (fixed, not scrollable) */}
+      <View style={{ paddingHorizontal: 16, paddingTop: 4 }}>
         {/* Search */}
         <View style={{ position: "relative", marginBottom: 12 }}>
           <Search
@@ -162,7 +254,7 @@ export default function TransactionsScreen() {
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{ gap: 8, paddingRight: 16 }}
-          style={{ marginHorizontal: -16, marginBottom: 14 }}
+          style={{ marginHorizontal: -16, marginBottom: 10 }}
         >
           <View style={{ width: 16 }} />
           {(
@@ -181,9 +273,11 @@ export default function TransactionsScreen() {
             />
           ))}
         </ScrollView>
+      </View>
 
-        {/* Body */}
-        {isLoading ? (
+      {/* Body */}
+      {isLoading ? (
+        <View style={{ paddingHorizontal: 16, paddingTop: 4 }}>
           <Card style={{ padding: 16, gap: 14 }}>
             {[1, 2, 3, 4].map((i) => (
               <View
@@ -199,88 +293,63 @@ export default function TransactionsScreen() {
               </View>
             ))}
           </Card>
-        ) : grouped.length === 0 ? (
-          <Card style={{ padding: 28, alignItems: "center" }}>
-            <IconTile
+        </View>
+      ) : sections.length === 0 ? (
+        <View style={{ paddingHorizontal: 16, paddingTop: 4 }}>
+          <Card>
+            <EmptyState
               Icon={Inbox}
-              tone="brand"
-              size="lg"
-              style={{ marginBottom: 12 }}
+              title="No transactions"
+              subtitle={
+                debouncedQ || filter !== "all"
+                  ? "Try clearing your filters."
+                  : "Start tracking your spending and income."
+              }
+              tone="indigo"
+              actionLabel={
+                debouncedQ || filter !== "all" ? undefined : "Add transaction"
+              }
+              onAction={
+                debouncedQ || filter !== "all"
+                  ? undefined
+                  : () => openEditSheet(undefined as any)
+              }
             />
-            <Text className="text-fg dark:text-fg-dark text-[15px] font-semibold">
-              No transactions
-            </Text>
-            <Text className="text-fg-muted dark:text-fg-dark-muted text-[12.5px] text-center mt-1">
-              {debouncedQ || filter !== "all"
-                ? "Try clearing your filters."
-                : "Tap the + button to add your first."}
-            </Text>
           </Card>
-        ) : (
-          grouped.map(([date, items]) => {
-            const dayTotal = items.reduce(
-              (s, t) =>
-                s + (t.type === "expense" ? -t.amount : t.type === "income" ? t.amount : 0),
-              0,
-            );
-            const d = dayjs(date);
-            const diff = dayjs().startOf("day").diff(d, "day");
-            const label =
-              diff === 0
-                ? "Today"
-                : diff === 1
-                  ? "Yesterday"
-                  : d.format("ddd, D MMM");
-            return (
-              <View key={date} style={{ marginBottom: 14 }}>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    paddingHorizontal: 4,
-                    paddingBottom: 6,
-                  }}
-                >
-                  <Text
-                    className="text-fg-muted dark:text-fg-dark-muted text-[11.5px] font-bold uppercase"
-                    style={{ letterSpacing: 0.3 }}
-                  >
-                    {label}
-                  </Text>
-                  <Text
-                    className={
-                      dayTotal >= 0
-                        ? "text-emerald text-[11.5px] font-semibold"
-                        : "text-fg-muted dark:text-fg-dark-muted text-[11.5px] font-semibold"
-                    }
-                    style={{ fontVariant: ["tabular-nums"] }}
-                  >
-                    {dayTotal >= 0 ? "+" : "−"}
-                    {formatCurrency(Math.abs(dayTotal))}
-                  </Text>
-                </View>
-                <Card
-                  style={{
-                    paddingHorizontal: 0,
-                    paddingVertical: 0,
-                    overflow: "hidden",
-                  }}
-                >
-                  {items.map((tx, i) => (
-                    <TxRow
-                      key={tx._id}
-                      tx={tx}
-                      last={i === items.length - 1}
-                      onPress={() => openDetail(tx)}
-                    />
-                  ))}
-                </Card>
+        </View>
+      ) : (
+        <SectionList
+          sections={sections}
+          keyExtractor={keyExtractor}
+          renderItem={renderItem}
+          renderSectionHeader={renderSectionHeader}
+          renderSectionFooter={renderSectionFooter}
+          contentContainerStyle={{
+            paddingHorizontal: 16,
+            paddingBottom: 140,
+          }}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefetching}
+              onRefresh={onRefresh}
+              tintColor={Tokens.brand}
+            />
+          }
+          showsVerticalScrollIndicator={false}
+          onEndReached={loadMore}
+          onEndReachedThreshold={0.4}
+          stickySectionHeadersEnabled={false}
+          // Wrap each section's items in a Card
+          SectionSeparatorComponent={() => null}
+          ListFooterComponent={
+            isFetchingNextPage ? (
+              <View style={{ paddingVertical: 16, alignItems: "center" }}>
+                <ActivityIndicator color={Tokens.brand} />
               </View>
-            );
-          })
-        )}
-      </ScrollView>
+            ) : null
+          }
+        />
+      )}
 
       {/* FAB + AddTransactionSheet are both mounted globally in
           (tabs)/_layout — we don't render them here. */}

@@ -14,6 +14,8 @@ import {
 } from "react-native";
 
 import { useAuth } from "@/lib/auth";
+import { useCurrency } from "@/lib/currency";
+import { useDateFormat } from "@/lib/dateFormat";
 import { Tokens } from "@/lib/design";
 import { useTransactionSheet } from "@/lib/stores";
 
@@ -32,6 +34,15 @@ export default function TabsLayout() {
   const sheetEditing = useTransactionSheet((s) => s.editing);
   const sheetInitialType = useTransactionSheet((s) => s.initialType);
   const closeSheet = useTransactionSheet((s) => s.close);
+
+  // Re-render the whole tabs tree whenever the user changes their
+  // display currency or date format in Settings. `formatCurrency` and
+  // `formatDate` read the underlying stores non-reactively (via
+  // getState), so without these subscriptions the active screen would
+  // keep showing the old symbol/locale or date shape until the next
+  // unrelated re-render.
+  useCurrency((s) => s.code);
+  useDateFormat((s) => s.code);
 
   if (!token) return <Redirect href="/(auth)/login" />;
 

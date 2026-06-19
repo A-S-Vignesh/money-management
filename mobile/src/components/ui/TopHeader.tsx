@@ -47,6 +47,13 @@ export function TopHeader({
       : (
         <Pressable
           onPress={onBell}
+          accessibilityRole="button"
+          accessibilityLabel={
+            unread > 0
+              ? `Notifications, ${unread} unread`
+              : "Notifications"
+          }
+          accessibilityHint="Opens the notifications screen"
           android_ripple={{ color: dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)", borderless: true }}
           style={{
             width: 40,
@@ -62,18 +69,37 @@ export function TopHeader({
           <Bell size={18} color={iconColor} strokeWidth={2} />
           {unread > 0 ? (
             <View
+              // Numeric badge in the top-right corner of the bell. Caps at
+              // "9+" so the pill doesn't grow wide enough to spill off the
+              // 40px button when there's a backlog of unread notifications.
               style={{
                 position: "absolute",
-                top: 8,
-                right: 9,
-                width: 8,
-                height: 8,
+                top: -4,
+                right: -4,
+                minWidth: 18,
+                height: 18,
+                paddingHorizontal: 4,
                 borderRadius: 99,
                 backgroundColor: Tokens.rose,
                 borderWidth: 2,
                 borderColor: bg,
+                alignItems: "center",
+                justifyContent: "center",
               }}
-            />
+            >
+              <Text
+                style={{
+                  color: "#ffffff",
+                  fontSize: 9.5,
+                  fontWeight: "800",
+                  letterSpacing: 0,
+                  fontVariant: ["tabular-nums"],
+                  lineHeight: 12,
+                }}
+              >
+                {unread > 9 ? "9+" : unread}
+              </Text>
+            </View>
           ) : null}
         </Pressable>
       );
@@ -119,6 +145,9 @@ function IconBtn({
   return (
     <Pressable
       onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel="Open menu"
+      accessibilityHint="Opens the side navigation drawer"
       android_ripple={{ color: dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)", borderless: true }}
       style={{
         width: 40,

@@ -1,22 +1,14 @@
-// metro.config.js — monorepo-aware + NativeWind
+// metro.config.js
+// Stock Expo + NativeWind config. The earlier version added monorepo
+// workarounds (watch the workspace root, unstable_enableSymlinks for
+// pnpm-symlinked deps, etc.) — none of that is needed now that mobile/
+// is a standalone Expo project with vendored shared code at
+// src/_shared/. Expo-doctor flags the overrides as risky, so the
+// minimal stock config is the safe production choice.
+
 const { getDefaultConfig } = require("expo/metro-config");
 const { withNativeWind } = require("nativewind/metro");
-const path = require("node:path");
 
-const projectRoot = __dirname;
-const workspaceRoot = path.resolve(projectRoot, "..");
-
-const config = getDefaultConfig(projectRoot);
-
-// Let Metro see the workspace root so it can resolve `@money-nest/shared`
-// from `../shared` and any other hoisted deps from `../node_modules`.
-config.watchFolders = [workspaceRoot];
-config.resolver.nodeModulesPaths = [
-  path.resolve(projectRoot, "node_modules"),
-  path.resolve(workspaceRoot, "node_modules"),
-];
-// pnpm uses symlinked deps; let Metro follow them.
-config.resolver.unstable_enableSymlinks = true;
-config.resolver.unstable_enablePackageExports = true;
+const config = getDefaultConfig(__dirname);
 
 module.exports = withNativeWind(config, { input: "./src/global.css" });

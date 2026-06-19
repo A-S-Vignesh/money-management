@@ -4,7 +4,12 @@ export interface ITransaction extends Document {
   userId: mongoose.Types.ObjectId;
   fromAccountId?: mongoose.Types.ObjectId | null;
   toAccountId?: mongoose.Types.ObjectId | null;
-  type: "income" | "expense" | "transfer";
+  // "opening"    → the initial balance booked when an account is created
+  // "adjustment" → a manual correction posted to fix a mistyped/drifted balance
+  // Both affect Account.balance (credit toAccountId / debit fromAccountId) but
+  // are excluded from income/expense reporting — see /api/reports and the
+  // transactions summary, which both match only { income, expense }.
+  type: "income" | "expense" | "transfer" | "opening" | "adjustment";
   description: string;
   category: string;
   amount: number;
@@ -35,7 +40,7 @@ const TransactionSchema: Schema<ITransaction> = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ["income", "expense", "transfer"],
+      enum: ["income", "expense", "transfer", "opening", "adjustment"],
       required: true,
     },
     description: {

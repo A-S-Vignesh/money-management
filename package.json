@@ -10,8 +10,10 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "mobile": "pnpm --filter mobile start",
-    "mobile:android": "pnpm --filter mobile android"
+    "mobile": "cd mobile && pnpm start",
+    "mobile:android": "cd mobile && pnpm android",
+    "mobile:build:dev": "cd mobile && pnpm build:dev:android",
+    "mobile:build:preview": "cd mobile && pnpm build:preview:android"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.90.21",

@@ -2,6 +2,7 @@
 // Mirrors `.chip` + `.chip.active` from Mobile UI/app.css.
 
 import { Pressable, Text, type ViewStyle } from "react-native";
+import { hapticLight } from "@/lib/haptics";
 
 interface Props {
   label: string;
@@ -15,7 +16,13 @@ interface Props {
 export function Chip({ label, active, onPress, leading, style }: Props) {
   return (
     <Pressable
-      onPress={onPress}
+      onPress={() => {
+        hapticLight();
+        onPress?.();
+      }}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ selected: !!active }}
       style={[
         {
           height: 32,

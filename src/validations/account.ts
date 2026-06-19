@@ -51,6 +51,22 @@ export const updateAccountSchema = z.object({
   color: hexColor,
 });
 
+// Schema for adjusting an account's balance. The caller sends the *target*
+// balance they want the account to read; the server books an `adjustment`
+// transaction for the difference. This keeps balance derivable while still
+// letting users fix a mistyped opening amount or reconcile drift.
+export const adjustBalanceSchema = z.object({
+  balance: z
+    .number({ message: "Balance must be a number" })
+    .min(0, "Balance cannot be negative"),
+  note: z
+    .string()
+    .max(200, "Note must be at most 200 characters")
+    .trim()
+    .optional(),
+});
+
 // TypeScript types inferred from schemas
 export type CreateAccountInput = z.infer<typeof createAccountSchema>;
 export type UpdateAccountInput = z.infer<typeof updateAccountSchema>;
+export type AdjustBalanceInput = z.infer<typeof adjustBalanceSchema>;

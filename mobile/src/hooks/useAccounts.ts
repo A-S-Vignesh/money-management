@@ -87,3 +87,15 @@ export function useDeleteAccount() {
     onSuccess: () => invalidate(qc),
   });
 }
+
+// Set an account's balance to a target value. The backend books an
+// `adjustment` transaction for the difference (target − current) so the
+// balance stays derivable — see /api/accounts/[id]/adjust.
+export function useAdjustBalance(id: string) {
+  const qc = useQueryClient();
+  return useMutation<AccountDoc, ApiError, { balance: number; note?: string }>({
+    mutationFn: (body) =>
+      api<AccountDoc>(`/api/accounts/${id}/adjust`, { method: "POST", body }),
+    onSuccess: () => invalidate(qc),
+  });
+}

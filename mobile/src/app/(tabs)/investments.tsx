@@ -9,6 +9,8 @@
 // Lives inside (tabs) so it shares the tab bar + drawer chrome but isn't
 // a bottom-tab itself — reached via the side drawer's "Investments" link.
 
+import { tint } from "@/lib/colors";
+
 import { useState } from "react";
 import {
   Pressable,
@@ -19,7 +21,14 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
-import { ChevronRight, Plus, TrendingDown, TrendingUp } from "lucide-react-native";
+import { useRouter } from "expo-router";
+import {
+  ChevronRight,
+  LineChart,
+  Plus,
+  TrendingDown,
+  TrendingUp,
+} from "lucide-react-native";
 
 import { useColorScheme } from "@/hooks/useAppColorScheme";
 import { useDrawer } from "@/lib/stores";
@@ -35,6 +44,7 @@ import { formatCurrency } from "@/lib/format";
 import { AddInvestmentSheet } from "@/components/investments/AddInvestmentSheet";
 import { Card } from "@/components/ui/Card";
 import { Donut } from "@/components/ui/Donut";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { Money } from "@/components/ui/Money";
 import { ScreenHead } from "@/components/ui/ScreenHead";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -68,6 +78,7 @@ const TYPE_LABEL: Record<HoldingType, string> = {
 
 export default function InvestmentsScreen() {
   const dark = useColorScheme() === "dark";
+  const router = useRouter();
   const openDrawer = useDrawer((s) => s.toggle);
   const { data: portfolio, isLoading: pfLoading, isRefetching, refetch: refetchPf } = usePortfolio();
   const { data: holdings = [], refetch: refetchH } = useHoldings();
@@ -88,6 +99,8 @@ export default function InvestmentsScreen() {
           trailing={
             <Pressable
               onPress={() => setSheetOpen(true)}
+              accessibilityRole="button"
+              accessibilityLabel="Add investment"
               hitSlop={6}
               android_ripple={{ color: "rgba(255,255,255,0.18)", borderless: true }}
               style={{
@@ -344,13 +357,15 @@ export default function InvestmentsScreen() {
             ))}
           </Card>
         ) : holdings.length === 0 ? (
-          <Card style={{ padding: 24, alignItems: "center" }}>
-            <Text className="text-fg dark:text-fg-dark text-[15px] font-semibold">
-              No investments yet
-            </Text>
-            <Text className="text-fg-muted dark:text-fg-dark-muted text-[12px] text-center mt-1">
-              Tap + Add to record your first stock, MF, or crypto position.
-            </Text>
+          <Card>
+            <EmptyState
+              Icon={LineChart}
+              title="No investments yet"
+              subtitle="Track stocks, mutual funds, ETFs, crypto, and gold all in one place."
+              tone="emerald"
+              actionLabel="Add investment"
+              onAction={() => setSheetOpen(true)}
+            />
           </Card>
         ) : (
           <Card style={{ paddingHorizontal: 0, paddingVertical: 0, overflow: "hidden" }}>
@@ -360,6 +375,7 @@ export default function InvestmentsScreen() {
                 holding={h}
                 dark={dark}
                 last={i === holdings.length - 1}
+                onPress={() => router.push(`/holdings/${h._id}`)}
               />
             ))}
           </Card>
@@ -375,10 +391,12 @@ function HoldingRow({
   holding,
   dark,
   last,
+  onPress,
 }: {
   holding: HoldingDoc;
   dark: boolean;
   last: boolean;
+  onPress: () => void;
 }) {
   const color = TYPE_COLOR[holding.type] ?? Tokens.brand;
   const symbol = holding.symbol || holding.name;
@@ -389,7 +407,9 @@ function HoldingRow({
   const up = pct >= 0;
 
   return (
-    <View
+    <Pressable
+      onPress={onPress}
+      android_ripple={{ color: dark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.03)" }}
       style={{
         flexDirection: "row",
         alignItems: "center",
@@ -398,6 +418,7 @@ function HoldingRow({
         paddingVertical: 14,
         borderBottomWidth: last ? 0 : 1,
         borderBottomColor: dark ? Tokens.borderDark : Tokens.border,
+        overflow: "hidden",
       }}
     >
       <View
@@ -453,16 +474,15 @@ function HoldingRow({
           {pct.toFixed(1)}%
         </Text>
       </View>
-    </View>
+      {/* Chevron — visible affordance that the row opens the holding
+          detail page on tap. */}
+      <ChevronRight
+        size={16}
+        color={dark ? Tokens.textDimDark : Tokens.textDim}
+        strokeWidth={2.2}
+        style={{ marginLeft: 4 }}
+      />
+    </Pressable>
   );
 }
 
-function tint(hex: string, alpha: number): string {
-  const m = /^#?([0-9a-f]{6})$/i.exec(hex);
-  if (!m) return hex;
-  const n = parseInt(m[1], 16);
-  const r = (n >> 16) & 0xff;
-  const g = (n >> 8) & 0xff;
-  const b = n & 0xff;
-  return `rgba(${r},${g},${b},${alpha})`;
-}

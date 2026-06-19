@@ -9,6 +9,8 @@
 //      + % + remaining + colored progress bar
 //   4. Smart suggestion card — recommends bumping the worst-overspent budget
 
+import { lightenHex } from "@/lib/colors";
+
 import { useCallback, useMemo, useState } from "react";
 import {
   Pressable,
@@ -18,10 +20,16 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { AlertTriangle, Pencil, Plus, Sparkles } from "lucide-react-native";
+import {
+  AlertTriangle,
+  PieChart,
+  Pencil,
+  Plus,
+  Sparkles,
+} from "lucide-react-native";
 import { LinearGradient } from "expo-linear-gradient";
 
-import { getCategoryPalette } from "@money-nest/shared";
+import { getCategoryPalette } from "@/_shared";
 import { useBudgets, type BudgetDoc } from "@/hooks/useBudgets";
 import { useDrawer } from "@/lib/stores";
 import { Tokens } from "@/lib/design";
@@ -30,6 +38,7 @@ import { getCategoryIcon } from "@/lib/categoryIcons";
 
 import { BudgetSheet } from "@/components/budgets/BudgetSheet";
 import { Card } from "@/components/ui/Card";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { Money } from "@/components/ui/Money";
 import { ScreenHead } from "@/components/ui/ScreenHead";
 import { Section } from "@/components/ui/Section";
@@ -157,13 +166,15 @@ export default function BudgetsScreen() {
               ))}
             </Card>
           ) : budgets.length === 0 ? (
-            <Card style={{ padding: 24, alignItems: "center" }}>
-              <Text className="text-fg dark:text-fg-dark text-[15px] font-semibold">
-                No budgets yet
-              </Text>
-              <Text className="text-fg-muted dark:text-fg-dark-muted text-[12.5px] text-center mt-1">
-                Tap "+ New" to create your first category budget.
-              </Text>
+            <Card>
+              <EmptyState
+                Icon={PieChart}
+                title="No budgets yet"
+                subtitle="Set a monthly limit for each category. We'll warn you at 80% and 100%."
+                tone="emerald"
+                actionLabel="New budget"
+                onAction={openCreate}
+              />
             </Card>
           ) : (
             <Card style={{ paddingHorizontal: 0, paddingVertical: 0, overflow: "hidden" }}>
@@ -500,18 +511,3 @@ function BudgetRow({
   );
 }
 
-// Brighten a #RRGGBB hex toward white by `amount` (0–1). Used to give the
-// progress-bar fill a subtle gradient finish — the bar fades a touch
-// lighter at its leading edge, which reads as polished without needing a
-// real animation or shadow.
-function lightenHex(hex: string, amount: number): string {
-  const m = /^#?([0-9a-f]{6})$/i.exec(hex);
-  if (!m) return hex;
-  const n = parseInt(m[1], 16);
-  const r = (n >> 16) & 0xff;
-  const g = (n >> 8) & 0xff;
-  const b = n & 0xff;
-  const mix = (c: number) => Math.round(c + (255 - c) * amount);
-  const toHex = (v: number) => v.toString(16).padStart(2, "0");
-  return `#${toHex(mix(r))}${toHex(mix(g))}${toHex(mix(b))}`;
-}

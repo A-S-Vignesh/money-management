@@ -23,10 +23,11 @@ import {
 import dayjs from "dayjs";
 import { Check, Trash2 } from "lucide-react-native";
 
-import { getCategoryPalette } from "@money-nest/shared";
+import { getCategoryPalette } from "@/_shared";
 import { getCategoryIcon } from "@/lib/categoryIcons";
 import { Tokens } from "@/lib/design";
 import { formatCurrency } from "@/lib/format";
+import { hapticMedium } from "@/lib/haptics";
 import {
   useAddBudget,
   useDeleteBudget,
@@ -138,6 +139,7 @@ export function BudgetSheet({ visible, onClose, editing }: Props) {
 
   const submit = async () => {
     if (!canSubmit || submitting) return;
+    hapticMedium();
     setSubmitting(true);
     try {
       const win = periodWindow(period);

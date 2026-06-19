@@ -10,10 +10,10 @@ import {
   View,
 } from "react-native";
 import { Repeat } from "lucide-react-native";
-import dayjs from "dayjs";
 
-import { getCategoryPalette } from "@money-nest/shared";
+import { getCategoryPalette } from "@/_shared";
 import { getCategoryIcon } from "@/lib/categoryIcons";
+import { formatDate } from "@/lib/format";
 import { Money } from "./Money";
 import { useColorScheme } from "@/hooks/useAppColorScheme";
 
@@ -112,7 +112,7 @@ export function TxRow({ tx, onPress, last }: Props) {
             }}
           />
           <Text className="text-fg-muted dark:text-fg-dark-muted text-[11.5px]">
-            {dayjs(tx.date).format("D MMM")}
+            {formatDate(tx.date, "short")}
           </Text>
           {tx.recurring ? (
             <>

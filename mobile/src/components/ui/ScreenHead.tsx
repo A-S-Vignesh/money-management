@@ -29,6 +29,9 @@ export function ScreenHead({ title, subtitle, onMenu, leading, trailing }: Props
     leading ?? (onMenu ? (
       <Pressable
         onPress={onMenu}
+        accessibilityRole="button"
+        accessibilityLabel="Open menu"
+        accessibilityHint="Opens the side navigation drawer"
         android_ripple={{ color: dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)", borderless: true }}
         style={{
           width: 40,

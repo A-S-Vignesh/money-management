@@ -48,6 +48,7 @@ import {
 } from "@/hooks/useGoals";
 import { Tokens } from "@/lib/design";
 import { formatCurrency } from "@/lib/format";
+import { hapticMedium } from "@/lib/haptics";
 
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { SheetHeader } from "@/components/transactions/SheetHeader";
@@ -146,6 +147,7 @@ export function GoalSheet({ visible, onClose, editing }: Props) {
 
   const submit = async () => {
     if (!canSubmit || submitting) return;
+    hapticMedium();
     setSubmitting(true);
     try {
       const body = {

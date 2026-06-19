@@ -3,7 +3,7 @@
 //   - Big gradient preview card (account type + name + balance + icon chip)
 //   - Account type chips: Bank / Card / Wallet / Cash
 //   - Account name input
-//   - Opening balance input (create only — backend disallows balance edits)
+//   - Balance input (opening on create; on edit it posts an adjustment txn)
 //   - Card colour swatches
 //   - Save changes / Add account button (+ Delete in edit mode)
 
@@ -29,8 +29,10 @@ import {
 
 import { Tokens } from "@/lib/design";
 import { formatCurrency } from "@/lib/format";
+import { hapticMedium } from "@/lib/haptics";
 import {
   useAddAccount,
+  useAdjustBalance,
   useDeleteAccount,
   useUpdateAccount,
   type AccountDoc,
@@ -120,22 +122,34 @@ export function AccountSheet({ visible, onClose, editing }: Props) {
 
   const addMut = useAddAccount();
   const updateMut = useUpdateAccount(editing?._id ?? "");
+  const adjustMut = useAdjustBalance(editing?._id ?? "");
   const deleteMut = useDeleteAccount();
 
-  const canSubmit =
-    name.trim().length >= 2 && (editing || Number(balance) >= 0);
+  // Balance is only directly editable on broker/investment accounts via their
+  // own flow — here it's adjustable on bank/card/wallet/cash. Hide the field
+  // for broker accounts in edit mode (the backend rejects adjusting those).
+  const canAdjustBalance = type !== "broker";
+
+  const canSubmit = name.trim().length >= 2 && Number(balance) >= 0;
 
   const submit = async () => {
     if (!canSubmit || submitting) return;
+    hapticMedium();
     setSubmitting(true);
     try {
       if (editing) {
-        // Backend rejects balance on update — only send the editable fields.
+        // Name/type/color go through the normal update. Balance is derived
+        // from transactions, so a changed amount is posted as an adjustment
+        // transaction instead of a direct field write.
         await updateMut.mutateAsync({
           name: name.trim(),
           type: backendType(type),
           color,
         });
+        const target = Number(balance) || 0;
+        if (canAdjustBalance && target !== editing.balance) {
+          await adjustMut.mutateAsync({ balance: target });
+        }
       } else {
         await addMut.mutateAsync({
           name: name.trim(),
@@ -349,10 +363,15 @@ export function AccountSheet({ visible, onClose, editing }: Props) {
         }}
       />
 
-      {/* Opening balance — create only. Backend rejects balance on update. */}
-      {!editing ? (
+      {/* Balance. On create this is the opening balance; on edit it's the
+          current balance — changing it books an `adjustment` transaction for
+          the difference rather than overwriting the value. Hidden for broker
+          accounts, whose balance is driven by holdings. */}
+      {(!editing || canAdjustBalance) ? (
         <>
-          <Label dark={dark}>Opening balance</Label>
+          <Label dark={dark}>
+            {editing ? "Current balance" : "Opening balance"}
+          </Label>
           <View
             style={{
               flexDirection: "row",
@@ -363,7 +382,7 @@ export function AccountSheet({ visible, onClose, editing }: Props) {
               borderWidth: 1,
               borderColor: dark ? Tokens.borderDark : Tokens.border,
               paddingHorizontal: 14,
-              marginBottom: 18,
+              marginBottom: editing ? 8 : 18,
             }}
           >
             <Text
@@ -391,6 +410,19 @@ export function AccountSheet({ visible, onClose, editing }: Props) {
               }}
             />
           </View>
+          {editing ? (
+            <Text
+              style={{
+                fontSize: 11.5,
+                lineHeight: 16,
+                color: dark ? Tokens.textDimDark : Tokens.textDim,
+                marginBottom: 18,
+              }}
+            >
+              Correcting a mistyped amount? We&apos;ll record the difference as
+              a balance adjustment — it won&apos;t count as income or expense.
+            </Text>
+          ) : null}
         </>
       ) : null}
 

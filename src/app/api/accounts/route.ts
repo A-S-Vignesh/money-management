@@ -1,7 +1,9 @@
 import { getUserId } from "@/lib/mobileAuth";
 import { connectToDatabase } from "@/lib/mongodb";
 import Account from "@/models/Account";
+import Transaction from "@/models/Transaction";
 import { createAccountSchema } from "@/validations/account";
+import mongoose from "mongoose";
 
 export async function GET(req: Request) {
   const userId = await getUserId(req);
@@ -98,21 +100,65 @@ export async function POST(req: Request) {
       );
     }
 
-    const newAccount = await Account.create({
-      ...parsed.data,
-      userId,
-      lastUpdated: new Date(),
-    });
+    const openingBalance = parsed.data.balance ?? 0;
 
-    return Response.json(
-      {
-        message: "Account Created Successfully",
-        type: "success",
-        success: true,
-        data: newAccount,
-      },
-      { status: 201 },
-    );
+    // MongoDB sessions/transactions only work on replica sets (not local
+    // standalone MongoDB) — gate on prod, matching the transactions routes.
+    const isProd = process.env.NODE_ENV === "production";
+    let dbSession: mongoose.ClientSession | undefined = undefined;
+    if (isProd) {
+      dbSession = await mongoose.startSession();
+      dbSession.startTransaction();
+    }
+
+    try {
+      const [newAccount] = await Account.create(
+        [{ ...parsed.data, userId }],
+        isProd ? { session: dbSession } : undefined,
+      );
+
+      // Book the opening balance as a transaction so Account.balance stays
+      // fully derivable from the transaction log. Without this, recompute
+      // (deriveAccountBalance) would wipe the opening balance to 0 since it
+      // sums only transactions. Excluded from income/expense reports.
+      if (openingBalance > 0) {
+        await Transaction.create(
+          [
+            {
+              userId,
+              type: "opening",
+              toAccountId: newAccount._id,
+              amount: openingBalance,
+              category: "Opening Balance",
+              description: "Opening balance",
+              date: new Date(),
+            },
+          ],
+          isProd ? { session: dbSession } : undefined,
+        );
+      }
+
+      if (isProd && dbSession) {
+        await dbSession.commitTransaction();
+        dbSession.endSession();
+      }
+
+      return Response.json(
+        {
+          message: "Account Created Successfully",
+          type: "success",
+          success: true,
+          data: newAccount,
+        },
+        { status: 201 },
+      );
+    } catch (txError) {
+      if (isProd && dbSession) {
+        await dbSession.abortTransaction();
+        dbSession.endSession();
+      }
+      throw txError;
+    }
   } catch (error) {
     console.error("POST /api/accounts error:", error);
     return Response.json(

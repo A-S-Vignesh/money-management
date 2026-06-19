@@ -10,6 +10,7 @@ import { Plus } from "lucide-react-native";
 
 import { Tokens } from "@/lib/design";
 import { useTransactionSheet } from "@/lib/stores";
+import { hapticMedium } from "@/lib/haptics";
 
 export function GlobalFab() {
   const openAdd = useTransactionSheet((s) => s.openAdd);
@@ -21,7 +22,13 @@ export function GlobalFab() {
 
   return (
     <Pressable
-      onPress={() => openAdd("expense")}
+      onPress={() => {
+        hapticMedium();
+        openAdd("expense");
+      }}
+      accessibilityRole="button"
+      accessibilityLabel="Add transaction"
+      accessibilityHint="Opens the add-transaction sheet"
       android_ripple={{ color: "rgba(255,255,255,0.18)", borderless: true }}
       // Flat style only. Function-style props get dropped by NativeWind's
       // Pressable wrapper, which previously rendered this FAB as a 0×0 box

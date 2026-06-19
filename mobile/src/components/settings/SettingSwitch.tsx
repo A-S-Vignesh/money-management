@@ -22,6 +22,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { Tokens } from "@/lib/design";
 import { useColorScheme } from "@/hooks/useAppColorScheme";
+import { hapticLight } from "@/lib/haptics";
 
 interface Props {
   value: boolean;
@@ -68,6 +69,7 @@ export function SettingSwitch({ value, onChange, disabled }: Props) {
     <Pressable
       onPress={() => {
         if (disabled) return;
+        hapticLight();
         onChange(!value);
       }}
       hitSlop={10}

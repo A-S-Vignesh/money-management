@@ -25,7 +25,7 @@ import {
   type LucideIcon,
 } from "lucide-react-native";
 
-import { getCategoryPalette } from "@money-nest/shared";
+import { getCategoryPalette } from "@/_shared";
 import { Tokens } from "@/lib/design";
 import { useColorScheme } from "@/hooks/useAppColorScheme";
 
@@ -54,7 +54,7 @@ const CATEGORY_ICONS: Record<string, LucideIcon> = {
 interface Props {
   value: string;
   onChange: (next: string) => void;
-  categories: string[];
+  categories: readonly string[];
 }
 
 export function CategoryPicker({ value, onChange, categories }: Props) {

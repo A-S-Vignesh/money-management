@@ -11,9 +11,12 @@
 // - After bulk imports / migrations / data fixes
 //
 // The conventions match POST /api/transactions:
-//   income   → toAccountId   gets +amount
-//   expense  → fromAccountId gets -amount
-//   transfer → fromAccountId gets -amount AND toAccountId gets +amount
+//   income     → toAccountId   gets +amount
+//   expense    → fromAccountId gets -amount
+//   transfer   → fromAccountId gets -amount AND toAccountId gets +amount
+//   opening    → toAccountId   gets +amount  (initial balance at creation)
+//   adjustment → toAccountId   gets +amount  OR  fromAccountId gets -amount
+//                (manual correction; direction depends on which side is set)
 
 import mongoose from "mongoose";
 import Account from "@/models/Account";
@@ -81,6 +84,36 @@ export async function deriveAccountBalance(
                   case: {
                     $and: [
                       { $eq: ["$type", "transfer"] },
+                      { $eq: ["$fromAccountId", _id] },
+                    ],
+                  },
+                  then: { $multiply: ["$amount", -1] },
+                },
+                // opening balance: always a credit to the account it created
+                {
+                  case: {
+                    $and: [
+                      { $eq: ["$type", "opening"] },
+                      { $eq: ["$toAccountId", _id] },
+                    ],
+                  },
+                  then: "$amount",
+                },
+                // manual adjustment, credit side (balance was raised)
+                {
+                  case: {
+                    $and: [
+                      { $eq: ["$type", "adjustment"] },
+                      { $eq: ["$toAccountId", _id] },
+                    ],
+                  },
+                  then: "$amount",
+                },
+                // manual adjustment, debit side (balance was lowered)
+                {
+                  case: {
+                    $and: [
+                      { $eq: ["$type", "adjustment"] },
                       { $eq: ["$fromAccountId", _id] },
                     ],
                   },

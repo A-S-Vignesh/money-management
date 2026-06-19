@@ -5,6 +5,8 @@
 //   - Per-goal cards (color-tinted icon + due date + saved/target + bar)
 //   - "+ Add new goal" dashed card at the bottom
 
+import { tint, lightenHex } from "@/lib/colors";
+
 import { useMemo, useState } from "react";
 import {
   Pressable,
@@ -98,6 +100,8 @@ export default function GoalsScreen() {
           trailing={
             <Pressable
               onPress={openCreate}
+              accessibilityRole="button"
+              accessibilityLabel="Add goal"
               android_ripple={{ color: "rgba(255,255,255,0.18)", borderless: true }}
               style={{
                 width: 38,
@@ -210,7 +214,7 @@ export default function GoalsScreen() {
                 key={g._id}
                 goal={g}
                 dark={dark}
-                onPress={() => router.push(`/goals/${g._id}` as never)}
+                onPress={() => router.push(`/goals/${g._id}`)}
                 onEdit={() => {
                   setEditing(g);
                   setSheetOpen(true);
@@ -357,7 +361,7 @@ function GoalCard({
         }}
       >
         <LinearGradient
-          colors={[color, lighten(color, 0.2)]}
+          colors={[color, lightenHex(color, 0.2)]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={{ width: `${pct}%`, height: "100%", borderRadius: 99 }}
@@ -387,27 +391,4 @@ function GoalCard({
       </View>
     </Pressable>
   );
-}
-
-// ── color helpers ────────────────────────────────────────────────────────
-
-function lighten(hex: string, amount: number): string {
-  const m = /^#?([0-9a-f]{6})$/i.exec(hex);
-  if (!m) return hex;
-  const n = parseInt(m[1], 16);
-  const r = (n >> 16) & 0xff;
-  const g = (n >> 8) & 0xff;
-  const b = n & 0xff;
-  const mix = (c: number) => Math.round(c + (255 - c) * amount);
-  const toHex = (v: number) => v.toString(16).padStart(2, "0");
-  return `#${toHex(mix(r))}${toHex(mix(g))}${toHex(mix(b))}`;
-}
-function tint(hex: string, alpha: number): string {
-  const m = /^#?([0-9a-f]{6})$/i.exec(hex);
-  if (!m) return hex;
-  const n = parseInt(m[1], 16);
-  const r = (n >> 16) & 0xff;
-  const g = (n >> 8) & 0xff;
-  const b = n & 0xff;
-  return `rgba(${r},${g},${b},${alpha})`;
 }

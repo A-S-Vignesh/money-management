@@ -5,7 +5,7 @@
 
 import { create } from "zustand";
 import * as SecureStore from "expo-secure-store";
-import type { MobileAuthResponse } from "@money-nest/shared";
+import type { MobileAuthResponse } from "@/_shared";
 
 const TOKEN_KEY = "money_nest_jwt";
 const USER_KEY = "money_nest_user";

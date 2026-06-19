@@ -142,7 +142,7 @@ export default function Footer() {
           </p>
 
           {/* Codolve Credit */}
-          <p className="mt-2 md:mt-0 text-gray-400 dark:text-gray-500">
+          {/* <p className="mt-2 md:mt-0 text-gray-400 dark:text-gray-500">
             Developed by{" "}
             <Link
               href="https://codolve.com"
@@ -152,7 +152,7 @@ export default function Footer() {
             >
               Codolve
             </Link>
-          </p>
+          </p> */}
 
           {/* Social Icons */}
           <div className="mt-4 md:mt-0 flex space-x-6">

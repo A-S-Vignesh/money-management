@@ -18,21 +18,35 @@ import { useRouter } from "expo-router";
 import {
   ArrowDownLeft,
   ArrowUpRight,
+  Briefcase,
+  Car,
   ChevronRight,
   Eye,
   EyeOff,
+  Gift,
+  GraduationCap,
+  Home,
+  Plane,
   Plus,
   Send,
+  ShieldCheck,
+  Smartphone,
   Target,
   TrendingUp,
+  type LucideIcon,
 } from "lucide-react-native";
+import dayjs from "dayjs";
 
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { Tokens } from "@/lib/design";
 import { formatCurrency } from "@/lib/format";
+import { useGoals, type GoalDoc } from "@/hooks/useGoals";
+import { useNotifications } from "@/hooks/useNotifications";
+import { useColorScheme } from "@/hooks/useAppColorScheme";
+import { useSecurity } from "@/lib/security";
 import { useDrawer, useTransactionSheet } from "@/lib/stores";
-import { getCategoryPalette } from "@money-nest/shared";
+import { getCategoryPalette } from "@/_shared";
 
 import { Card } from "@/components/ui/Card";
 import { Donut } from "@/components/ui/Donut";
@@ -88,7 +102,12 @@ function greetingFor(hour: number): string {
 export default function DashboardScreen() {
   const user = useAuth((s) => s.user);
   const router = useRouter();
-  const [hidden, setHidden] = useState(false);
+  // Balance visibility lives in the security store so the "Hide balance on
+  // open" Settings toggle and the AppLockGate's foreground listener can
+  // both drive it (the gate flips this back to `true` whenever the app
+  // resumes from background, if the preference is on).
+  const hidden = useSecurity((s) => s.balanceHidden);
+  const setBalanceHidden = useSecurity((s) => s.setBalanceHidden);
   const screenWidth = Dimensions.get("window").width;
 
   // AddTransactionSheet is mounted globally in (tabs)/_layout — we just
@@ -97,6 +116,9 @@ export default function DashboardScreen() {
   const openAdd = useTransactionSheet((s) => s.openAdd);
   const openEdit = useTransactionSheet((s) => s.openEdit);
   const openDrawer = useDrawer((s) => s.toggle);
+  // Live unread count drives the bell badge dot in the TopHeader.
+  const { data: notifData } = useNotifications();
+  const unreadNotifications = notifData?.unreadCount ?? 0;
 
   const [detailTx, setDetailTx] = useState<TransactionDoc | null>(null);
   const [showDetail, setShowDetail] = useState(false);
@@ -114,6 +136,8 @@ export default function DashboardScreen() {
     queryKey: ["dashboard"],
     queryFn: () => api<DashboardPayload>("/api/dashboard"),
   });
+
+  const { data: goals = [], isLoading: goalsLoading } = useGoals();
 
   const onRefresh = useCallback(() => refetch(), [refetch]);
 
@@ -156,8 +180,8 @@ export default function DashboardScreen() {
         <TopHeader
           title="Money Nest"
           subtitle={greet}
-          unread={2}
-          onBell={() => router.push("/(tabs)/profile")}
+          unread={unreadNotifications}
+          onBell={() => router.push("/(tabs)/notifications")}
           onMenu={openDrawer}
         />
       </View>
@@ -208,7 +232,15 @@ export default function DashboardScreen() {
               Total balance
             </Text>
             <Pressable
-              onPress={() => setHidden((v) => !v)}
+              onPress={() => setBalanceHidden(!hidden)}
+              accessibilityRole="button"
+              accessibilityLabel={hidden ? "Show balance" : "Hide balance"}
+              accessibilityHint={
+                hidden
+                  ? "Reveals your total balance and amounts"
+                  : "Masks your total balance and amounts"
+              }
+              accessibilityState={{ selected: hidden }}
               style={{
                 width: 32,
                 height: 32,
@@ -228,7 +260,18 @@ export default function DashboardScreen() {
 
           {isLoading ? (
             <View style={{ marginTop: 8 }}>
-              <Skeleton width={220} height={36} radius={6} />
+              {/* Skeleton sits on the blue gradient hero, so the default
+                  gray palette would read as a hole punched into the
+                  card. Override with white-translucent tones so the
+                  shimmer looks like it belongs to the surface — same
+                  pattern Stripe/Linear use on coloured hero cards. */}
+              <Skeleton
+                width={220}
+                height={36}
+                radius={6}
+                baseColor="rgba(255,255,255,0.14)"
+                highlightColor="rgba(255,255,255,0.32)"
+              />
             </View>
           ) : hidden ? (
             <Text
@@ -300,14 +343,17 @@ export default function DashboardScreen() {
           </View>
         </LinearGradient>
 
-        {/* Quick actions */}
+        {/* Quick actions — Add / Send / Goals / Invest. Matches the
+            Mobile UI mock; Send = transfer between accounts, Goals +
+            Invest deep-link into their own pages so the user can jump
+            from the dashboard. */}
         <View style={{ flexDirection: "row", gap: 10, marginBottom: 18 }}>
           {(
             [
               { l: "Add", Icon: Plus, tone: "brand", onPress: () => openAdd("expense") },
-              { l: "Income", Icon: Send, tone: "emerald", onPress: () => openAdd("income") },
-              { l: "Transfer", Icon: TrendingUp, tone: "amber", onPress: () => openAdd("transfer") },
-              { l: "More", Icon: Target, tone: "purple", onPress: () => router.push("/(tabs)/transactions") },
+              { l: "Send", Icon: Send, tone: "emerald", onPress: () => openAdd("transfer") },
+              { l: "Goals", Icon: Target, tone: "purple", onPress: () => router.push("/(tabs)/goals") },
+              { l: "Invest", Icon: TrendingUp, tone: "amber", onPress: () => router.push("/(tabs)/investments") },
             ] as const
           ).map((a, i) => (
             <Pressable
@@ -465,6 +511,36 @@ export default function DashboardScreen() {
           )}
         </Card>
 
+        {/* Goals — horizontal scroll. While the goals API is fetching we
+            show two shimmer card placeholders so the section doesn't
+            silently appear/disappear once data lands (which used to make
+            the dashboard feel like it was jumping around).
+            paddingRight: 16 on the content container so the LAST card
+            has equal breathing room to the first one. */}
+        {goalsLoading || goals.length > 0 ? (
+          <Section
+            title="Goals"
+            action="See all"
+            onAction={() => router.push("/(tabs)/goals")}
+          >
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ gap: 12, paddingRight: 16 }}
+            >
+              {goalsLoading
+                ? [0, 1].map((i) => <DashboardGoalCardSkeleton key={i} />)
+                : goals.slice(0, 6).map((g) => (
+                    <DashboardGoalCard
+                      key={g._id}
+                      goal={g}
+                      onPress={() => router.push(`/goals/${g._id}`)}
+                    />
+                  ))}
+            </ScrollView>
+          </Section>
+        ) : null}
+
         {/* Recent activity */}
         <Section
           title="Recent activity"
@@ -516,5 +592,198 @@ export default function DashboardScreen() {
         onEdit={startEditFromDetail}
       />
     </SafeAreaView>
+  );
+}
+
+// ── DashboardGoalCard ────────────────────────────────────────────────────
+// Compact goal card for the horizontal scroll on the dashboard. Mirrors
+// the structure of the dedicated Goals list row but laid out vertically
+// inside a 220px-wide chip so it scrolls cleanly side-to-side.
+
+function iconForGoalCategory(c: string): LucideIcon {
+  switch (c) {
+    case "Emergency": return ShieldCheck;
+    case "Travel": return Plane;
+    case "House": return Home;
+    case "Vehicle": return Car;
+    case "Gadget": return Smartphone;
+    case "Gift": return Gift;
+    case "Education": return GraduationCap;
+    default: return Briefcase;
+  }
+}
+
+function DashboardGoalCard({
+  goal,
+  onPress,
+}: {
+  goal: GoalDoc;
+  onPress: () => void;
+}) {
+  const dark = useColorScheme() === "dark";
+  const Icon = iconForGoalCategory(goal.category);
+  const color = goal.color || Tokens.brand;
+  const pct =
+    goal.target > 0 ? Math.min(100, (goal.saved / goal.target) * 100) : 0;
+  const toGo = Math.max(0, goal.target - goal.saved);
+  const due = goal.deadline ? dayjs(goal.deadline).format("MMM YYYY") : null;
+
+  return (
+    <Pressable
+      onPress={onPress}
+      android_ripple={{ color: dark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)" }}
+      // Inline style only — NativeWind classes don't reliably override
+      // Pressable's style prop when both are set, so the card was rendering
+      // transparent (no visible box). Same surface tokens the Card primitive
+      // uses, plus the same soft 2-layer shadow approximating --shadow-card.
+      style={{
+        width: 220,
+        padding: 14,
+        borderRadius: 18,
+        backgroundColor: dark ? Tokens.cardDark : Tokens.card,
+        borderWidth: 1,
+        borderColor: dark ? Tokens.borderDark : Tokens.border,
+        shadowColor: "#0f1224",
+        shadowOpacity: 0.06,
+        shadowRadius: 6,
+        shadowOffset: { width: 0, height: 2 },
+        elevation: 1,
+        overflow: "hidden",
+      }}
+    >
+      <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+        <View
+          style={{
+            width: 32,
+            height: 32,
+            borderRadius: 10,
+            backgroundColor: `${color}22`,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Icon size={16} color={color} strokeWidth={2.2} />
+        </View>
+        <View style={{ flex: 1 }} />
+        {due ? (
+          <Text
+            className="text-fg-muted dark:text-fg-dark-muted text-[10.5px] font-semibold"
+            style={{ letterSpacing: 0.2 }}
+          >
+            {due}
+          </Text>
+        ) : null}
+      </View>
+
+      <Text
+        numberOfLines={1}
+        className="text-fg dark:text-fg-dark text-[13.5px] font-bold mt-2"
+        style={{ letterSpacing: -0.1 }}
+      >
+        {goal.name}
+      </Text>
+      <View style={{ flexDirection: "row", alignItems: "baseline", marginTop: 2, gap: 4 }}>
+        <Money
+          value={goal.saved}
+          className="text-fg dark:text-fg-dark text-[15px] font-bold"
+          style={{ letterSpacing: -0.3 }}
+        />
+        <Text
+          className="text-fg-muted dark:text-fg-dark-muted text-[11px]"
+          style={{ fontVariant: ["tabular-nums"] }}
+        >
+          / {formatCurrency(goal.target)}
+        </Text>
+      </View>
+
+      <View
+        style={{
+          marginTop: 10,
+          height: 5,
+          borderRadius: 99,
+          backgroundColor: `${color}1f`,
+          overflow: "hidden",
+        }}
+      >
+        <View
+          style={{
+            width: `${pct}%`,
+            height: "100%",
+            borderRadius: 99,
+            backgroundColor: color,
+          }}
+        />
+      </View>
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          marginTop: 6,
+        }}
+      >
+        <Text className="text-fg-muted dark:text-fg-dark-muted text-[10.5px] font-semibold">
+          {pct.toFixed(0)}% complete
+        </Text>
+        <Text
+          style={{
+            fontSize: 10.5,
+            fontWeight: "700",
+            color,
+            fontVariant: ["tabular-nums"],
+          }}
+        >
+          {formatCurrency(toGo)} to go
+        </Text>
+      </View>
+    </Pressable>
+  );
+}
+
+// Shimmer-skeleton mirror of DashboardGoalCard. Same dimensions and
+// internal block layout so the section doesn't snap-resize when real
+// data lands — only the placeholder bars cross-fade out as the real
+// content renders.
+function DashboardGoalCardSkeleton() {
+  const dark = useColorScheme() === "dark";
+  return (
+    <View
+      style={{
+        width: 220,
+        padding: 14,
+        borderRadius: 18,
+        backgroundColor: dark ? Tokens.cardDark : Tokens.card,
+        borderWidth: 1,
+        borderColor: dark ? Tokens.borderDark : Tokens.border,
+        shadowColor: "#0f1224",
+        shadowOpacity: 0.06,
+        shadowRadius: 6,
+        shadowOffset: { width: 0, height: 2 },
+        elevation: 1,
+        overflow: "hidden",
+      }}
+    >
+      <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+        <Skeleton width={32} height={32} radius={10} />
+        <View style={{ flex: 1 }} />
+        <Skeleton width={48} height={10} radius={4} />
+      </View>
+      <View style={{ height: 10 }} />
+      <Skeleton width="70%" height={14} />
+      <View style={{ height: 6 }} />
+      <Skeleton width="55%" height={14} />
+      <View style={{ height: 12 }} />
+      <Skeleton width="100%" height={5} radius={99} />
+      <View style={{ height: 8 }} />
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <Skeleton width={60} height={10} radius={4} />
+        <Skeleton width={50} height={10} radius={4} />
+      </View>
+    </View>
   );
 }

@@ -5,6 +5,7 @@
 
 import { Text, type TextStyle, type TextProps } from "react-native";
 import { formatCurrency } from "@/lib/format";
+import { useCurrency } from "@/lib/currency";
 
 interface Props extends Omit<TextProps, "children"> {
   value: number;
@@ -15,6 +16,12 @@ interface Props extends Omit<TextProps, "children"> {
 }
 
 export function Money({ value, prefix = "", className, style, ...rest }: Props) {
+  // Subscribe to the active currency so a Settings → Currency change
+  // re-renders every <Money /> in the tree immediately. formatCurrency
+  // itself reads the store via getState() (non-reactive), so without this
+  // subscription the screen would still show the old symbol/locale until
+  // some other state change forced a re-render.
+  useCurrency((s) => s.code);
   return (
     <Text
       className={className}

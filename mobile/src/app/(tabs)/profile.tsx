@@ -6,6 +6,8 @@
 //   - More section: Settings / Notifications / Privacy / Help / Log out
 //   - Version footer
 
+import { tint } from "@/lib/colors";
+
 import { useMemo, useState } from "react";
 import {
   Pressable,
@@ -28,7 +30,6 @@ import {
   HelpCircle,
   LogOut,
   Settings,
-  Shield,
   Wallet,
   type LucideIcon,
 } from "lucide-react-native";
@@ -38,7 +39,6 @@ import { useAuth } from "@/lib/auth";
 import { useDrawer } from "@/lib/stores";
 import { useAccounts, type AccountDoc } from "@/hooks/useAccounts";
 import { useProfile } from "@/hooks/useProfile";
-import { useTransactions } from "@/hooks/useTransactions";
 import { Tokens } from "@/lib/design";
 import { formatCurrency } from "@/lib/format";
 
@@ -74,7 +74,6 @@ export default function ProfileScreen() {
   });
   const { data: profile } = useProfile();
   const [editOpen, setEditOpen] = useState(false);
-  const { data: txData, isLoading: txLoading } = useTransactions({ limit: 1 });
 
   // Goals count — no dedicated hook yet, inline lightweight fetch off the
   // existing /api/goals endpoint.
@@ -89,10 +88,23 @@ export default function ProfileScreen() {
     },
   });
 
-  const accounts = useMemo(
-    () => accountsRaw.filter((a) => !a.isSystem && !a.isDeleted),
-    [accountsRaw],
-  );
+  // Split user-facing accounts into "regular" (bank/cash/wallet/credit/
+  // other) and "investment" (broker accounts like Zerodha, Groww, etc.).
+  // Stats row shows them as separate counts so the user can see at a
+  // glance how many brokers they're tracking vs how many cash accounts.
+  const { regularAccounts, investmentAccounts } = useMemo(() => {
+    const reg: AccountDoc[] = [];
+    const inv: AccountDoc[] = [];
+    for (const a of accountsRaw) {
+      if (a.isSystem || a.isDeleted) continue;
+      if (a.type === "investment") inv.push(a);
+      else reg.push(a);
+    }
+    return { regularAccounts: reg, investmentAccounts: inv };
+  }, [accountsRaw]);
+  // Backwards-compat alias: the mini-list below + the empty state still
+  // think of "accounts" as the user's non-broker money accounts.
+  const accounts = regularAccounts;
 
   const initials = (user?.name ?? "U")
     .split(" ")
@@ -288,8 +300,8 @@ export default function ProfileScreen() {
         {/* ── Stats row ─────────────────────────────────────────── */}
         <View style={{ flexDirection: "row", gap: 10, marginBottom: 16 }}>
           <StatCard
-            value={txLoading ? "—" : (txData?.pagination?.total ?? 0)}
-            label="Transactions"
+            value={accountsLoading ? "—" : investmentAccounts.length}
+            label="Investments"
           />
           <StatCard
             value={typeof goalsCount === "number" ? goalsCount : "—"}
@@ -306,7 +318,7 @@ export default function ProfileScreen() {
           title="Accounts"
           trailing={
             <Pressable
-              onPress={() => router.push("/(tabs)/accounts" as never)}
+              onPress={() => router.push("/(tabs)/accounts")}
               hitSlop={6}
               android_ripple={{
                 color: dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)",
@@ -355,7 +367,7 @@ export default function ProfileScreen() {
                   account={a}
                   dark={dark}
                   last={i === accounts.length - 1}
-                  onPress={() => router.push("/(tabs)/accounts" as never)}
+                  onPress={() => router.push("/(tabs)/accounts")}
                 />
               ))}
             </Card>
@@ -371,32 +383,21 @@ export default function ProfileScreen() {
               Icon={Settings}
               tone="brand"
               label="Settings"
-              onPress={() => router.push("/(tabs)/settings" as never)}
+              onPress={() => router.push("/(tabs)/settings")}
               trailing={<Chevron dark={dark} />}
             />
             <SettingRow
               Icon={Bell}
               tone="amber"
               label="Notifications"
-              onPress={() => {
-                /* TODO: notifications screen */
-              }}
-              trailing={<Chevron dark={dark} />}
-            />
-            <SettingRow
-              Icon={Shield}
-              tone="emerald"
-              label="Privacy & Security"
-              onPress={() => router.push("/(tabs)/settings" as never)}
+              onPress={() => router.push("/(tabs)/notifications")}
               trailing={<Chevron dark={dark} />}
             />
             <SettingRow
               Icon={HelpCircle}
               tone="purple"
               label="Help & Support"
-              onPress={() => {
-                /* TODO: help screen */
-              }}
+              onPress={() => router.push("/help")}
               trailing={<Chevron dark={dark} />}
             />
             <SettingRow
@@ -543,12 +544,3 @@ function Chevron({ dark }: { dark: boolean }) {
   );
 }
 
-function tint(hex: string, alpha: number): string {
-  const m = /^#?([0-9a-f]{6})$/i.exec(hex);
-  if (!m) return hex;
-  const n = parseInt(m[1], 16);
-  const r = (n >> 16) & 0xff;
-  const g = (n >> 8) & 0xff;
-  const b = n & 0xff;
-  return `rgba(${r},${g},${b},${alpha})`;
-}
